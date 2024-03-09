@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-#include "../format.hpp"
+#include "format.hpp"
 
 class ParseResult
 {
