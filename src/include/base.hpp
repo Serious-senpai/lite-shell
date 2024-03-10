@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../parse_results.hpp"
-#include "../standard.hpp"
+#include "parse_results.hpp"
+#include "standard.hpp"
 
 class BaseCommand
 {

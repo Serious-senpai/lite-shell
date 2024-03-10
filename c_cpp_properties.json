@@ -1,0 +1,13 @@
+{
+    "version": 0,
+    "configurations": [
+        {
+            "name": "Win32",
+            "includePath": [
+                "src/include",
+                "${default}"
+            ],
+            "cppStandard": "c++17"
+        }
+    ]
+}

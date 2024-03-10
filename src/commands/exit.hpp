@@ -1,11 +1,13 @@
 #pragma once
 
-#include "base.hpp"
-#include "../standard.hpp"
+#include <base.hpp>
+#include <standard.hpp>
 
 class ExitCommand : public BaseCommand
 {
 public:
+    using BaseCommand::run;
+
     ExitCommand() : BaseCommand("exit") {}
 
     int run(const ParseResult &arguments) override

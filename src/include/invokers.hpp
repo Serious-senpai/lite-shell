@@ -1,8 +1,8 @@
 #pragma once
 
+#include "base.hpp"
 #include "parse_results.hpp"
 #include "standard.hpp"
-#include "commands/base.hpp"
 
 template <typename T>
 class CommandInvoker

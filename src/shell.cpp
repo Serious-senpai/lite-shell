@@ -1,11 +1,12 @@
 #define LITE_SHELL
 
-#include "converter.hpp"
-#include "invokers.hpp"
-#include "split.hpp"
-#include "standard.hpp"
-#include "strip.hpp"
-#include "commands/base.hpp"
+#include <base.hpp>
+#include <converter.hpp>
+#include <invokers.hpp>
+#include <split.hpp>
+#include <standard.hpp>
+#include <strip.hpp>
+
 #include "commands/exit.hpp"
 
 // Windows uses UTF-16, but we process UTF-8 only
