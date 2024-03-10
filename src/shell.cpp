@@ -1,5 +1,3 @@
-#define LITE_SHELL
-
 #include <base.hpp>
 #include <converter.hpp>
 #include <invokers.hpp>
@@ -8,14 +6,15 @@
 #include <strip.hpp>
 
 #include "commands/exit.hpp"
+#include "commands/type.hpp"
 
 // Windows uses UTF-16, but we process UTF-8 only
 // https://utf8everywhere.org/
 
 std::string get_working_directory()
 {
-    TCHAR buffer[MAX_PATH];
-    auto size = GetCurrentDirectory(MAX_PATH, buffer);
+    wchar_t buffer[MAX_PATH];
+    auto size = GetCurrentDirectoryW(MAX_PATH, buffer);
 
     if (size == 0)
     {
@@ -29,11 +28,12 @@ int main()
 {
     std::vector<CommandInvoker<BaseCommand>> commands;
     commands.emplace_back(std::make_shared<ExitCommand>());
+    commands.emplace_back(std::make_shared<TypeCommand>());
 
     int errorlevel = 0;
     while (true)
     {
-        std::cout << "furishell~" << get_working_directory() << ">";
+        std::cout << "liteshell(" << errorlevel << ")~" << get_working_directory() << ">";
 
         std::string input;
         std::getline(std::cin, input);
@@ -62,8 +62,26 @@ int main()
         else
         {
             auto command = matched[0];
-            auto parsed = command.parse(arguments);
-            errorlevel = command.run(parsed);
+
+            try
+            {
+                auto parsed = command.parse(arguments);
+                errorlevel = command.run(parsed);
+            }
+            catch (std::exception &e)
+            {
+                errorlevel = 1000;
+
+#define ERROR_CODE(exception_type, code)            \
+    if (dynamic_cast<exception_type *>(&e) != NULL) \
+    {                                               \
+        errorlevel = code;                          \
+    }
+                ERROR_CODE(std::runtime_error, 900);
+                ERROR_CODE(std::invalid_argument, 901);
+
+                std::cerr << e.what() << std::endl;
+            }
         }
     }
 

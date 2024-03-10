@@ -51,7 +51,7 @@ public:
                 const auto iter = arguments.find(arg);
                 if (iter == arguments.end())
                 {
-                    throw std::invalid_argument(format("Unknown argument %s", arg));
+                    throw std::invalid_argument(format("Unknown argument: %s", arg.c_str()));
                 }
 
                 current_parameter = iter->second;
