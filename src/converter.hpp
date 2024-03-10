@@ -1,9 +1,6 @@
 #pragma once
 
-#include <codecvt>
-#include <locale>
-#include <string>
-
+#include "standard.hpp"
 // Source: https://stackoverflow.com/a/18374698
 
 // Convert std::string to std::wstring

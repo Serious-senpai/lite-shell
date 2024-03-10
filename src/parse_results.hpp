@@ -1,11 +1,7 @@
 #pragma once
 
-#include <map>
-#include <stdexcept>
-#include <string>
-#include <vector>
-
 #include "format.hpp"
+#include "standard.hpp"
 
 class ParseResult
 {

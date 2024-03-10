@@ -1,9 +1,8 @@
 #pragma once
 
-#include <memory>
-#include <string>
-
 #include "parse_results.hpp"
+#include "standard.hpp"
+#include "commands/base.hpp"
 
 template <typename T>
 class CommandInvoker
@@ -15,7 +14,10 @@ private:
 public:
     const std::string name;
 
-    CommandInvoker(const std::shared_ptr<T> object) : object(object), name(object->name) {}
+    CommandInvoker(const std::shared_ptr<T> object) : object(object), name(object->name)
+    {
+        static_assert(std::is_base_of<BaseCommand, T>::value, "CommandInvoker can only be used for BaseCommand subclasses");
+    }
 
     ParseResult parse(const std::vector<std::string> &args)
     {

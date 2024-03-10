@@ -1,11 +1,7 @@
 #pragma once
 
-#include <map>
-#include <optional>
-#include <string>
-#include <vector>
-
-#include "parse_results.hpp"
+#include "../parse_results.hpp"
+#include "../standard.hpp"
 
 class BaseCommand
 {
@@ -17,6 +13,7 @@ public:
     const std::string name;
 
     BaseCommand(const std::string &name) : name(name) {}
+    virtual ~BaseCommand() {}
 
     virtual ParseResult parse(const std::vector<std::string> &args) final
     {

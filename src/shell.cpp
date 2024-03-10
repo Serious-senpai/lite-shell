@@ -1,14 +1,11 @@
 #define LITE_SHELL
 
-#include <deque>
-#include <iostream>
-#include <string>
-#include <vector>
-#include <windows.h>
-
 #include "converter.hpp"
-#include "commands.hpp"
 #include "invokers.hpp"
+#include "split.hpp"
+#include "standard.hpp"
+#include "strip.hpp"
+#include "commands/base.hpp"
 #include "commands/exit.hpp"
 
 // Windows uses UTF-16, but we process UTF-8 only
@@ -25,50 +22,6 @@ std::string get_working_directory()
     }
 
     return utf_convert(std::wstring(buffer, buffer + size));
-}
-
-std::string strip(const std::string &original)
-{
-    std::deque<char> result(original.begin(), original.end());
-    while (!result.empty() && result.front() == ' ')
-    {
-        result.pop_front();
-    }
-
-    while (!result.empty() && (result.back() == ' ' || result.back() == '\n' || result.back() == '\r'))
-    {
-        result.pop_back();
-    }
-
-    return std::string(result.begin(), result.end());
-}
-
-std::vector<std::string> split(const std::string &original)
-{
-    std::vector<std::string> result;
-    result.emplace_back();
-
-    for (auto &c : original)
-    {
-        if (c == ' ')
-        {
-            if (result.empty() || result.back().size() > 0)
-            {
-                result.emplace_back();
-            }
-        }
-        else
-        {
-            result.back().push_back(c);
-        }
-    }
-
-    if (result.back().size() == 0)
-    {
-        result.pop_back();
-    }
-
-    return result;
 }
 
 int main()

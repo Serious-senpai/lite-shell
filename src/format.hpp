@@ -1,7 +1,6 @@
 #pragma once
 
-#include <memory>
-#include <string>
+#include "standard.hpp"
 
 template <typename... Args>
 std::string format(const std::string &format, Args... args)
