@@ -2,6 +2,7 @@
 
 #include <base.hpp>
 #include <converter.hpp>
+#include <error.hpp>
 #include <standard.hpp>
 
 class TypeCommand : public BaseCommand
@@ -32,25 +33,16 @@ public:
 
         if (h_file == INVALID_HANDLE_VALUE)
         {
-            auto code = GetLastError();
-            throw std::runtime_error(format("Error opening file: %d", code));
+            throw_last_error("Error when opening file");
         }
 
         char buffer[BUFFER_SIZE] = {};
         DWORD read = BUFFER_SIZE;
         while (read == BUFFER_SIZE)
         {
-            auto success = ReadFile(
-                h_file,
-                buffer,
-                BUFFER_SIZE,
-                &read,
-                NULL);
-
-            if (!success)
+            if (!ReadFile(h_file, buffer, BUFFER_SIZE, &read, NULL))
             {
-                auto code = GetLastError();
-                throw std::runtime_error(format("Error reading file: %d", code));
+                throw_last_error("Error when reading file");
             }
 
             std::cout << std::string(buffer, buffer + read);

@@ -4,27 +4,17 @@
 #include <split.hpp>
 #include <standard.hpp>
 #include <strip.hpp>
+#include <utils.hpp>
 
 #include "commands/args.hpp"
+#include "commands/cd.hpp"
 #include "commands/echo.hpp"
 #include "commands/exit.hpp"
+#include "commands/ls.hpp"
 #include "commands/type.hpp"
 
 // Windows uses UTF-16, but we process UTF-8 only
 // https://utf8everywhere.org/
-
-std::string get_working_directory()
-{
-    wchar_t buffer[MAX_PATH];
-    auto size = GetCurrentDirectoryW(MAX_PATH, buffer);
-
-    if (size == 0)
-    {
-        throw std::runtime_error("Error getting current directory.");
-    }
-
-    return utf_convert(std::wstring(buffer, buffer + size));
-}
 
 const char title[] = R"(Windows lightweight command shell
 Repository: https://github.com/Serious-senpai/lite-shell
@@ -35,8 +25,10 @@ int main()
 {
     std::vector<CommandInvoker<BaseCommand>> commands;
     commands.emplace_back(std::make_shared<ArgsCommand>());
+    commands.emplace_back(std::make_shared<CdCommand>());
     commands.emplace_back(std::make_shared<EchoCommand>());
     commands.emplace_back(std::make_shared<ExitCommand>());
+    commands.emplace_back(std::make_shared<LsCommand>());
     commands.emplace_back(std::make_shared<TypeCommand>());
 
     int errorlevel = 0;
@@ -95,6 +87,7 @@ int main()
     }
                 ERROR_CODE(std::runtime_error, 900);
                 ERROR_CODE(std::invalid_argument, 901);
+                ERROR_CODE(std::bad_alloc, 902);
 
                 std::cerr << e.what() << std::endl;
             }
