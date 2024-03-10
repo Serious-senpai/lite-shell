@@ -23,16 +23,18 @@ private:
     }
 
 public:
-    const std::vector<std::string> positional_arguments;
+    const std::vector<std::string> positional_arguments, original;
     const std::vector<std::set<std::string>> alias_groups;
 
     ParseResult(
         const std::vector<std::vector<std::string>> &groups,
         const std::map<std::string, unsigned> &results,
-        const std::vector<std::string> positional_arguments)
+        const std::vector<std::string> &positional_arguments,
+        const std::vector<std::string> &original)
         : groups(groups),
           results(results),
           positional_arguments(positional_arguments),
+          original(original),
           alias_groups(get_alias_group(groups, results)) {}
 
     const std::vector<std::string> &get(const std::string &name) const

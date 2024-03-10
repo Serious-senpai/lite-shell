@@ -104,7 +104,7 @@ public:
             }
         }
 
-        return ParseResult(groups, results, positional_arguments);
+        return ParseResult(groups, results, positional_arguments, args);
     }
 
     virtual void add_argument(const std::initializer_list<std::string> &names) final

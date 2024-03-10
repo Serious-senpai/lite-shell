@@ -6,6 +6,7 @@
 #include <strip.hpp>
 
 #include "commands/args.hpp"
+#include "commands/echo.hpp"
 #include "commands/exit.hpp"
 #include "commands/type.hpp"
 
@@ -34,6 +35,7 @@ int main()
 {
     std::vector<CommandInvoker<BaseCommand>> commands;
     commands.emplace_back(std::make_shared<ArgsCommand>());
+    commands.emplace_back(std::make_shared<EchoCommand>());
     commands.emplace_back(std::make_shared<ExitCommand>());
     commands.emplace_back(std::make_shared<TypeCommand>());
 
@@ -41,11 +43,16 @@ int main()
     std::cout << title << std::endl;
     while (true)
     {
-        std::cout << std::endl
-                  << "liteshell(" << errorlevel << ")~" << get_working_directory() << ">";
+        std::cout << "\nliteshell(" << errorlevel << ")~" << get_working_directory() << ">";
+        std::cout.flush();
 
         std::string input;
         std::getline(std::cin, input);
+
+        if (input.empty())
+        {
+            continue;
+        }
 
         auto arguments = split(strip(input));
 
