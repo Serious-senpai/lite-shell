@@ -25,6 +25,11 @@ std::string get_working_directory()
     return utf_convert(std::wstring(buffer, buffer + size));
 }
 
+const char title[] = R"(Windows lightweight command shell
+Repository: https://github.com/Serious-senpai/lite-shell
+Contribute: https://github.com/Serious-senpai/lite-shell/pulls
+Issue tracker: https://github.com/Serious-senpai/lite-shell/issues)";
+
 int main()
 {
     std::vector<CommandInvoker<BaseCommand>> commands;
@@ -33,9 +38,11 @@ int main()
     commands.emplace_back(std::make_shared<TypeCommand>());
 
     int errorlevel = 0;
+    std::cout << title << std::endl;
     while (true)
     {
-        std::cout << "liteshell(" << errorlevel << ")~" << get_working_directory() << ">";
+        std::cout << std::endl
+                  << "liteshell(" << errorlevel << ")~" << get_working_directory() << ">";
 
         std::string input;
         std::getline(std::cin, input);

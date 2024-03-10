@@ -1,4 +1,6 @@
 @echo off
+g++ --version
+
 if not exist build\ mkdir build
 set params=-O3 -Wall -I src\include -std=c++17
 

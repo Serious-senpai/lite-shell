@@ -23,9 +23,9 @@ public:
         {
             for (unsigned i = 0; i < arguments.positional_arguments.size() - 1; i++)
             {
-                std::cout << arguments.positional_arguments[i] << ", ";
+                std::cout << "\"" << arguments.positional_arguments[i] << "\", ";
             }
-            std::cout << arguments.positional_arguments.back();
+            std::cout << "\"" << arguments.positional_arguments.back() << "\"";
         }
         std::cout << std::endl;
 
@@ -40,9 +40,9 @@ public:
                 {
                     for (unsigned i = 0; i < values.size() - 1; i++)
                     {
-                        std::cout << values[i] << ", ";
+                        std::cout << "\"" << values[i] << "\", ";
                     }
-                    std::cout << values.back();
+                    std::cout << "\"" << values.back() << "\"";
                 }
                 std::cout << std::endl;
             }
