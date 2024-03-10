@@ -15,67 +15,99 @@ public:
     BaseCommand(const std::string &name) : name(name) {}
     virtual ~BaseCommand() {}
 
+    // Whether this command accepts any arguments, including unregistered ones
+    virtual bool accept_any_arguments()
+    {
+        return false;
+    }
+
     virtual ParseResult parse(const std::vector<std::string> &args) final
     {
         std::vector<std::string> positional_arguments;
         std::vector<std::vector<std::string>> groups;
-        std::map<std::string, std::vector<std::vector<std::string>>::iterator> results;
+        std::map<std::string, unsigned> results;
 
-        for (const auto &[alias, original] : arguments)
+        if (!accept_any_arguments())
         {
-            if (results.find(original) == results.end())
+            for (const auto &[alias, original] : arguments)
             {
-                groups.emplace_back();
-                results[original] = --groups.end();
-            }
+                if (results.find(original) == results.end())
+                {
+                    results[original] = groups.size();
+                    groups.emplace_back();
+                }
 
-            if (alias != original)
-            {
-                results[alias] = results[original];
+                if (alias != original)
+                {
+                    results[alias] = results[original];
+                }
             }
         }
 
         std::optional<std::string> current_parameter;
-        bool read_first = false;
-        for (auto &arg : args)
-        {
-            if (read_first)
-            {
-                read_first = true;
-                continue;
-            }
 
-            if (arg[0] == '-')
+        auto add_token = [this, &groups, &results, &positional_arguments, &current_parameter](const std::string &token)
+        {
+            if (current_parameter.has_value())
             {
-                // arg is an argument name
-                const auto iter = arguments.find(arg);
-                if (iter == arguments.end())
+                if (results.find(*current_parameter) == results.end())
                 {
-                    throw std::invalid_argument(format("Unknown argument: %s", arg.c_str()));
+                    if (this->accept_any_arguments())
+                    {
+                        results[*current_parameter] = groups.size();
+                        groups.emplace_back();
+                    }
+                    else
+                    {
+                        throw std::invalid_argument("Unknown argument: " + *current_parameter);
+                    }
                 }
 
-                current_parameter = iter->second;
+                // keyword argument
+                groups[results[*current_parameter]].push_back(token);
             }
             else
             {
-                // arg is an argument value
-                if (current_parameter.has_value())
+                // positional argument
+                positional_arguments.push_back(token);
+            }
+        };
+
+        for (auto &arg : args)
+        {
+            if (arg[0] == '-')
+            {
+                if (arg.size() == 1) // Token "-"
                 {
-                    // keyword argument
-                    results[*current_parameter]->push_back(arg);
+                    throw std::invalid_argument("Input pipe is not supported");
                 }
-                else
+                else if (arg[1] != '-') // Token of type "-abc", treat it as "-a", "-b", "-c"
                 {
-                    // positional argument
-                    positional_arguments.push_back(arg);
+                    for (unsigned i = 1; i < arg.size(); i++)
+                    {
+                        std::string name = "-";
+                        name += arg[i];
+
+                        current_parameter = name;
+                        add_token(name);
+                    }
                 }
+                else // Token of type "--abc"
+                {
+                    current_parameter = arg;
+                    add_token(arg);
+                }
+            }
+            else
+            {
+                add_token(arg);
             }
         }
 
         return ParseResult(groups, results, positional_arguments);
     }
 
-    virtual void add_command(const std::initializer_list<std::string> &names) final
+    virtual void add_argument(const std::initializer_list<std::string> &names) final
     {
         if (names.size() > 0)
         {

@@ -5,6 +5,7 @@
 #include <standard.hpp>
 #include <strip.hpp>
 
+#include "commands/args.hpp"
 #include "commands/exit.hpp"
 #include "commands/type.hpp"
 
@@ -27,6 +28,7 @@ std::string get_working_directory()
 int main()
 {
     std::vector<CommandInvoker<BaseCommand>> commands;
+    commands.emplace_back(std::make_shared<ArgsCommand>());
     commands.emplace_back(std::make_shared<ExitCommand>());
     commands.emplace_back(std::make_shared<TypeCommand>());
 
