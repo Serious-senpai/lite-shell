@@ -92,9 +92,19 @@ private:
 public:
     Client() {}
 
-    std::vector<CommandWrapper<BaseCommand>> walk_commands()
+    std::vector<CommandWrapper<BaseCommand>> walk_commands() const
     {
         return wrappers;
+    }
+
+    std::optional<CommandWrapper<BaseCommand>> get_command(const std::string &name) const
+    {
+        auto iter = commands.find(name);
+        if (iter == commands.end())
+        {
+            return std::nullopt;
+        }
+        return wrappers[iter->second];
     }
 
     Client *add_command(const std::shared_ptr<BaseCommand> &ptr)

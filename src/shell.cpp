@@ -5,6 +5,7 @@
 #include "commands/cd.hpp"
 #include "commands/echo.hpp"
 #include "commands/exit.hpp"
+#include "commands/help.hpp"
 #include "commands/ls.hpp"
 #include "commands/type.hpp"
 
@@ -23,6 +24,7 @@ int main()
     client.add_command(std::make_shared<CdCommand>());
     client.add_command(std::make_shared<EchoCommand>());
     client.add_command(std::make_shared<ExitCommand>());
+    client.add_command(std::make_shared<HelpCommand>());
     client.add_command(std::make_shared<LsCommand>());
     client.add_command(std::make_shared<TypeCommand>());
 
