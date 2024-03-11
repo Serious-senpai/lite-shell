@@ -13,17 +13,21 @@ private:
 public:
     using BaseCommand::run;
 
-    TypeCommand() : BaseCommand("type") {}
+    TypeCommand() : BaseCommand(
+                        "type",
+                        "Read a file",
+                        "type <file>",
+                        {}) {}
 
-    int run(const ParseResult &arguments) override
+    int run(const Context &context)
     {
-        if (arguments.positional_arguments.size() < 2)
+        if (context.args.size() < 2)
         {
             throw std::invalid_argument("No file to read");
         }
 
         auto h_file = CreateFileW(
-            utf_convert(arguments.positional_arguments[1]).c_str(),
+            utf_convert(context.args[1]).c_str(),
             GENERIC_READ,
             FILE_SHARE_READ,
             NULL,

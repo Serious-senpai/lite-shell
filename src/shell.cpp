@@ -1,10 +1,5 @@
-#include <base.hpp>
-#include <converter.hpp>
-#include <invokers.hpp>
-#include <split.hpp>
+#include <client.hpp>
 #include <standard.hpp>
-#include <strip.hpp>
-#include <utils.hpp>
 
 #include "commands/args.hpp"
 #include "commands/cd.hpp"
@@ -23,19 +18,18 @@ Issue tracker: https://github.com/Serious-senpai/lite-shell/issues)";
 
 int main()
 {
-    std::vector<CommandInvoker<BaseCommand>> commands;
-    commands.emplace_back(std::make_shared<ArgsCommand>());
-    commands.emplace_back(std::make_shared<CdCommand>());
-    commands.emplace_back(std::make_shared<EchoCommand>());
-    commands.emplace_back(std::make_shared<ExitCommand>());
-    commands.emplace_back(std::make_shared<LsCommand>());
-    commands.emplace_back(std::make_shared<TypeCommand>());
+    Client client;
+    client.add_command(std::make_shared<ArgsCommand>());
+    client.add_command(std::make_shared<CdCommand>());
+    client.add_command(std::make_shared<EchoCommand>());
+    client.add_command(std::make_shared<ExitCommand>());
+    client.add_command(std::make_shared<LsCommand>());
+    client.add_command(std::make_shared<TypeCommand>());
 
-    int errorlevel = 0;
     std::cout << title << std::endl;
     while (true)
     {
-        std::cout << "\nliteshell(" << errorlevel << ")~" << get_working_directory() << ">";
+        std::cout << "\nliteshell(" << client.get_errorlevel() << ")~" << get_working_directory() << ">";
         std::cout.flush();
 
         std::string input;
@@ -46,52 +40,7 @@ int main()
             continue;
         }
 
-        auto arguments = split(strip(input));
-
-        std::vector<CommandInvoker<BaseCommand>> matched;
-        for (const auto &command : commands)
-        {
-            if (command.name == arguments[0])
-            {
-                matched.push_back(command);
-            }
-        }
-
-        if (matched.empty())
-        {
-            std::cerr << "Command not found: " << arguments[0] << std::endl;
-            errorlevel = 1;
-        }
-        else if (matched.size() > 1)
-        {
-            std::cerr << "Ambiguous command: " << arguments[0] << std::endl;
-            errorlevel = 1;
-        }
-        else
-        {
-            auto command = matched[0];
-
-            try
-            {
-                auto parsed = command.parse(arguments);
-                errorlevel = command.run(parsed);
-            }
-            catch (std::exception &e)
-            {
-                errorlevel = 1000;
-
-#define ERROR_CODE(exception_type, code)            \
-    if (dynamic_cast<exception_type *>(&e) != NULL) \
-    {                                               \
-        errorlevel = code;                          \
-    }
-                ERROR_CODE(std::runtime_error, 900);
-                ERROR_CODE(std::invalid_argument, 901);
-                ERROR_CODE(std::bad_alloc, 902);
-
-                std::cerr << e.what() << std::endl;
-            }
-        }
+        client.process_command(input);
     }
 
     return 0;

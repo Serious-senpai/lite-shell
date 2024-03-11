@@ -8,17 +8,22 @@ class ExitCommand : public BaseCommand
 public:
     using BaseCommand::run;
 
-    ExitCommand() : BaseCommand("exit") {}
+    ExitCommand()
+        : BaseCommand(
+              "exit",
+              "Exit the shell",
+              "exit <optional code>",
+              {}) {}
 
-    int run(const ParseResult &arguments) override
+    int run(const Context &arguments)
     {
-        if (arguments.positional_arguments.size() == 1)
+        if (arguments.args.size() == 1)
         {
             exit(0);
         }
         else
         {
-            auto code = std::stoi(arguments.positional_arguments[1]);
+            auto code = std::stoi(arguments.args[1]);
             exit(code);
         }
     }

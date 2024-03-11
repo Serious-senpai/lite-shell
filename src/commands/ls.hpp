@@ -13,16 +13,21 @@ class LsCommand : public BaseCommand
 public:
     using BaseCommand::run;
 
-    LsCommand() : BaseCommand("ls") {}
+    LsCommand()
+        : BaseCommand(
+              "ls",
+              "List the content of a directory",
+              "ls <optional dir>",
+              {}) {}
 
-    int run(const ParseResult &arguments) override
+    int run(const Context &context)
     {
         auto directory = get_working_directory();
-        if (arguments.positional_arguments.size() == 2)
+        if (context.args.size() == 2)
         {
-            directory = arguments.positional_arguments[1];
+            directory = context.args[1];
         }
-        else if (arguments.positional_arguments.size() > 2)
+        else if (context.args.size() > 2)
         {
             throw std::invalid_argument("Expected at most 1 argument only");
         }

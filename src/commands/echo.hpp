@@ -8,25 +8,32 @@ class EchoCommand : public BaseCommand
 public:
     using BaseCommand::run;
 
-    EchoCommand() : BaseCommand("echo") {}
+    EchoCommand()
+        : BaseCommand(
+              "echo",
+              "Print something",
+              "echo <content>",
+              {}) {}
 
-    bool accept_any_arguments() override
+    int run(const Context &context)
     {
-        return true;
-    }
-
-    int run(const ParseResult &arguments) override
-    {
-        if (arguments.original.size() > 1) // Skip first argument
+        std::string filtered;
+        bool ok = false;
+        for (auto &c : context.message)
         {
-            for (unsigned i = 1; i < arguments.original.size() - 1; i++)
+            if (!ok && c == ' ')
             {
-                std::cout << arguments.original[i] << " ";
+                ok = true;
+                continue;
             }
-            std::cout << arguments.original.back();
+
+            if (ok)
+            {
+                filtered += c;
+            }
         }
 
-        std::cout << std::endl;
+        std::cout << filtered << std::endl;
         return 0;
     }
 };
