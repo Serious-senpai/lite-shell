@@ -3,11 +3,6 @@
 
 #include "initialize.hpp"
 
-constexpr bool guarantee_fail()
-{
-    return false;
-}
-
 int main()
 {
     Client client;
