@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cassert>
 #include <codecvt>
 #include <deque>
 #include <iostream>

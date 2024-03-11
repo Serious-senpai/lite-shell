@@ -32,6 +32,8 @@ public:
             throw std::invalid_argument("Expected at most 1 argument only");
         }
 
+        std::cout << "Exploring " << directory << std::endl;
+
         Table displayer({"Name", "Type", "Size"});
 
         directory += "\\*";
