@@ -53,6 +53,8 @@ public:
             std::cout.flush();
         }
 
+        CloseHandle(h_file);
+
         std::cout << std::endl;
 
         return 0;

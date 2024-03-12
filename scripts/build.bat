@@ -9,7 +9,7 @@ g++ %params% src\shell.cpp -o build\shell.exe
 
 for %%f in (src\commands\*) do (
     if /i %%~xf equ .hpp (
-        echo Building standalone.exe to %%~nf.exe
+        echo Building standalone.cpp to %%~nf.exe
         g++ %params% -D COMMAND_NAME=\"%%~nf\" src\standalone.cpp -o build\%%~nf.exe
     )
 )

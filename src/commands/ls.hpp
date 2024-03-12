@@ -61,6 +61,8 @@ public:
             throw_last_error("Error when closing file search handle");
         }
 
+        CloseHandle(h_file);
+
         return 0;
     }
 };
