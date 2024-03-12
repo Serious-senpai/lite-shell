@@ -12,28 +12,38 @@ Contribute: https://github.com/Serious-senpai/lite-shell/pulls
 Issue tracker: https://github.com/Serious-senpai/lite-shell/issues
 Type "help" to get started.)";
 
-int main()
+int main(int argc, const char *argv[])
 {
     Client client;
     initialize(&client);
 
-    std::cout << title << std::endl;
-    while (true)
+    if (argc > 1)
     {
-        std::cout << "\n"
-                  << client.get_prompt();
-        std::cout.flush();
+        auto command = utf_convert(std::wstring(GetCommandLineW())).substr(strlen(argv[0]));
+        client.process_command(command);
 
-        std::string input;
-        std::getline(std::cin, input);
-
-        if (input.empty())
+        return client.get_errorlevel();
+    }
+    else
+    {
+        std::cout << title << std::endl;
+        while (true)
         {
-            continue;
+            std::cout << "\n"
+                      << client.get_prompt();
+            std::cout.flush();
+
+            std::string input;
+            std::getline(std::cin, input);
+
+            if (input.empty())
+            {
+                continue;
+            }
+
+            client.process_command(input);
         }
 
-        client.process_command(input);
+        return 0;
     }
-
-    return 0;
 }

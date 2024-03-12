@@ -3,9 +3,9 @@
 #include "converter.hpp"
 #include "standard.hpp"
 
-void throw_last_error(const std::string &message)
+std::string format_last_error(const std::string &message)
 {
-    throw std::runtime_error(format("%s: %d", message.c_str(), GetLastError()));
+    return format("%s: %d", message.c_str(), GetLastError());
 }
 
 std::string get_working_directory()
@@ -27,7 +27,7 @@ std::string get_executable_path()
     auto size = GetModuleFileNameW(NULL, buffer, MAX_PATH);
     if (size == 0)
     {
-        throw_last_error("Error calling GetModuleFileNameW");
+        throw std::runtime_error(format_last_error("Error calling GetModuleFileNameW"));
     }
 
     return utf_convert(std::wstring(buffer, buffer + size));

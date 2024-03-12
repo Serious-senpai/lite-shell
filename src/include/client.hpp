@@ -8,6 +8,22 @@
 #include "utils.hpp"
 #include "wrapper.hpp"
 
+void finalize_process(PROCESS_INFORMATION *info)
+{
+    CloseHandle(info->hProcess);
+    CloseHandle(info->hThread);
+    HeapFree(GetProcessHeap(), 0, info);
+}
+
+DWORD WINAPI waiter_thread(LPVOID argument)
+{
+    auto info = (PROCESS_INFORMATION *)argument;
+    WaitForSingleObject(info->hProcess, INFINITE);
+    finalize_process(info);
+
+    return 0;
+}
+
 class Client
 {
 private:
@@ -144,21 +160,23 @@ public:
     Client *process_command(const std::string &message, const std::optional<std::string> &command_name = std::nullopt)
     {
         auto stripped_message = strip(message);
-        if (stripped_message.back() == BACKGROUND_SUFFIX)
+        try
         {
-            spawn_subprocess(message.substr(0, stripped_message.size() - 1));
-        }
-        else
-        {
-            try
+            if (stripped_message.back() == BACKGROUND_SUFFIX)
+            {
+                spawn_subprocess(message.substr(0, stripped_message.size() - 1));
+                errorlevel = 0;
+            }
+            else
             {
                 auto context = get_context(stripped_message);
                 auto wrapper = command_name.has_value() ? get_command(*command_name) : get_command(context);
                 errorlevel = wrapper.run(context);
             }
-            catch (std::exception &e)
-            {
-                errorlevel = 1000;
+        }
+        catch (std::exception &e)
+        {
+            errorlevel = 1000;
 
 #define ERROR_CODE(exception_type, code)               \
     {                                                  \
@@ -170,13 +188,13 @@ public:
         }                                              \
     }
 
-                ERROR_CODE(std::runtime_error, 900);
-                ERROR_CODE(std::invalid_argument, 901);
-                ERROR_CODE(std::bad_alloc, 902);
-                ERROR_CODE(CommandInputError, 903);
+            ERROR_CODE(std::runtime_error, 900);
+            ERROR_CODE(std::invalid_argument, 901);
+            ERROR_CODE(std::bad_alloc, 902);
+            ERROR_CODE(CommandInputError, 903);
+            ERROR_CODE(SubprocessCreationError, 904);
 
 #undef ERROR_CODE
-            }
         }
 
         return this;
@@ -184,7 +202,41 @@ public:
 
     void spawn_subprocess(const std::string &message)
     {
-        // TODO: Implement this
+        STARTUPINFOW *startup_info = (STARTUPINFOW *)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(STARTUPINFOW));
+        startup_info->cb = sizeof(startup_info);
+        startup_info->lpTitle = utf_convert(std::string(message)).data();
+
+        PROCESS_INFORMATION *process_info = (PROCESS_INFORMATION *)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(PROCESS_INFORMATION));
+
+        auto success = CreateProcessW(
+            NULL,                                   // lpApplicationName
+            utf_convert("shell " + message).data(), // lpCommandLine
+            NULL,                                   // lpProcessAttributes
+            NULL,                                   // lpThreadAttributes
+            true,                                   // bInheritHandles
+            0,                                      // dwCreationFlags
+            NULL,                                   // lpEnvironment
+            NULL,                                   // lpCurrentDirectory
+            startup_info,                           // lpStartupInfo
+            process_info                            // lpProcessInformation
+        );
+        HeapFree(GetProcessHeap(), 0, startup_info);
+
+        if (success)
+        {
+            SECURITY_ATTRIBUTES sec_attrs;
+            sec_attrs.nLength = sizeof(SECURITY_ATTRIBUTES);
+            sec_attrs.bInheritHandle = true;
+            sec_attrs.lpSecurityDescriptor = NULL;
+
+            CreateThread(&sec_attrs, 0, waiter_thread, process_info, 0, NULL);
+            // TODO: Terminate this thread
+        }
+        else
+        {
+            finalize_process(process_info);
+            throw SubprocessCreationError(format_last_error(format("Unable to create subprocess: %s", message.c_str())));
+        }
     }
 
     int get_errorlevel()

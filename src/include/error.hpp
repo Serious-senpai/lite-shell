@@ -33,9 +33,3 @@ class SubprocessCreationError : public LiteShellException
 public:
     SubprocessCreationError(const std::string &message) : LiteShellException(message) {}
 };
-
-class SubprocessPipeError : public SubprocessException
-{
-public:
-    SubprocessPipeError(const std::string &message) : SubprocessException(message) {}
-};

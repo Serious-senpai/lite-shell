@@ -41,7 +41,7 @@ public:
         HANDLE h_file = FindFirstFileW(utf_convert(directory).c_str(), &data);
         if (h_file == INVALID_HANDLE_VALUE)
         {
-            throw_last_error("Error when listing directory");
+            throw std::runtime_error(format_last_error("Error when listing directory"));
         }
 
         do
@@ -58,7 +58,7 @@ public:
 
         if (!FindClose(h_file))
         {
-            throw_last_error("Error when closing file search handle");
+            throw std::runtime_error(format_last_error("Error when closing file search handle"));
         }
 
         CloseHandle(h_file);

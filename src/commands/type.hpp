@@ -37,7 +37,7 @@ public:
 
         if (h_file == INVALID_HANDLE_VALUE)
         {
-            throw_last_error("Error when opening file");
+            throw std::runtime_error(format_last_error("Error when opening file"));
         }
 
         char buffer[BUFFER_SIZE] = {};
@@ -46,7 +46,7 @@ public:
         {
             if (!ReadFile(h_file, buffer, BUFFER_SIZE, &read, NULL))
             {
-                throw_last_error("Error when reading file");
+                throw std::runtime_error(format_last_error("Error when reading file"));
             }
 
             std::cout << std::string(buffer, buffer + read);

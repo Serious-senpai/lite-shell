@@ -32,7 +32,7 @@ public:
             auto target = context.args[1];
             if (!SetCurrentDirectoryW(utf_convert(target).c_str()))
             {
-                throw_last_error("Error when changing directory");
+                throw std::runtime_error(format_last_error("Error when changing directory"));
             }
         }
 
