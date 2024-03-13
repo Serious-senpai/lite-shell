@@ -6,8 +6,6 @@
 class SleepCommand : public BaseCommand
 {
 public:
-    using BaseCommand::run;
-
     SleepCommand()
         : BaseCommand(
               "sleep",

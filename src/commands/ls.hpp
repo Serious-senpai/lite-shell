@@ -11,14 +11,12 @@
 class LsCommand : public BaseCommand
 {
 public:
-    using BaseCommand::run;
-
     LsCommand()
         : BaseCommand(
               "ls",
               "List the content of a directory",
               "ls <optional dir>",
-              {}) {}
+              {"dir"}) {}
 
     int run(const Context &context)
     {

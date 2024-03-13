@@ -7,8 +7,6 @@
 class HelpCommand : public BaseCommand
 {
 public:
-    using BaseCommand::run;
-
     HelpCommand()
         : BaseCommand(
               "help",

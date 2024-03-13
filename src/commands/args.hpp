@@ -7,8 +7,6 @@ class ArgsCommand : public BaseCommand
 {
 private:
 public:
-    using BaseCommand::run;
-
     ArgsCommand()
         : BaseCommand(
               "args",

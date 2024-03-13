@@ -6,8 +6,6 @@
 class EchoCommand : public BaseCommand
 {
 public:
-    using BaseCommand::run;
-
     EchoCommand()
         : BaseCommand(
               "echo",

@@ -5,19 +5,17 @@
 #include <error.hpp>
 #include <standard.hpp>
 
-class TypeCommand : public BaseCommand
+class CatCommand : public BaseCommand
 {
 private:
     const DWORD BUFFER_SIZE = 2048;
 
 public:
-    using BaseCommand::run;
-
-    TypeCommand() : BaseCommand(
-                        "type",
-                        "Read a file",
-                        "type <file>",
-                        {}) {}
+    CatCommand() : BaseCommand(
+                       "cat",
+                       "Read a file",
+                       "cat <file>",
+                       {"type"}) {}
 
     int run(const Context &context)
     {

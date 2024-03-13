@@ -8,8 +8,6 @@
 class CdCommand : public BaseCommand
 {
 public:
-    using BaseCommand::run;
-
     CdCommand()
         : BaseCommand(
               "cd",

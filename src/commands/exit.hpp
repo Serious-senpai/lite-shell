@@ -6,8 +6,6 @@
 class ExitCommand : public BaseCommand
 {
 public:
-    using BaseCommand::run;
-
     ExitCommand()
         : BaseCommand(
               "exit",
