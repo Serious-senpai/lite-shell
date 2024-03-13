@@ -229,8 +229,9 @@ public:
             sec_attrs.bInheritHandle = true;
             sec_attrs.lpSecurityDescriptor = NULL;
 
-            CreateThread(&sec_attrs, 0, waiter_thread, process_info, 0, NULL);
-            // TODO: Terminate this thread
+            // Open the thread and close the handle immediately
+            // https://stackoverflow.com/a/11226526
+            CloseHandle(CreateThread(&sec_attrs, 0, waiter_thread, process_info, 0, NULL));
         }
         else
         {
