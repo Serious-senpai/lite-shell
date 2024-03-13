@@ -14,7 +14,7 @@ public:
 
     CommandWrapper(const std::shared_ptr<T> &command) : command(command)
     {
-        static_assert(std::is_base_of<BaseCommand, T>::value, "CommandInvoker can only be used for BaseCommand subclasses");
+        static_assert(std::is_base_of<BaseCommand, T>::value, "CommandWrapper can only be used for BaseCommand subclasses");
     }
 
     int run(const Context &context)

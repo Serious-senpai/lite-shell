@@ -5,24 +5,9 @@
 #include "error.hpp"
 #include "format.hpp"
 #include "standard.hpp"
+#include "subprocess.hpp"
 #include "utils.hpp"
 #include "wrapper.hpp"
-
-void finalize_process(PROCESS_INFORMATION *info)
-{
-    CloseHandle(info->hProcess);
-    CloseHandle(info->hThread);
-    HeapFree(GetProcessHeap(), 0, info);
-}
-
-DWORD WINAPI waiter_thread(LPVOID argument)
-{
-    auto info = (PROCESS_INFORMATION *)argument;
-    WaitForSingleObject(info->hProcess, INFINITE);
-    finalize_process(info);
-
-    return 0;
-}
 
 class Client
 {
@@ -30,6 +15,9 @@ private:
     const char BACKGROUND_SUFFIX = '%';
 
     int errorlevel = 0;
+
+    std::set<ProcessInfoWrapper> subprocesses;
+
     std::vector<CommandWrapper<BaseCommand>> wrappers;
     std::map<std::string, unsigned> commands;
 
@@ -116,12 +104,12 @@ private:
     }
 
 public:
-    std::vector<CommandWrapper<BaseCommand>> walk_commands() const
+    const std::vector<CommandWrapper<BaseCommand>> walk_commands() const
     {
         return wrappers;
     }
 
-    std::optional<CommandWrapper<BaseCommand>> get_command(const std::string &name) const
+    const std::optional<CommandWrapper<BaseCommand>> get_command(const std::string &name) const
     {
         auto iter = commands.find(name);
         if (iter == commands.end())
@@ -129,6 +117,11 @@ public:
             return std::nullopt;
         }
         return wrappers[iter->second];
+    }
+
+    const std::set<ProcessInfoWrapper> get_subprocesses() const
+    {
+        return subprocesses;
     }
 
     std::string get_prompt()
@@ -206,8 +199,7 @@ public:
         startup_info->cb = sizeof(startup_info);
         startup_info->lpTitle = utf_convert(std::string(message)).data();
 
-        PROCESS_INFORMATION *process_info = (PROCESS_INFORMATION *)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(PROCESS_INFORMATION));
-
+        PROCESS_INFORMATION process_info;
         auto success = CreateProcessW(
             NULL,                                   // lpApplicationName
             utf_convert("shell " + message).data(), // lpCommandLine
@@ -218,12 +210,18 @@ public:
             NULL,                                   // lpEnvironment
             NULL,                                   // lpCurrentDirectory
             startup_info,                           // lpStartupInfo
-            process_info                            // lpProcessInformation
+            &process_info                           // lpProcessInformation
         );
         HeapFree(GetProcessHeap(), 0, startup_info);
 
+        ProcessInfoWrapper wrapper(message, process_info);
         if (success)
         {
+            subprocesses.insert(wrapper);
+
+            // Do not close the handles since we want to keep track of all subprocesses in our current shell (unless explicitly closed)
+
+            /*
             SECURITY_ATTRIBUTES sec_attrs;
             sec_attrs.nLength = sizeof(SECURITY_ATTRIBUTES);
             sec_attrs.bInheritHandle = true;
@@ -231,11 +229,12 @@ public:
 
             // Open the thread and close the handle immediately
             // https://stackoverflow.com/a/11226526
-            CloseHandle(CreateThread(&sec_attrs, 0, waiter_thread, process_info, 0, NULL));
+            CloseHandle(CreateThread(&sec_attrs, 0, waiter_thread, &process_info, 0, NULL));
+            */
         }
         else
         {
-            finalize_process(process_info);
+            wrapper.close();
             throw SubprocessCreationError(format_last_error(format("Unable to create subprocess: %s", message.c_str())));
         }
     }
