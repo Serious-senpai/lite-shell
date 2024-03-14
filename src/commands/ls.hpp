@@ -1,8 +1,6 @@
 #pragma once
 
 #include <base.hpp>
-#include <converter.hpp>
-#include <error.hpp>
 #include <standard.hpp>
 #include <tables.hpp>
 #include <units.hpp>
@@ -34,15 +32,7 @@ public:
 
         Table displayer({"Name", "Type", "Size"});
 
-        directory += "\\*";
-        WIN32_FIND_DATAW data;
-        HANDLE h_file = FindFirstFileW(utf_convert(directory).c_str(), &data);
-        if (h_file == INVALID_HANDLE_VALUE)
-        {
-            throw std::runtime_error(format_last_error("Error when listing directory"));
-        }
-
-        do
+        for (const auto &data : explore_directory(directory))
         {
             long double size = ((long double)data.nFileSizeHigh * ((long double)MAXDWORD + 1.0L)) + (long double)data.nFileSizeLow;
             bool is_directory = data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY;
@@ -50,16 +40,9 @@ public:
                 {utf_convert(std::wstring(data.cFileName)),
                  is_directory ? "DIR" : "FILE",
                  is_directory ? "-" : memory_size(size)});
-        } while (FindNextFileW(h_file, &data));
-
-        std::cout << displayer.display() << std::endl;
-
-        if (!FindClose(h_file))
-        {
-            throw std::runtime_error(format_last_error("Error when closing file search handle"));
         }
 
-        CloseHandle(h_file);
+        std::cout << displayer.display() << std::endl;
 
         return 0;
     }

@@ -80,3 +80,30 @@ std::vector<std::string> split(const std::string &original)
 
     return args;
 }
+
+std::vector<WIN32_FIND_DATAW> explore_directory(const std::string &__directory)
+{
+    auto directory = __directory + "\\*";
+    std::vector<WIN32_FIND_DATAW> results(1);
+
+    HANDLE h_file = FindFirstFileW(utf_convert(directory).c_str(), &results[0]);
+    if (h_file == INVALID_HANDLE_VALUE)
+    {
+        throw std::runtime_error(format_last_error("Error when listing directory"));
+    }
+
+    do
+    {
+        results.emplace_back();
+    } while (FindNextFileW(h_file, &results.back()));
+
+    results.pop_back();
+
+    if (!FindClose(h_file))
+    {
+        throw std::runtime_error(format_last_error("Error when closing file search handle"));
+    }
+
+    CloseHandle(h_file);
+    return results;
+}
