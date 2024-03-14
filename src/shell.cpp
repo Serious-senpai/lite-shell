@@ -27,22 +27,7 @@ int main(int argc, const char *argv[])
     else
     {
         std::cout << title << std::endl;
-        while (true)
-        {
-            std::cout << "\n"
-                      << client.get_prompt();
-            std::cout.flush();
-
-            std::string input;
-            std::getline(std::cin, input);
-
-            if (input.empty())
-            {
-                continue;
-            }
-
-            client.process_command(input);
-        }
+        client.run_forever();
 
         return 0;
     }

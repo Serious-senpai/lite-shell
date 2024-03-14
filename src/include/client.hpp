@@ -129,6 +129,37 @@ public:
         return format("liteshell(%d)~%s>", errorlevel, get_working_directory().c_str());
     }
 
+    void run_forever()
+    {
+        if (!SetConsoleCtrlHandler(NULL, TRUE))
+        {
+            std::cerr << format_last_error("Warning: SetConsoleCtrlHandler ERROR") << std::endl;
+        }
+
+        while (true)
+        {
+            std::cout << "\n"
+                      << get_prompt();
+            std::cout.flush();
+
+            std::string input;
+            std::getline(std::cin, input);
+
+            if (std::cin.fail() || std::cin.eof())
+            {
+                std::cin.clear();
+                continue;
+            }
+
+            if (input.empty())
+            {
+                continue;
+            }
+
+            process_command(input);
+        }
+    }
+
     Client *add_command(const std::shared_ptr<BaseCommand> &ptr)
     {
         if (commands.find(ptr->name) != commands.end())
