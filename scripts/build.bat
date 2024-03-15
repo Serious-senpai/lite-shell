@@ -7,9 +7,9 @@ set params=-O3 -Wall -I src\include -std=c++17
 echo Building shell.cpp
 g++ %params% src\shell.cpp -o build\shell.exe
 
-for %%f in (src\commands\*) do (
-    if /i %%~xf equ .hpp (
-        echo Building standalone.cpp to %%~nf.exe
-        g++ %params% -D COMMAND_NAME=\"%%~nf\" src\standalone.cpp -o build\%%~nf.exe
+for %%f in (src\external\*) do (
+    if /i %%~xf equ .cpp (
+        echo Building %%f to %%~nf.exe
+        g++ %params% %%f -o build\%%~nf.exe
     )
 )

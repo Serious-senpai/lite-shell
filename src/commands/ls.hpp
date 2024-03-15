@@ -16,7 +16,7 @@ public:
               "ls <optional dir>",
               {"dir"}) {}
 
-    int run(const Context &context)
+    DWORD run(const Context &context)
     {
         auto directory = get_working_directory();
         if (context.args.size() == 2)

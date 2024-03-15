@@ -13,7 +13,7 @@ public:
               "exit <optional code>",
               {}) {}
 
-    int run(const Context &arguments)
+    DWORD run(const Context &arguments)
     {
         if (arguments.args.size() == 1)
         {

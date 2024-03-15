@@ -17,7 +17,7 @@ public:
                        "cat <file>",
                        {"type"}) {}
 
-    int run(const Context &context)
+    DWORD run(const Context &context)
     {
         if (context.args.size() < 2)
         {

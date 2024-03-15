@@ -81,9 +81,10 @@ std::vector<std::string> split(const std::string &original)
     return args;
 }
 
-std::vector<WIN32_FIND_DATAW> explore_directory(const std::string &__directory)
+std::vector<WIN32_FIND_DATAW> explore_directory(const std::string &__directory, const std::string &__suffix = "\\*")
 {
-    auto directory = __directory + "\\*";
+    auto directory = __directory + __suffix;
+    std::cout << "Exploring " << directory << std::endl;
     std::vector<WIN32_FIND_DATAW> results(1);
 
     HANDLE h_file = FindFirstFileW(utf_convert(directory).c_str(), &results[0]);
@@ -106,4 +107,33 @@ std::vector<WIN32_FIND_DATAW> explore_directory(const std::string &__directory)
 
     CloseHandle(h_file);
     return results;
+}
+
+bool is_executable(LPCWSTR name)
+{
+    DWORD _;
+    return GetBinaryTypeW(name, &_);
+}
+
+std::string join(std::string first, std::string second)
+{
+    {
+        auto size = first.size();
+        while (size > 0 && first[size - 1] == '\\')
+        {
+            size--;
+        }
+        first = first.substr(0, size);
+    }
+
+    {
+        unsigned index = 0;
+        while (index < second.size() - 1 && second[index] == '\\')
+        {
+            index++;
+        }
+        second = second.substr(index);
+    }
+
+    return first + '\\' + second;
 }

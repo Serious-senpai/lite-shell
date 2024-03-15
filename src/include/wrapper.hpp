@@ -17,7 +17,7 @@ public:
         static_assert(std::is_base_of<BaseCommand, T>::value, "CommandWrapper can only be used for BaseCommand subclasses");
     }
 
-    int run(const Context &context)
+    DWORD run(const Context &context)
     {
         return command->run(context);
     }

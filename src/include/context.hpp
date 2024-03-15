@@ -31,4 +31,20 @@ public:
           args(args),
           kwargs(kwargs),
           client(client) {}
+
+    Context replace_call(const std::string &token)
+    {
+        if (args.empty())
+        {
+            throw std::runtime_error("No positional arguments to replace call");
+        }
+
+        std::string new_message(token);
+        new_message += message.substr(args[0].size());
+
+        std::vector<std::string> new_args(args);
+        new_args[0] = token;
+
+        return Context(new_message, new_args, kwargs, client);
+    }
 };

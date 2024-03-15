@@ -15,7 +15,7 @@ public:
               "ps",
               {}) {}
 
-    int run(const Context &context)
+    DWORD run(const Context &context)
     {
         Table displayer({"PID", "Command line", "Exit code"});
         for (auto &subprocess : context.client->get_subprocesses())
@@ -38,7 +38,7 @@ public:
                 status_display = format_last_error("GetExitCodeProcess ERROR");
             }
 
-            displayer.add_row({std::to_string(subprocess.info.dwProcessId), subprocess.message, status_display});
+            displayer.add_row({std::to_string(subprocess.info.dwProcessId), subprocess.command, status_display});
         }
 
         std::cout << displayer.display() << std::endl;

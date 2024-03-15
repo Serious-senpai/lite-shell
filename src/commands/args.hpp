@@ -14,7 +14,7 @@ public:
               "args <whatever>",
               {}) {}
 
-    int run(const Context &context)
+    DWORD run(const Context &context)
     {
         std::cout << "Positional arguments (" << context.args.size() << "): ";
         if (!context.args.empty())

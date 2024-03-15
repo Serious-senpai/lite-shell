@@ -8,11 +8,11 @@ private:
     bool closed = false;
 
 public:
-    std::string message;
+    std::string command;
     PROCESS_INFORMATION info;
 
-    ProcessInfoWrapper(const std::string &message, const PROCESS_INFORMATION &info)
-        : message(message), info(info) {}
+    ProcessInfoWrapper(const std::string &command, const PROCESS_INFORMATION &info)
+        : command(command), info(info) {}
 
     bool is_closed()
     {

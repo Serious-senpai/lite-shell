@@ -14,7 +14,7 @@ public:
               "help <optional command>",
               {}) {}
 
-    int run(const Context &context)
+    DWORD run(const Context &context)
     {
         if (context.args.size() == 1)
         {

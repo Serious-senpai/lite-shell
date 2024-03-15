@@ -22,5 +22,5 @@ public:
 
     virtual ~BaseCommand() {}
 
-    virtual int run(const Context &context) = 0;
+    virtual DWORD run(const Context &context) = 0;
 };

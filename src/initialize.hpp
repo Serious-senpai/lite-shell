@@ -10,7 +10,6 @@
 #include "commands/help.hpp"
 #include "commands/ls.hpp"
 #include "commands/ps.hpp"
-#include "commands/sleep.hpp"
 
 void initialize(Client *client)
 {
@@ -21,6 +20,5 @@ void initialize(Client *client)
         ->add_command(std::make_shared<ExitCommand>())
         ->add_command(std::make_shared<HelpCommand>())
         ->add_command(std::make_shared<LsCommand>())
-        ->add_command(std::make_shared<PsCommand>())
-        ->add_command(std::make_shared<SleepCommand>());
+        ->add_command(std::make_shared<PsCommand>());
 }

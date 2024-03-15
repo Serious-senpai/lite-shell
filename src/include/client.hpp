@@ -14,9 +14,11 @@ class Client
 private:
     const char BACKGROUND_SUFFIX = '%';
 
-    int errorlevel = 0;
+    DWORD errorlevel = 0;
 
     std::set<ProcessInfoWrapper> subprocesses;
+
+    std::vector<std::string> resolve_order;
 
     std::vector<CommandWrapper<BaseCommand>> wrappers;
     std::map<std::string, unsigned> commands;
@@ -104,6 +106,18 @@ private:
     }
 
 public:
+    Client()
+    {
+        auto path = get_executable_path();
+        auto size = path.size();
+        while (size > 0 && path[size - 1] != '\\')
+        {
+            size--;
+        }
+
+        resolve_order.push_back(path.substr(0, size));
+    }
+
     const std::vector<CommandWrapper<BaseCommand>> walk_commands() const
     {
         return wrappers;
@@ -122,6 +136,13 @@ public:
     const std::set<ProcessInfoWrapper> get_subprocesses() const
     {
         return subprocesses;
+    }
+
+    bool is_background_request(const std::string &message)
+    {
+        auto stripped_message = strip(message);
+        auto n = stripped_message.size();
+        return n > 2 && stripped_message[n - 2] == ' ' && stripped_message[n - 1] == '%';
     }
 
     std::string get_prompt()
@@ -181,26 +202,48 @@ public:
         return this;
     }
 
-    Client *process_command(const std::string &message, const std::optional<std::string> &command_name = std::nullopt)
+    Client *process_command(const std::string &message)
     {
         auto stripped_message = strip(message);
         try
         {
-            if (stripped_message.back() == BACKGROUND_SUFFIX)
+            auto context = get_context(stripped_message);
+
+            // Find an executable first
+            auto executable = resolve(context.args[0]);
+            if (executable.has_value())
             {
-                spawn_subprocess(message.substr(0, stripped_message.size() - 1));
-                errorlevel = 0;
+                // Is an executable
+                auto final_context = context.replace_call(*executable);
+                auto subprocess = spawn_subprocess(final_context.message);
+                if (is_background_request(message))
+                {
+                    errorlevel = 0;
+                }
+                else
+                {
+                    WaitForSingleObject(subprocess.info.hProcess, INFINITE);
+                    GetExitCodeProcess(subprocess.info.hProcess, &errorlevel);
+                }
             }
             else
             {
-                auto context = get_context(stripped_message);
-                auto wrapper = command_name.has_value() ? get_command(*command_name) : get_command(context);
+                // Is a local command, throw if no match was found in get_command()
+                auto wrapper = get_command(context);
                 errorlevel = wrapper.run(context);
             }
         }
         catch (std::exception &e)
         {
-            errorlevel = 1000;
+            on_error(e);
+        }
+
+        return this;
+    }
+
+    void on_error(std::exception e)
+    {
+        errorlevel = 1000;
 
 #define ERROR_CODE(exception_type, code)               \
     {                                                  \
@@ -212,40 +255,80 @@ public:
         }                                              \
     }
 
-            ERROR_CODE(std::runtime_error, 900);
-            ERROR_CODE(std::invalid_argument, 901);
-            ERROR_CODE(std::bad_alloc, 902);
-            ERROR_CODE(CommandInputError, 903);
-            ERROR_CODE(SubprocessCreationError, 904);
+        ERROR_CODE(std::runtime_error, 900);
+        ERROR_CODE(std::invalid_argument, 901);
+        ERROR_CODE(std::bad_alloc, 902);
+        ERROR_CODE(CommandInputError, 903);
+        ERROR_CODE(SubprocessCreationError, 904);
 
 #undef ERROR_CODE
-        }
-
-        return this;
     }
 
-    void spawn_subprocess(const std::string &message)
+    std::optional<std::string> resolve(const std::string &token)
+    {
+        auto find_executable = [&token](const std::string &directory) -> std::optional<std::string>
+        {
+            auto name = join(directory, token);
+            if (is_executable(utf_convert(name).c_str()))
+            {
+                return name;
+            }
+
+            name += ".exe";
+            if (is_executable(utf_convert(name).c_str()))
+            {
+                return name;
+            }
+
+            return std::nullopt;
+        };
+
+        auto result = find_executable(get_working_directory());
+        if (result.has_value())
+        {
+            return *result;
+        }
+
+        for (const auto &directory : resolve_order)
+        {
+            result = find_executable(directory);
+            if (result.has_value())
+            {
+                return *result;
+            }
+        }
+
+        return std::nullopt;
+    }
+
+    ProcessInfoWrapper spawn_subprocess(const std::string &command)
     {
         STARTUPINFOW *startup_info = (STARTUPINFOW *)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(STARTUPINFOW));
         startup_info->cb = sizeof(startup_info);
-        startup_info->lpTitle = utf_convert(std::string(message)).data();
+
+        // Strip background request suffix
+        std::string cmd(strip(command));
+        while (is_background_request(cmd))
+        {
+            cmd = strip(cmd.substr(0, cmd.size() - 1));
+        }
 
         PROCESS_INFORMATION process_info;
         auto success = CreateProcessW(
-            NULL,                                   // lpApplicationName
-            utf_convert("shell " + message).data(), // lpCommandLine
-            NULL,                                   // lpProcessAttributes
-            NULL,                                   // lpThreadAttributes
-            true,                                   // bInheritHandles
-            0,                                      // dwCreationFlags
-            NULL,                                   // lpEnvironment
-            NULL,                                   // lpCurrentDirectory
-            startup_info,                           // lpStartupInfo
-            &process_info                           // lpProcessInformation
+            NULL,                    // lpApplicationName
+            utf_convert(cmd).data(), // lpCommandLine
+            NULL,                    // lpProcessAttributes
+            NULL,                    // lpThreadAttributes
+            true,                    // bInheritHandles
+            0,                       // dwCreationFlags
+            NULL,                    // lpEnvironment
+            NULL,                    // lpCurrentDirectory
+            startup_info,            // lpStartupInfo
+            &process_info            // lpProcessInformation
         );
         HeapFree(GetProcessHeap(), 0, startup_info);
 
-        ProcessInfoWrapper wrapper(message, process_info);
+        ProcessInfoWrapper wrapper(command, process_info);
         if (success)
         {
             subprocesses.insert(wrapper);
@@ -262,11 +345,13 @@ public:
             // https://stackoverflow.com/a/11226526
             CloseHandle(CreateThread(&sec_attrs, 0, waiter_thread, &process_info, 0, NULL));
             */
+
+            return wrapper;
         }
         else
         {
             wrapper.close();
-            throw SubprocessCreationError(format_last_error(format("Unable to create subprocess: %s", message.c_str())));
+            throw SubprocessCreationError(format_last_error(format("Unable to create subprocess: %s", command.c_str())));
         }
     }
 

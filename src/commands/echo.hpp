@@ -13,7 +13,7 @@ public:
               "echo <content>",
               {}) {}
 
-    int run(const Context &context)
+    DWORD run(const Context &context)
     {
         std::string filtered;
         bool ok = false;

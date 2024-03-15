@@ -17,18 +17,8 @@ int main(int argc, const char *argv[])
     Client client;
     initialize(&client);
 
-    if (argc > 1)
-    {
-        auto command = utf_convert(std::wstring(GetCommandLineW())).substr(strlen(argv[0]));
-        client.process_command(command);
+    std::cout << title << std::endl;
+    client.run_forever();
 
-        return client.get_errorlevel();
-    }
-    else
-    {
-        std::cout << title << std::endl;
-        client.run_forever();
-
-        return 0;
-    }
+    return 0;
 }
