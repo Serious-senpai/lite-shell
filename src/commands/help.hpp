@@ -54,7 +54,7 @@ public:
             }
             else
             {
-                std::cout << "Command not found" << std::endl;
+                throw std::invalid_argument("Command not found");
             }
         }
 

@@ -241,7 +241,7 @@ public:
         return this;
     }
 
-    void on_error(std::exception e)
+    void on_error(std::exception &e)
     {
         errorlevel = 1000;
 
