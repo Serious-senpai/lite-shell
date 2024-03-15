@@ -6,10 +6,12 @@ set params=-O3 -Wall -I src\include -std=c++17
 
 echo Building shell.cpp
 g++ %params% src\shell.cpp -o build\shell.exe
+if %errorlevel% neq 0 exit /b %errorlevel%
 
 for %%f in (src\external\*) do (
     if /i %%~xf equ .cpp (
         echo Building %%f to %%~nf.exe
         g++ %params% %%f -o build\%%~nf.exe
+        if %errorlevel% neq 0 exit /b %errorlevel%
     )
 )

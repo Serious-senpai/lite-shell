@@ -3,7 +3,7 @@
 #include <base.hpp>
 #include <standard.hpp>
 
-const char __description[] = R"(Display the arguments and keyword arguments passed to the command.
+const char __args_description[] = R"(Display the arguments and keyword arguments passed to the command.
 
 This command was designed for testing the command line parser only.
 )";
@@ -16,7 +16,7 @@ public:
         : BaseCommand(
               "args",
               "Describe the arguments that were passed in",
-              __description,
+              __args_description,
               "args <...>",
               {}) {}
 

@@ -4,7 +4,7 @@
 #include <client.hpp>
 #include <standard.hpp>
 
-const char __description[] = R"(Provides help information for Windows commands.
+const char __help_description[] = R"(Provides help information for Windows commands.
 
 To get help for a specific command, specify its name as the first argument (e.g. "help help")
 )";
@@ -16,7 +16,7 @@ public:
         : BaseCommand(
               "help",
               "Get all commands or get help for a specific command",
-              __description,
+              __help_description,
               "help <command: optional>",
               {}) {}
 

@@ -5,7 +5,7 @@
 #include <error.hpp>
 #include <standard.hpp>
 
-const char __description[] = R"(Display the name of or change the current directory.
+const char __cd_description[] = R"(Display the name of or change the current directory.
 
 Call this command with no argument to get the working directory (similar to Unix shell's "pwd").
 When a positional argument is provided, the shell will attempt to change the working directory to
@@ -19,7 +19,7 @@ public:
         : BaseCommand(
               "cd",
               "Get or set the working directory",
-              __description,
+              __cd_description,
               "cd <target: optional>",
               {})
     {

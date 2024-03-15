@@ -5,7 +5,7 @@
 #include <error.hpp>
 #include <standard.hpp>
 
-const char __description[] = "Displays the contents of a text file";
+const char __cat_description[] = "Displays the contents of a text file";
 
 class CatCommand : public BaseCommand
 {
@@ -17,7 +17,7 @@ public:
         : BaseCommand(
               "cat",
               "Read a file",
-              __description,
+              __cat_description,
               "cat <file: required>",
               {"type"}) {}
 
