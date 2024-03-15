@@ -2,6 +2,7 @@
 
 #include "standard.hpp"
 
+/* Base class for all exceptions of this command shell */
 class LiteShellException : public std::exception
 {
 private:

@@ -5,32 +5,42 @@
 #include <error.hpp>
 #include <standard.hpp>
 
+const char __description[] = R"(Display the name of or change the current directory.
+
+Call this command with no argument to get the working directory (similar to Unix shell's "pwd").
+When a positional argument is provided, the shell will attempt to change the working directory to
+the specified path. If the path is not found, an error will be returned.
+)";
+
 class CdCommand : public BaseCommand
 {
 public:
     CdCommand()
         : BaseCommand(
               "cd",
-              "Change the working directory",
-              "cd <target>",
-              {}) {}
+              "Get or set the working directory",
+              __description,
+              "cd <target: optional>",
+              {})
+    {
+    }
 
     DWORD run(const Context &context)
     {
         if (context.args.size() == 1)
         {
-            throw std::invalid_argument("No target directory specified");
+            std::cout << get_working_directory() << std::endl;
         }
         else if (context.args.size() > 2)
         {
-            throw std::invalid_argument("Expected 1 argument only");
+            throw std::invalid_argument("Expected at most 1 argument");
         }
         else
         {
             auto target = context.args[1];
             if (!SetCurrentDirectoryW(utf_convert(target).c_str()))
             {
-                throw std::runtime_error(format_last_error("Error when changing directory"));
+                throw std::runtime_error(format_last_error(format("Error when changing directory to %s", target.c_str())));
             }
         }
 

@@ -9,8 +9,9 @@ public:
     ExitCommand()
         : BaseCommand(
               "exit",
-              "Exit the shell",
-              "exit <optional code>",
+              "Exit the shell with the specified exit code (default: 0)",
+              "",
+              "exit <code: optional>",
               {}) {}
 
     DWORD run(const Context &arguments)

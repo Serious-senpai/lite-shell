@@ -4,6 +4,11 @@
 #include <client.hpp>
 #include <standard.hpp>
 
+const char __description[] = R"(Provides help information for Windows commands.
+
+To get help for a specific command, specify its name as the first argument (e.g. "help help")
+)";
+
 class HelpCommand : public BaseCommand
 {
 public:
@@ -11,29 +16,29 @@ public:
         : BaseCommand(
               "help",
               "Get all commands or get help for a specific command",
-              "help <optional command>",
+              __description,
+              "help <command: optional>",
               {}) {}
 
     DWORD run(const Context &context)
     {
-        if (context.args.size() == 1)
+        if (context.args.size() == 1) // Get all commands
         {
-            // Get all commands
             for (auto &wrapper : context.client->walk_commands())
             {
                 std::cout << wrapper.command->name << " - " << wrapper.command->description << std::endl;
             }
         }
-        else if (context.args.size() > 1)
+        else if (context.args.size() > 1) // Get help for a specific command
         {
-            // Get help for a specific command
             auto name = context.args[1];
             auto wrapper = context.client->get_command(name);
             if (wrapper.has_value())
             {
                 std::cout << "Name: " << wrapper->command->name << std::endl;
-                std::cout << "Description: " << wrapper->command->description << std::endl;
                 std::cout << "Syntax: " << wrapper->command->syntax << std::endl;
+                std::cout << "Description: " << wrapper->command->description << std::endl;
+                std::cout << wrapper->command->long_description << std::endl;
 
                 auto aliases = wrapper->command->aliases;
                 std::cout << "Aliases: ";

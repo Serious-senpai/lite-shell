@@ -12,8 +12,9 @@ public:
     LsCommand()
         : BaseCommand(
               "ls",
-              "List the content of a directory",
-              "ls <optional dir>",
+              "Display the content of a directory (default: the working directory)",
+              "",
+              "ls <dir: optional>",
               {"dir"}) {}
 
     DWORD run(const Context &context)

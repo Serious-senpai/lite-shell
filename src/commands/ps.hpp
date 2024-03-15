@@ -12,6 +12,7 @@ public:
         : BaseCommand(
               "ps",
               "Get all subprocesses of the current shell, regardless of their states",
+              "",
               "ps",
               {}) {}
 

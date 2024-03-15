@@ -12,7 +12,8 @@ public:
         : BaseCommand(
               "mkdir",
               "Make a new directory",
-              "mkdir <name>",
+              "",
+              "mkdir <name: required>",
               {"md"}) {}
 
     DWORD run(const Context &context)

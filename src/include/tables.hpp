@@ -3,20 +3,30 @@
 #include "format.hpp"
 #include "standard.hpp"
 
+/* A helper class to display ASCII table on the console */
 class Table
 {
 private:
     std::vector<std::vector<std::string>> rows;
 
 public:
+    /* The number of columns, this number is unchanged */
     const unsigned columns;
+
+    /* Whether each row should align left */
     bool align_left = true;
 
-    Table(const std::initializer_list<std::string> &header) : columns(header.size())
+    /* Construct a new table with the specified headers */
+    Table(const std::initializer_list<std::string> &headers) : columns(headers.size())
     {
-        rows.push_back(header);
+        rows.push_back(headers);
     }
 
+    /*
+    Add a new row to the table.
+
+    @param row The row to add. The number of items in the row must be equal to the number of table columns.
+    */
     void add_row(const std::initializer_list<std::string> &row)
     {
         if (row.size() != columns)
@@ -27,6 +37,7 @@ public:
         rows.push_back(row);
     }
 
+    /* An ASCII string displaying the table */
     std::string display()
     {
         std::vector<unsigned> column_widths(columns);

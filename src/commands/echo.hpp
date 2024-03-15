@@ -9,8 +9,9 @@ public:
     EchoCommand()
         : BaseCommand(
               "echo",
-              "Print something",
-              "echo <content>",
+              "Display a message",
+              "",
+              "echo <message: optional>",
               {}) {}
 
     DWORD run(const Context &context)

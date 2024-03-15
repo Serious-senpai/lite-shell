@@ -9,6 +9,12 @@
 #include "utils.hpp"
 #include "wrapper.hpp"
 
+/*
+Represents a command shell client. The application should hold only one instance of this class.
+
+This class is responsible for managing commands, subprocesses and errorlevel. It also provides a method
+to run the shell indefinitely.
+*/
 class Client
 {
 private:
@@ -81,7 +87,7 @@ private:
             }
         }
 
-        return Context(message, args, kwargs, this);
+        return Context(message, tokens, args, kwargs, this);
     }
 
     CommandWrapper<BaseCommand> get_command(const std::string &name)
@@ -118,11 +124,23 @@ public:
         resolve_order.push_back(path.substr(0, size));
     }
 
+    /*
+    Get all commands of the current command shell
+
+    @return A vector containing all commands
+    */
     const std::vector<CommandWrapper<BaseCommand>> walk_commands() const
     {
         return wrappers;
     }
 
+    /*
+    Get a command from the internal list of commands.
+    This could also be used as a way to get aliases.
+
+    @param name The name of the command to get.
+    @return The command that was requested. If not found, returns an empty optional.
+    */
     const std::optional<CommandWrapper<BaseCommand>> get_command(const std::string &name) const
     {
         auto iter = commands.find(name);
@@ -133,16 +151,25 @@ public:
         return wrappers[iter->second];
     }
 
+    /*
+    Get all subprocesses of the current shell.
+
+    @return A set containing all subprocesses (both running and terminated processes).
+    */
     const std::set<ProcessInfoWrapper> get_subprocesses() const
     {
         return subprocesses;
     }
 
-    bool is_background_request(const std::string &message)
+    /*
+    Determine whether a command context is requesting to run in a background process.
+
+    @param context The context to check.
+    @return `true` if the context is requesting to run in the background, `false` otherwise
+    */
+    bool is_background_request(const Context &context)
     {
-        auto stripped_message = strip(message);
-        auto n = stripped_message.size();
-        return n > 2 && stripped_message[n - 2] == ' ' && stripped_message[n - 1] == '%';
+        return !context.tokens.empty() && context.tokens.back() == "%";
     }
 
     std::string get_prompt()
@@ -181,6 +208,12 @@ public:
         }
     }
 
+    /*
+    Adds a command into the internal list of commands.
+
+    @param ptr A shared pointer to the command to add.
+    @return A pointer to the current client.
+    */
     Client *add_command(const std::shared_ptr<BaseCommand> &ptr)
     {
         if (commands.find(ptr->name) != commands.end())
@@ -202,12 +235,22 @@ public:
         return this;
     }
 
+    /*
+    Process a command message.
+
+    The process logic is as follows: If `message` points to an executable, it will be executed in a subprocess.
+    Otherwise, the shell will attempt to find a command registered with `add_command()` and invoke it instead.
+
+    @param message The command message to process.
+    @return A pointer to the current client.
+    */
     Client *process_command(const std::string &message)
     {
         auto stripped_message = strip(message);
         try
         {
             auto context = get_context(stripped_message);
+            auto request_background = is_background_request(context);
 
             // Find an executable first
             auto executable = resolve(context.args[0]);
@@ -216,7 +259,7 @@ public:
                 // Is an executable
                 auto final_context = context.replace_call(*executable);
                 auto subprocess = spawn_subprocess(final_context.message);
-                if (is_background_request(message))
+                if (request_background)
                 {
                     errorlevel = 0;
                 }
@@ -241,6 +284,11 @@ public:
         return this;
     }
 
+    /*
+    An error handler that process exceptions thrown during command execution.
+
+    @param e The exception object that was thrown.
+    */
     void on_error(std::exception &e)
     {
         errorlevel = 1000;
@@ -264,6 +312,13 @@ public:
 #undef ERROR_CODE
     }
 
+    /*
+    Find an executable that `token` points to.
+    The function will first look in the current working directory, then in the directories specified in `resolve_order`.
+
+    @param token The token to resolve.
+    @return The path to the executable if found, `std::nullopt` otherwise.
+    */
     std::optional<std::string> resolve(const std::string &token)
     {
         auto find_executable = [&token](const std::string &directory) -> std::optional<std::string>
@@ -301,6 +356,12 @@ public:
         return std::nullopt;
     }
 
+    /*
+    Spawn a subprocess and execute `command` in it.
+
+    @param command The command to execute.
+    @return A wrapper object containing information about the subprocess.
+    */
     ProcessInfoWrapper spawn_subprocess(const std::string &command)
     {
         STARTUPINFOW *startup_info = (STARTUPINFOW *)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(STARTUPINFOW));
@@ -308,7 +369,7 @@ public:
 
         // Strip background request suffix
         std::string cmd(strip(command));
-        while (is_background_request(cmd))
+        while (is_background_request(get_context(command)))
         {
             cmd = strip(cmd.substr(0, cmd.size() - 1));
         }
@@ -355,6 +416,11 @@ public:
         }
     }
 
+    /*
+    Get the shell current errorlevel
+
+    @return The current errorlevel
+    */
     int get_errorlevel()
     {
         return errorlevel;

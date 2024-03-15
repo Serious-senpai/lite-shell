@@ -12,6 +12,7 @@ public:
         : BaseCommand(
               "date",
               "Retrieves the current system date and time",
+              "",
               "date",
               {}) {}
 

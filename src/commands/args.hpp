@@ -3,6 +3,11 @@
 #include <base.hpp>
 #include <standard.hpp>
 
+const char __description[] = R"(Display the arguments and keyword arguments passed to the command.
+
+This command was designed for testing the command line parser only.
+)";
+
 class ArgsCommand : public BaseCommand
 {
 private:
@@ -11,7 +16,8 @@ public:
         : BaseCommand(
               "args",
               "Describe the arguments that were passed in",
-              "args <whatever>",
+              __description,
+              "args <...>",
               {}) {}
 
     DWORD run(const Context &context)

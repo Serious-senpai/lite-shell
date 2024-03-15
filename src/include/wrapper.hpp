@@ -4,12 +4,18 @@
 #include "context.hpp"
 #include "standard.hpp"
 
+/*
+Wrapper for a command inheriting from BaseCommand.
+See https://stackoverflow.com/a/66010713 for more details
+
+@tparam T The command class, must be a subclass of BaseCommand
+*/
 template <typename T>
 class CommandWrapper
 {
 private:
 public:
-    // https://stackoverflow.com/a/66010713
+    /* A pointer to the underlying command object */
     const std::shared_ptr<T> command;
 
     CommandWrapper(const std::shared_ptr<T> &command) : command(command)

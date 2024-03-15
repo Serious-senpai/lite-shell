@@ -5,17 +5,21 @@
 #include <error.hpp>
 #include <standard.hpp>
 
+const char __description[] = "Displays the contents of a text file";
+
 class CatCommand : public BaseCommand
 {
 private:
     const DWORD BUFFER_SIZE = 2048;
 
 public:
-    CatCommand() : BaseCommand(
-                       "cat",
-                       "Read a file",
-                       "cat <file>",
-                       {"type"}) {}
+    CatCommand()
+        : BaseCommand(
+              "cat",
+              "Read a file",
+              __description,
+              "cat <file: required>",
+              {"type"}) {}
 
     DWORD run(const Context &context)
     {
