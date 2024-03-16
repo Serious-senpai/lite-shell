@@ -37,7 +37,7 @@ private:
         auto iter = commands.find(name);
         if (iter == commands.end())
         {
-            throw CommandInputError(format("Unrecognized command: %s", name.c_str()));
+            throw std::invalid_argument(format("Unrecognized command: %s", name.c_str()));
         }
 
         return wrappers[iter->second];
@@ -47,7 +47,7 @@ private:
     {
         if (context.args.size() == 0)
         {
-            throw CommandInputError("No command provided");
+            throw std::invalid_argument("No command provided");
         }
 
         return get_command(context.args[0]);
@@ -71,9 +71,9 @@ public:
 
     @return A vector containing all commands
     */
-    const std::vector<CommandWrapper<BaseCommand>> walk_commands() const
+    std::set<CommandWrapper<BaseCommand>> walk_commands() const
     {
-        return wrappers;
+        return std::set<CommandWrapper<BaseCommand>>(wrappers.begin(), wrappers.end());
     }
 
     /*
@@ -241,8 +241,7 @@ public:
         ERROR_CODE(std::runtime_error, 900);
         ERROR_CODE(std::invalid_argument, 901);
         ERROR_CODE(std::bad_alloc, 902);
-        ERROR_CODE(CommandInputError, 903);
-        ERROR_CODE(SubprocessCreationError, 904);
+        ERROR_CODE(SubprocessCreationError, 903);
 
 #undef ERROR_CODE
     }

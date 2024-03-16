@@ -17,12 +17,6 @@ public:
     }
 };
 
-class CommandInputError : public LiteShellException
-{
-public:
-    CommandInputError(const std::string &message) : LiteShellException(message) {}
-};
-
 class SubprocessException : public LiteShellException
 {
 public:

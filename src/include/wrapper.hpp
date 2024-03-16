@@ -28,3 +28,15 @@ public:
         return command->run(context);
     }
 };
+
+template <typename T>
+bool operator<(const CommandWrapper<T> &lhs, const CommandWrapper<T> &rhs)
+{
+    return lhs.command->name < rhs.command->name;
+}
+
+template <typename T>
+bool operator==(const CommandWrapper<T> &lhs, const CommandWrapper<T> &rhs)
+{
+    return lhs.command->name == rhs.command->name;
+}

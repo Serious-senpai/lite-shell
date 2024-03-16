@@ -164,7 +164,7 @@ Context Context::get_context(const Client *client, const std::string &message)
         {
             if (token.size() == 1) // Token "-"
             {
-                throw CommandInputError("Input pipe is not supported");
+                throw std::invalid_argument("Input pipe is not supported");
             }
             else if (token[1] != '-') // Token of type "-abc", treat it as "-a", "-b", "-c"
             {
@@ -175,7 +175,7 @@ Context Context::get_context(const Client *client, const std::string &message)
 
                     if (token[i] < 'a' || token[i] > 'z')
                     {
-                        throw CommandInputError(format("Unsupported option: %s", name.c_str()));
+                        throw std::invalid_argument(format("Unsupported option: %s", name.c_str()));
                     }
 
                     current_parameter = name;
