@@ -59,7 +59,21 @@ public:
             }
             else
             {
-                throw std::invalid_argument("Command not found");
+                std::vector<std::string> commands;
+                for (auto &wrapper : context.client->walk_commands())
+                {
+                    commands.push_back(wrapper.command->name);
+                    for (auto &alias : wrapper.command->aliases)
+                    {
+                        commands.push_back(alias);
+                    }
+                }
+
+                throw std::invalid_argument(
+                    format(
+                        "Command \"%s\" not found. Did you mean \"%s\"?",
+                        name.c_str(),
+                        fuzzy_search(commands.begin(), commands.end(), name)->c_str()));
             }
         }
 
