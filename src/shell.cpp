@@ -10,7 +10,9 @@ const char title[] = R"(Windows lightweight command shell
 Repository: https://github.com/Serious-senpai/lite-shell
 Contribute: https://github.com/Serious-senpai/lite-shell/pulls
 Issue tracker: https://github.com/Serious-senpai/lite-shell/issues
-Type "help" to get started.)";
+Type "help" to get started.
+Type "help <command>" to get help about a command.
+Type "<executable> <arguments> %" to run an executable in a subprocess.)";
 
 int main(int argc, const char *argv[])
 {

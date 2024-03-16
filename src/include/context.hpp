@@ -16,9 +16,10 @@ class is not created manually and is instead passed around to commands as the on
 class Context
 {
 private:
+public:
+    /* A suffix indicating that a command message should be run in a background */
     const char BACKGROUND_SUFFIX = '%';
 
-public:
     /* The message that triggered the command being executed. */
     const std::string message;
 
