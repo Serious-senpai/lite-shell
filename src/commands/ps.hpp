@@ -25,13 +25,17 @@ public:
             DWORD status = 0;
             if (GetExitCodeProcess(subprocess.info.hProcess, &status))
             {
-                if (status == STILL_ACTIVE)
+                switch (status)
                 {
+                case STILL_ACTIVE:
                     status_display = "STILL_ACTIVE";
-                }
-                else
-                {
+                    break;
+                case STATUS_CONTROL_C_EXIT:
+                    status_display = "CONTROL_C_EXIT";
+                    break;
+                default:
                     status_display = std::to_string(status);
+                    break;
                 }
             }
             else

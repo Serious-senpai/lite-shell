@@ -9,6 +9,11 @@
 #include "utils.hpp"
 #include "wrapper.hpp"
 
+BOOL WINAPI ctrl_handler(DWORD ctrl_type)
+{
+    return ctrl_type == CTRL_C_EVENT;
+}
+
 /*
 Represents a command shell client. The application should hold only one instance of this class.
 
@@ -18,8 +23,6 @@ to run the shell indefinitely.
 class Client
 {
 private:
-    const char BACKGROUND_SUFFIX = '%';
-
     DWORD errorlevel = 0;
 
     std::set<ProcessInfoWrapper> subprocesses;
@@ -28,67 +31,6 @@ private:
 
     std::vector<CommandWrapper<BaseCommand>> wrappers;
     std::map<std::string, unsigned> commands;
-
-    Context get_context(const std::string &message)
-    {
-        auto tokens = split(message);
-
-        std::vector<std::string> args;
-        std::map<std::string, std::vector<std::string>> kwargs;
-
-        std::optional<std::string> current_parameter;
-        auto add_token = [this, &args, &kwargs, &current_parameter](const std::string &token)
-        {
-            if (current_parameter.has_value())
-            {
-                // keyword argument
-                kwargs[*current_parameter].push_back(token);
-            }
-            else
-            {
-                // positional argument
-                args.push_back(token);
-            }
-        };
-
-        for (auto &token : tokens)
-        {
-            if (token[0] == '-')
-            {
-                if (token.size() == 1) // Token "-"
-                {
-                    throw CommandInputError("Input pipe is not supported");
-                }
-                else if (token[1] != '-') // Token of type "-abc", treat it as "-a", "-b", "-c"
-                {
-                    for (unsigned i = 1; i < token.size(); i++)
-                    {
-                        std::string name = "-";
-                        name += token[i];
-
-                        if (token[i] < 'a' || token[i] > 'z')
-                        {
-                            throw CommandInputError(format("Unsupported option: %s", name.c_str()));
-                        }
-
-                        current_parameter = name;
-                        add_token(name);
-                    }
-                }
-                else // Token of type "--abc"
-                {
-                    current_parameter = token;
-                    add_token(token);
-                }
-            }
-            else
-            {
-                add_token(token);
-            }
-        }
-
-        return Context(message, tokens, args, kwargs, this);
-    }
 
     CommandWrapper<BaseCommand> get_command(const std::string &name)
     {
@@ -162,53 +104,6 @@ public:
     }
 
     /*
-    Determine whether a command context is requesting to run in a background process.
-
-    @param context The context to check.
-    @return `true` if the context is requesting to run in the background, `false` otherwise
-    */
-    bool is_background_request(const Context &context)
-    {
-        return !context.tokens.empty() && context.tokens.back() == "%";
-    }
-
-    std::string get_prompt()
-    {
-        return format("liteshell(%d)~%s>", errorlevel, get_working_directory().c_str());
-    }
-
-    void run_forever()
-    {
-        if (!SetConsoleCtrlHandler(NULL, TRUE))
-        {
-            std::cerr << format_last_error("Warning: SetConsoleCtrlHandler ERROR") << std::endl;
-        }
-
-        while (true)
-        {
-            std::cout << "\n"
-                      << get_prompt();
-            std::cout.flush();
-
-            std::string input;
-            std::getline(std::cin, input);
-
-            if (std::cin.fail() || std::cin.eof())
-            {
-                std::cin.clear();
-                continue;
-            }
-
-            if (input.empty())
-            {
-                continue;
-            }
-
-            process_command(input);
-        }
-    }
-
-    /*
     Adds a command into the internal list of commands.
 
     @param ptr A shared pointer to the command to add.
@@ -235,6 +130,46 @@ public:
         return this;
     }
 
+    std::string get_prompt()
+    {
+        return format("liteshell(%d)~%s>", errorlevel, get_working_directory().c_str());
+    }
+
+    void set_ignore_ctrl_c(bool ignore)
+    {
+        if (!SetConsoleCtrlHandler(ctrl_handler, ignore))
+        {
+            std::cerr << format_last_error("Warning: SetConsoleCtrlHandler ERROR") << std::endl;
+        }
+    }
+
+    void run_forever()
+    {
+        set_ignore_ctrl_c(true);
+        while (true)
+        {
+            std::cout << "\n"
+                      << get_prompt();
+            std::cout.flush();
+
+            std::string input;
+            std::getline(std::cin, input);
+
+            if (std::cin.fail() || std::cin.eof())
+            {
+                std::cin.clear();
+                continue;
+            }
+
+            if (input.empty())
+            {
+                continue;
+            }
+
+            process_command(input);
+        }
+    }
+
     /*
     Process a command message.
 
@@ -249,8 +184,7 @@ public:
         auto stripped_message = strip(message);
         try
         {
-            auto context = get_context(stripped_message);
-            auto request_background = is_background_request(context);
+            auto context = Context::get_context(this, stripped_message);
 
             // Find an executable first
             auto executable = resolve(context.args[0]);
@@ -258,8 +192,9 @@ public:
             {
                 // Is an executable
                 auto final_context = context.replace_call(*executable);
-                auto subprocess = spawn_subprocess(final_context.message);
-                if (request_background)
+
+                auto subprocess = spawn_subprocess(final_context);
+                if (final_context.is_background_request())
                 {
                     errorlevel = 0;
                 }
@@ -362,34 +297,29 @@ public:
     @param command The command to execute.
     @return A wrapper object containing information about the subprocess.
     */
-    ProcessInfoWrapper spawn_subprocess(const std::string &command)
+    ProcessInfoWrapper spawn_subprocess(const Context &context)
     {
         STARTUPINFOW *startup_info = (STARTUPINFOW *)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(STARTUPINFOW));
         startup_info->cb = sizeof(startup_info);
 
-        // Strip background request suffix
-        std::string cmd(strip(command));
-        while (is_background_request(get_context(command)))
-        {
-            cmd = strip(cmd.substr(0, cmd.size() - 1));
-        }
+        auto final_context = context.strip_background_request();
 
         PROCESS_INFORMATION process_info;
         auto success = CreateProcessW(
-            NULL,                    // lpApplicationName
-            utf_convert(cmd).data(), // lpCommandLine
-            NULL,                    // lpProcessAttributes
-            NULL,                    // lpThreadAttributes
-            true,                    // bInheritHandles
-            0,                       // dwCreationFlags
-            NULL,                    // lpEnvironment
-            NULL,                    // lpCurrentDirectory
-            startup_info,            // lpStartupInfo
-            &process_info            // lpProcessInformation
+            NULL,                                      // lpApplicationName
+            utf_convert(final_context.message).data(), // lpCommandLine
+            NULL,                                      // lpProcessAttributes
+            NULL,                                      // lpThreadAttributes
+            true,                                      // bInheritHandles
+            0,                                         // dwCreationFlags
+            NULL,                                      // lpEnvironment
+            NULL,                                      // lpCurrentDirectory
+            startup_info,                              // lpStartupInfo
+            &process_info                              // lpProcessInformation
         );
         HeapFree(GetProcessHeap(), 0, startup_info);
 
-        ProcessInfoWrapper wrapper(command, process_info);
+        ProcessInfoWrapper wrapper(final_context.message, process_info);
         if (success)
         {
             subprocesses.insert(wrapper);
@@ -412,7 +342,7 @@ public:
         else
         {
             wrapper.close();
-            throw SubprocessCreationError(format_last_error(format("Unable to create subprocess: %s", command.c_str())));
+            throw SubprocessCreationError(format_last_error(format("Unable to create subprocess: %s", final_context.message.c_str())));
         }
     }
 

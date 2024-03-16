@@ -1,7 +1,9 @@
 #pragma once
 
+#include "error.hpp"
 #include "format.hpp"
 #include "standard.hpp"
+#include "utils.hpp"
 
 class Client; // Forward declaration
 
@@ -14,6 +16,8 @@ class is not created manually and is instead passed around to commands as the on
 class Context
 {
 private:
+    const char BACKGROUND_SUFFIX = '%';
+
 public:
     /* The message that triggered the command being executed. */
     const std::string message;
@@ -57,11 +61,21 @@ public:
           client(client) {}
 
     /*
-    @brief Replace the first argument of the original command message
+    Return a shallow copy of the current context
+
+    @return A new context with the same information as the current one
+    */
+    Context copy() const
+    {
+        return Context(message, tokens, args, kwargs, client);
+    }
+
+    /*
+    Replace the first argument of the original command message
     @param token the token to replace with
     @return A new Context with the first argument replaced with the given token
      */
-    Context replace_call(const std::string &token)
+    Context replace_call(const std::string &token) const
     {
         if (tokens.empty() || args.empty())
         {
@@ -79,4 +93,105 @@ public:
 
         return Context(new_message, new_tokens, new_args, kwargs, client);
     }
+
+    /*
+    Remove the background suffix token from the command message
+
+    @return A new context with the background suffix token removed
+    */
+    Context strip_background_request() const
+    {
+        if (is_background_request())
+        {
+            auto size = message.size();
+            while (message[size - 1] != BACKGROUND_SUFFIX)
+            {
+                size--;
+            }
+
+            auto new_message = message.substr(0, size - 1);
+            return get_context(client, new_message);
+        }
+
+        return copy();
+    }
+
+    /*
+    Determine whether this context is requesting to run in a background process.
+
+    @return `true` if the context is requesting to run in the background, `false` otherwise
+    */
+    bool is_background_request() const
+    {
+        return !tokens.empty() && tokens.back() == std::string(1, BACKGROUND_SUFFIX); // copy constructor
+    }
+
+    /*
+    Construct a Context from a message
+
+    @param message The message to construct the context from
+    @return A new context object
+    */
+    static Context get_context(const Client *client, const std::string &message);
 };
+
+Context Context::get_context(const Client *client, const std::string &message)
+{
+    auto tokens = split(message);
+
+    std::vector<std::string> args;
+    std::map<std::string, std::vector<std::string>> kwargs;
+
+    std::optional<std::string> current_parameter;
+    auto add_token = [&args, &kwargs, &current_parameter](const std::string &token)
+    {
+        if (current_parameter.has_value())
+        {
+            // keyword argument
+            kwargs[*current_parameter].push_back(token);
+        }
+        else
+        {
+            // positional argument
+            args.push_back(token);
+        }
+    };
+
+    for (auto &token : tokens)
+    {
+        if (token[0] == '-')
+        {
+            if (token.size() == 1) // Token "-"
+            {
+                throw CommandInputError("Input pipe is not supported");
+            }
+            else if (token[1] != '-') // Token of type "-abc", treat it as "-a", "-b", "-c"
+            {
+                for (unsigned i = 1; i < token.size(); i++)
+                {
+                    std::string name = "-";
+                    name += token[i];
+
+                    if (token[i] < 'a' || token[i] > 'z')
+                    {
+                        throw CommandInputError(format("Unsupported option: %s", name.c_str()));
+                    }
+
+                    current_parameter = name;
+                    add_token(name);
+                }
+            }
+            else // Token of type "--abc"
+            {
+                current_parameter = token;
+                add_token(token);
+            }
+        }
+        else
+        {
+            add_token(token);
+        }
+    }
+
+    return Context(message, tokens, args, kwargs, client);
+}
