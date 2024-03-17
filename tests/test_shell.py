@@ -8,7 +8,7 @@ from typing import Tuple
 build_dir = Path(__file__).parent.parent / "build"
 
 
-def execute_command(command: str, /) -> Tuple[str, str]:
+def execute_command(command: str, *, expected_exit_code: int = 0) -> Tuple[str, str]:
     process = subprocess.Popen(
         build_dir / "shell.exe",
         stdin=subprocess.PIPE,
@@ -17,6 +17,7 @@ def execute_command(command: str, /) -> Tuple[str, str]:
         text=True,
     )
     stdout, stderr = process.communicate(f"{command}\nexit 0\n")
+    assert process.returncode == expected_exit_code
     return stdout, stderr
 
 
