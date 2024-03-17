@@ -49,17 +49,25 @@ public:
     /* A pointer to the client that contains the command being executed. */
     const Client *client;
 
+    /*
+    Whether this context object was parsed.
+    If this context hasn't been parsed yet, args and kwargs will be empty.
+    */
+    const bool parsed;
+
     Context(
         const std::string &message,
         const std::vector<std::string> &tokens,
         const std::vector<std::string> &args,
         const std::map<std::string, std::vector<std::string>> &kwargs,
-        const Client *client)
+        const Client *client,
+        const bool parsed)
         : message(message),
           tokens(tokens),
           args(args),
           kwargs(kwargs),
-          client(client) {}
+          client(client),
+          parsed(parsed) {}
 
     /*
     Return a shallow copy of the current context
@@ -68,7 +76,18 @@ public:
     */
     Context copy() const
     {
-        return Context(message, tokens, args, kwargs, client);
+        return Context(message, tokens, args, kwargs, client, parsed);
+    }
+
+    /*
+    If this context object hasn't been parsed yet, return a new one with the arguments parsed.
+    Otherwise, return a copy of the current object.
+
+    @return A new context with the arguments parsed
+    */
+    Context parse() const
+    {
+        return parsed ? copy() : get_context(client, message, true);
     }
 
     /*
@@ -90,9 +109,12 @@ public:
         new_tokens[0] = token;
 
         std::vector<std::string> new_args(args);
-        new_args[0] = token;
+        if (!new_args.empty())
+        {
+            new_args[0] = token;
+        }
 
-        return Context(new_message, new_tokens, new_args, kwargs, client);
+        return Context(new_message, new_tokens, new_args, kwargs, client, parsed);
     }
 
     /*
@@ -111,7 +133,7 @@ public:
             }
 
             auto new_message = message.substr(0, size - 1);
-            return get_context(client, new_message);
+            return get_context(client, new_message, parsed);
         }
 
         return copy();
@@ -133,66 +155,69 @@ public:
     @param message The message to construct the context from
     @return A new context object
     */
-    static Context get_context(const Client *client, const std::string &message);
+    static Context get_context(const Client *client, const std::string &message, const bool parse);
 };
 
-Context Context::get_context(const Client *client, const std::string &message)
+Context Context::get_context(const Client *client, const std::string &message, const bool parse)
 {
     auto tokens = split(message);
 
     std::vector<std::string> args;
     std::map<std::string, std::vector<std::string>> kwargs;
 
-    std::optional<std::string> current_parameter;
-    auto add_token = [&args, &kwargs, &current_parameter](const std::string &token)
+    if (parse)
     {
-        if (current_parameter.has_value())
+        std::optional<std::string> current_parameter;
+        auto add_token = [&args, &kwargs, &current_parameter](const std::string &token)
         {
-            // keyword argument
-            kwargs[*current_parameter].push_back(token);
-        }
-        else
-        {
-            // positional argument
-            args.push_back(token);
-        }
-    };
-
-    for (auto &token : tokens)
-    {
-        if (token[0] == '-')
-        {
-            if (token.size() == 1) // Token "-"
+            if (current_parameter.has_value())
             {
-                throw std::invalid_argument("Input pipe is not supported");
+                // keyword argument
+                kwargs[*current_parameter].push_back(token);
             }
-            else if (token[1] != '-') // Token of type "-abc", treat it as "-a", "-b", "-c"
+            else
             {
-                for (unsigned i = 1; i < token.size(); i++)
+                // positional argument
+                args.push_back(token);
+            }
+        };
+
+        for (auto &token : tokens)
+        {
+            if (token[0] == '-')
+            {
+                if (token.size() == 1) // Token "-"
                 {
-                    std::string name = "-";
-                    name += token[i];
-
-                    if (token[i] < 'a' || token[i] > 'z')
+                    throw std::invalid_argument("Input pipe is not supported");
+                }
+                else if (token[1] != '-') // Token of type "-abc", treat it as "-a", "-b", "-c"
+                {
+                    for (unsigned i = 1; i < token.size(); i++)
                     {
-                        throw std::invalid_argument(format("Unsupported option: %s", name.c_str()));
-                    }
+                        std::string name = "-";
+                        name += token[i];
 
-                    current_parameter = name;
-                    add_token(name);
+                        if (token[i] < 'a' || token[i] > 'z')
+                        {
+                            throw std::invalid_argument(format("Unsupported option: %s", name.c_str()));
+                        }
+
+                        current_parameter = name;
+                        add_token(name);
+                    }
+                }
+                else // Token of type "--abc"
+                {
+                    current_parameter = token;
+                    add_token(token);
                 }
             }
-            else // Token of type "--abc"
+            else
             {
-                current_parameter = token;
                 add_token(token);
             }
         }
-        else
-        {
-            add_token(token);
-        }
     }
 
-    return Context(message, tokens, args, kwargs, client);
+    return Context(message, tokens, args, kwargs, client, parse);
 }

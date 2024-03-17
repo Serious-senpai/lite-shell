@@ -12,7 +12,8 @@ public:
               "Display a message",
               "",
               "echo <message: optional>",
-              {}) {}
+              {},
+              false) {}
 
     DWORD run(const Context &context)
     {

@@ -27,17 +27,22 @@ public:
     /* The list of aliases the command can be invoked under. */
     const std::vector<std::string> aliases;
 
+    /* Whether the command requires the context to be parsed. */
+    const bool require_context_parsing;
+
     BaseCommand(
         const std::string &name,
         const std::string &description,
         const std::string &long_description,
         const std::string &syntax,
-        const std::initializer_list<std::string> &aliases)
+        const std::initializer_list<std::string> &aliases,
+        const bool require_context_parsing = true)
         : name(name),
           description(description),
           long_description(long_description),
           syntax(syntax),
-          aliases(aliases) {}
+          aliases(aliases),
+          require_context_parsing(require_context_parsing) {}
 
     virtual ~BaseCommand() {}
 

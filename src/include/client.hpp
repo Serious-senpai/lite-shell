@@ -45,12 +45,12 @@ private:
 
     CommandWrapper<BaseCommand> get_command(const Context &context)
     {
-        if (context.args.size() == 0)
+        if (context.tokens.size() == 0)
         {
             throw std::invalid_argument("No command provided");
         }
 
-        return get_command(context.args[0]);
+        return get_command(context.tokens[0]);
     }
 
 public:
@@ -184,10 +184,10 @@ public:
         auto stripped_message = strip(message);
         try
         {
-            auto context = Context::get_context(this, stripped_message);
+            auto context = Context::get_context(this, stripped_message, false);
 
             // Find an executable first
-            auto executable = resolve(context.args[0]);
+            auto executable = resolve(context.tokens[0]);
             if (executable.has_value())
             {
                 // Is an executable
@@ -208,7 +208,7 @@ public:
             {
                 // Is a local command, throw if no match was found in get_command()
                 auto wrapper = get_command(context);
-                errorlevel = wrapper.run(context);
+                errorlevel = wrapper.run(wrapper.command->require_context_parsing ? context.parse() : context);
             }
         }
         catch (std::exception &e)
