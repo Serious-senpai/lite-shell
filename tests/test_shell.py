@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 import subprocess
 from pathlib import Path
 from typing import Tuple
@@ -21,9 +22,23 @@ def execute_command(command: str, *, expected_exit_code: int = 0) -> Tuple[str, 
     return stdout, stderr
 
 
+def assert_match(token: str, string: str) -> None:
+    pattern = r"(?:[^\w]|^)" + re.escape(token) + r"(?:[^\w]|$)"
+    assert re.search(pattern, string) is not None
+
+
+def test_args() -> None:
+    stdout, stderr = execute_command("args hello world -abc test --b-c 1")
+    assert_match("-a", stdout)
+    assert_match("-b", stdout)
+    assert_match("-c", stdout)
+    assert_match("--b-c", stdout)
+    assert stderr.strip() == ""
+
+
 def test_echo() -> None:
     # Do not include white spaces at both ends
-    test_string = "hello world    1 2 --3 4 -abc3 --4"
+    test_string = "hello world    1 2 --3 4 -abc3 --4 \"in quotes\""
     stdout, stderr = execute_command(f"echo {test_string}")
-    assert test_string in stdout.strip()
+    assert_match(test_string, stdout)
     assert stderr.strip() == ""
