@@ -12,10 +12,9 @@ std::string get_working_directory()
 {
     wchar_t buffer[MAX_PATH];
     auto size = GetCurrentDirectoryW(MAX_PATH, buffer);
-
     if (size == 0)
     {
-        throw std::runtime_error("Error getting current directory.");
+        throw std::runtime_error(format_last_error("GetCurrentDirectoryW ERROR"));
     }
 
     return utf_convert(std::wstring(buffer, buffer + size));
@@ -71,6 +70,10 @@ std::vector<std::string> split(const std::string &original)
 
     int size = 0;
     auto results = CommandLineToArgvW(wstr.c_str(), &size);
+    if (results == NULL)
+    {
+        throw std::runtime_error(format_last_error("CommandLineToArgvW ERROR"));
+    }
 
     std::vector<std::string> args(size);
     for (int i = 0; i < size; i++)
