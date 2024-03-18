@@ -3,6 +3,7 @@ from __future__ import annotations
 import random
 import re
 import subprocess
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Tuple
@@ -95,3 +96,11 @@ def test_help() -> None:
 
     _, stderr = execute_command("help halp", expected_exit_code=901)
     assert_match("Did you mean \"help\"?", stderr)
+
+
+def test_sleep() -> None:
+    start = time.perf_counter()
+    default_test("sleep 1000")
+    end = time.perf_counter()
+
+    assert end - start > 1.0

@@ -97,13 +97,13 @@ public:
      */
     Context replace_call(const std::string &token) const
     {
-        if (tokens.empty() || args.empty())
+        if (tokens.empty())
         {
             throw std::runtime_error("No positional arguments to replace call");
         }
 
         std::string new_message(token);
-        new_message += message.substr(args[0].size());
+        new_message += message.substr(tokens[0].size());
 
         std::vector<std::string> new_tokens(tokens);
         new_tokens[0] = token;
