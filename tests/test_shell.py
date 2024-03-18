@@ -6,7 +6,8 @@ from pathlib import Path
 from typing import Tuple
 
 
-build_dir = Path(__file__).parent.parent / "build"
+root_dir = Path(__file__).parent.parent
+build_dir = root_dir / "build"
 
 
 def execute_command(command: str, *, expected_exit_code: int = 0) -> Tuple[str, str]:
@@ -15,15 +16,21 @@ def execute_command(command: str, *, expected_exit_code: int = 0) -> Tuple[str, 
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
-        text=True,
     )
-    stdout, stderr = process.communicate(f"{command}\nexit 0\n")
+    stdout, stderr = process.communicate(f"{command}\nexit 0\n".encode("utf-8"))
     assert process.returncode == expected_exit_code
-    return stdout, stderr
+
+    def decode(data: bytes) -> str:
+        return data.decode("utf-8").replace("\r", "")
+
+    return decode(stdout), decode(stderr)
 
 
 def assert_match(token: str, string: str) -> None:
     pattern = r"(?:[^\w]|^)" + re.escape(token) + r"(?:[^\w]|$)"
+    print(pattern)
+    print("-" * 20)
+    print(repr(string))
     assert re.search(pattern, string) is not None
 
 
@@ -33,6 +40,16 @@ def test_args() -> None:
     assert_match("-b", stdout)
     assert_match("-c", stdout)
     assert_match("--b-c", stdout)
+    assert stderr.strip() == ""
+
+
+def test_cat() -> None:
+    path = root_dir / "src" / "shell.cpp"
+    with open(path, "r", encoding="utf-8") as file:
+        data = file.read()
+
+    stdout, stderr = execute_command(f"cat {path}")
+    assert_match(data, stdout)
     assert stderr.strip() == ""
 
 
