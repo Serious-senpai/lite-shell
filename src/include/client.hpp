@@ -238,10 +238,10 @@ public:
         }                                              \
     }
 
-        ERROR_CODE(std::runtime_error, 900);
-        ERROR_CODE(std::invalid_argument, 901);
-        ERROR_CODE(std::bad_alloc, 902);
-        ERROR_CODE(SubprocessCreationError, 903);
+        ERROR_CODE(std::runtime_error, LITE_SHELL_RUNTIME_ERROR);
+        ERROR_CODE(std::invalid_argument, LITE_SHELL_INVALID_ARGUMENT);
+        ERROR_CODE(std::bad_alloc, LITE_SHELL_BAD_ALLOC);
+        ERROR_CODE(SubprocessCreationError, LITE_SHELL_SUBPROCESS_CREATION_ERROR);
 
 #undef ERROR_CODE
     }
@@ -350,7 +350,7 @@ public:
 
     @return The current errorlevel
     */
-    int get_errorlevel()
+    DWORD get_errorlevel() const
     {
         return errorlevel;
     }

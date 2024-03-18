@@ -9,20 +9,20 @@ public:
     ExitCommand()
         : BaseCommand(
               "exit",
-              "Exit the shell with the specified exit code (default: 0)",
-              "",
+              "Exit the shell with the specified exit code",
+              "If no exit code is specified, the shell will exit with the current errorlevel.",
               "exit <code: optional>",
               {}) {}
 
-    DWORD run(const Context &arguments)
+    DWORD run(const Context &context)
     {
-        if (arguments.args.size() == 1)
+        if (context.args.size() == 1)
         {
-            exit(0);
+            exit(context.client->get_errorlevel());
         }
         else
         {
-            auto code = std::stoi(arguments.args[1]);
+            auto code = std::stoi(context.args[1]);
             exit(code);
         }
     }

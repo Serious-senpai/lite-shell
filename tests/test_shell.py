@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import random
 import re
 import subprocess
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Tuple
 
@@ -17,13 +19,18 @@ def execute_command(command: str, *, expected_exit_code: int = 0) -> Tuple[str, 
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
     )
-    stdout, stderr = process.communicate(f"{command}\nexit 0\n".encode("utf-8"))
+    stdout, stderr = process.communicate(f"{command}\nexit\n".encode("utf-8"))
     assert process.returncode == expected_exit_code
 
     def decode(data: bytes) -> str:
         return data.decode("utf-8").replace("\r", "")
 
     return decode(stdout), decode(stderr)
+
+
+def default_test(command: str) -> None:
+    _, stderr = execute_command(command)
+    assert stderr.strip() == ""
 
 
 def assert_match(token: str, string: str) -> None:
@@ -53,9 +60,38 @@ def test_cat() -> None:
     assert stderr.strip() == ""
 
 
+def test_date() -> None:
+    utc_now = datetime.now(timezone.utc)
+    utc_display = "/".join(map(str, [utc_now.day, utc_now.month, utc_now.year]))  # dd/mm/yyyy
+
+    local_now = datetime.now()
+    local_display = "/".join(map(str, [local_now.day, local_now.month, local_now.year]))  # dd/mm/yyyy
+
+    stdout, stderr = execute_command("date")
+    assert_match(utc_display, stdout)
+    assert_match(local_display, stdout)
+
+    assert stderr.strip() == ""
+
+
 def test_echo() -> None:
     # Do not include white spaces at both ends
     test_string = "hello world    1 2 --3 4 -abc3 --4 \"in quotes\""
     stdout, stderr = execute_command(f"echo {test_string}")
     assert_match(test_string, stdout)
     assert stderr.strip() == ""
+
+
+def test_exit() -> None:
+    for exit_code in random.choices(range(100), k=5):
+        _, stderr = execute_command(f"exit {exit_code}", expected_exit_code=exit_code)
+
+    assert stderr.strip() == ""
+
+
+def test_help() -> None:
+    default_test("help")
+    default_test("help help")
+
+    _, stderr = execute_command("help halp", expected_exit_code=901)
+    assert_match("Did you mean \"help\"?", stderr)

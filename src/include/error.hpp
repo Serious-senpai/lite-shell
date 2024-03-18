@@ -2,6 +2,11 @@
 
 #include "standard.hpp"
 
+#define LITE_SHELL_RUNTIME_ERROR 900
+#define LITE_SHELL_INVALID_ARGUMENT 901
+#define LITE_SHELL_BAD_ALLOC 902
+#define LITE_SHELL_SUBPROCESS_CREATION_ERROR 903
+
 /* Base class for all exceptions of this command shell */
 class LiteShellException : public std::exception
 {
