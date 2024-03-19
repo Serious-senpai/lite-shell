@@ -12,6 +12,7 @@
 #include "commands/kill.hpp"
 #include "commands/ls.hpp"
 #include "commands/mkdir.hpp"
+#include "commands/path.hpp"
 #include "commands/ps.hpp"
 
 void initialize(Client *client)
@@ -26,5 +27,6 @@ void initialize(Client *client)
         ->add_command(std::make_shared<KillCommand>())
         ->add_command(std::make_shared<LsCommand>())
         ->add_command(std::make_shared<MkdirCommand>())
+        ->add_command(std::make_shared<PathCommand>())
         ->add_command(std::make_shared<PsCommand>());
 }
