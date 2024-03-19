@@ -19,15 +19,11 @@ public:
               "Read a file",
               __cat_description,
               "cat <file: required>",
-              {"type"}) {}
+              {"type"},
+              ArgumentsConstraint(2, 2)) {}
 
     DWORD run(const Context &context)
     {
-        if (context.args.size() < 2)
-        {
-            throw std::invalid_argument("No file to read");
-        }
-
         auto h_file = CreateFileW(
             utf_convert(context.args[1]).c_str(),
             GENERIC_READ,

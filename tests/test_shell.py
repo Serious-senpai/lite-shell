@@ -84,6 +84,7 @@ def test_echo() -> None:
 
 
 def test_exit() -> None:
+    execute_command("exit", expected_exit_code=0)
     for exit_code in random.choices(range(100), k=5):
         _, stderr = execute_command(f"exit {exit_code}", expected_exit_code=exit_code)
 

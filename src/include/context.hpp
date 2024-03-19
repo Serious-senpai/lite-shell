@@ -33,7 +33,7 @@ public:
     The keyword arguments passed to the command: e.g. `args a b -c d e -g h` will give {`-c`: [`-c`, `d`, `e`],
     `-g`: [`-g`, `h`]}.
 
-    Note that if a parameter is absent from the command, its value will be an empty vector. Therefore, it is sufficient
+    Note that if a parameter is absent from the command, its value will not present in the map. Therefore, it is sufficient
     to check the existence of a paramater (e.g. `-v`) by the following idiom:
 
 ```cpp
@@ -49,11 +49,8 @@ public:
     /* A pointer to the client that contains the command being executed. */
     const Client *client;
 
-    /*
-    Whether this context object was parsed.
-    If this context hasn't been parsed yet, args and kwargs will be empty.
-    */
-    const bool parsed;
+    /* The arguments constraint of this context object */
+    const ArgumentsConstraint constraint;
 
     Context(
         const std::string &message,
@@ -61,13 +58,13 @@ public:
         const std::vector<std::string> &args,
         const std::map<std::string, std::vector<std::string>> &kwargs,
         const Client *client,
-        const bool parsed)
+        const ArgumentsConstraint &constraint)
         : message(message),
           tokens(tokens),
           args(args),
           kwargs(kwargs),
           client(client),
-          parsed(parsed) {}
+          constraint(constraint) {}
 
     /*
     Return a shallow copy of the current context
@@ -76,18 +73,18 @@ public:
     */
     Context copy() const
     {
-        return Context(message, tokens, args, kwargs, client, parsed);
+        return Context(message, tokens, args, kwargs, client, constraint);
     }
 
     /*
-    If this context object hasn't been parsed yet, return a new one with the arguments parsed.
-    Otherwise, return a copy of the current object.
+    Parse this context with new constraint.
 
-    @return A new context with the arguments parsed
+    @param constraint The new constraint to parse the context with
+    @return A new context with the new constraint applied
     */
-    Context parse() const
+    Context parse(const ArgumentsConstraint &constraint) const
     {
-        return parsed ? copy() : get_context(client, message, true);
+        return get_context(client, message, constraint);
     }
 
     /*
@@ -114,7 +111,7 @@ public:
             new_args[0] = token;
         }
 
-        return Context(new_message, new_tokens, new_args, kwargs, client, parsed);
+        return Context(new_message, new_tokens, new_args, kwargs, client, constraint);
     }
 
     /*
@@ -133,7 +130,7 @@ public:
             }
 
             auto new_message = message.substr(0, size - 1);
-            return get_context(client, new_message, parsed);
+            return get_context(client, new_message, constraint);
         }
 
         return copy();
@@ -152,28 +149,34 @@ public:
     /*
     Construct a Context from a message
 
+    @param client A pointer to the Client object
     @param message The message to construct the context from
+    @param constraint The constraint to parse the context with
     @return A new context object
     */
-    static Context get_context(const Client *client, const std::string &message, const bool parse);
+    static Context get_context(const Client *client, const std::string &message, const ArgumentsConstraint &constraint);
 };
 
-Context Context::get_context(const Client *client, const std::string &message, const bool parse)
+Context Context::get_context(const Client *client, const std::string &message, const ArgumentsConstraint &constraint)
 {
     auto tokens = split(message);
 
     std::vector<std::string> args;
     std::map<std::string, std::vector<std::string>> kwargs;
 
-    if (parse)
+    if (constraint.require_context_parsing)
     {
         std::optional<std::string> current_parameter;
-        auto add_token = [&args, &kwargs, &current_parameter](const std::string &token)
+        auto add_token = [&constraint, &args, &kwargs, &current_parameter](const std::string &token)
         {
             if (current_parameter.has_value())
             {
                 // keyword argument
                 kwargs[*current_parameter].push_back(token);
+                if (constraint.arguments_checking && !constraint.has_argument(*current_parameter))
+                {
+                    throw std::invalid_argument(format("Unknown argument: %s", current_parameter->c_str()));
+                }
             }
             else
             {
@@ -219,5 +222,18 @@ Context Context::get_context(const Client *client, const std::string &message, c
         }
     }
 
-    return Context(message, tokens, args, kwargs, client, parse);
+    if (constraint.arguments_checking)
+    {
+        if (args.size() < constraint.args_bounds.first)
+        {
+            throw std::invalid_argument(format("Too few positional arguments: %d", args.size()));
+        }
+
+        if (args.size() > constraint.args_bounds.second)
+        {
+            throw std::invalid_argument(format("Too many positional arguments: %d", args.size()));
+        }
+    }
+
+    return Context(message, tokens, args, kwargs, client, constraint);
 }

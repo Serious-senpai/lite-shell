@@ -18,7 +18,8 @@ public:
               "Get all commands or get help for a specific command",
               __help_description,
               "help <command: optional>",
-              {}) {}
+              {},
+              ArgumentsConstraint(1, 2)) {}
 
     DWORD run(const Context &context)
     {
@@ -29,7 +30,7 @@ public:
                 std::cout << wrapper.command->name << " - " << wrapper.command->description << std::endl;
             }
         }
-        else if (context.args.size() > 1) // Get help for a specific command
+        else // Get help for a specific command
         {
             auto name = context.args[1];
             auto wrapper = context.client->get_command(name);

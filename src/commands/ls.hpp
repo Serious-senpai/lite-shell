@@ -15,7 +15,8 @@ public:
               "Display the content of a directory (default: the working directory)",
               "",
               "ls <dir: optional>",
-              {"dir"}) {}
+              {"dir"},
+              ArgumentsConstraint(1, 2)) {}
 
     DWORD run(const Context &context)
     {
@@ -23,10 +24,6 @@ public:
         if (context.args.size() == 2)
         {
             directory = context.args[1];
-        }
-        else if (context.args.size() > 2)
-        {
-            throw std::invalid_argument("Expected at most 1 argument only");
         }
 
         std::cout << "Exploring " << directory << std::endl;

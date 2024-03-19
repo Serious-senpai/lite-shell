@@ -13,7 +13,7 @@ public:
               "",
               "echo <message: optional>",
               {},
-              false) {}
+              ArgumentsConstraint()) {}
 
     DWORD run(const Context &context)
     {

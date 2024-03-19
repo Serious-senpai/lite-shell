@@ -15,7 +15,7 @@ public:
               "",
               "date",
               {},
-              false) {}
+              ArgumentsConstraint(1, 1)) {}
 
     DWORD run(const Context &context)
     {

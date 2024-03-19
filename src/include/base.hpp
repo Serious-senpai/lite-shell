@@ -1,5 +1,6 @@
 #pragma once
 
+#include "constraint.hpp"
 #include "context.hpp"
 #include "standard.hpp"
 
@@ -27,8 +28,8 @@ public:
     /* The list of aliases the command can be invoked under. */
     const std::vector<std::string> aliases;
 
-    /* Whether the command requires the context to be parsed. */
-    const bool require_context_parsing;
+    /* The arguments constraint for this command */
+    const ArgumentsConstraint constraint;
 
     BaseCommand(
         const std::string &name,
@@ -36,13 +37,13 @@ public:
         const std::string &long_description,
         const std::string &syntax,
         const std::initializer_list<std::string> &aliases,
-        const bool require_context_parsing = true)
+        const ArgumentsConstraint &constraint)
         : name(name),
           description(description),
           long_description(long_description),
           syntax(syntax),
           aliases(aliases),
-          require_context_parsing(require_context_parsing) {}
+          constraint(constraint) {}
 
     virtual ~BaseCommand() {}
 

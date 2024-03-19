@@ -21,19 +21,14 @@ public:
               "Get or set the working directory",
               __cd_description,
               "cd <target: optional>",
-              {})
-    {
-    }
+              {},
+              ArgumentsConstraint(1, 2)) {}
 
     DWORD run(const Context &context)
     {
         if (context.args.size() == 1)
         {
             std::cout << get_working_directory() << std::endl;
-        }
-        else if (context.args.size() > 2)
-        {
-            throw std::invalid_argument("Expected at most 1 argument");
         }
         else
         {

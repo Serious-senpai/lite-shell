@@ -18,7 +18,8 @@ public:
               "Describe the arguments that were passed in",
               __args_description,
               "args <...>",
-              {}) {}
+              {},
+              ArgumentsConstraint(false)) {}
 
     DWORD run(const Context &context)
     {

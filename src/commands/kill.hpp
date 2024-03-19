@@ -13,15 +13,11 @@ public:
               "Kill a subprocess",
               "",
               "kill <PID: required>",
-              {}) {}
+              {},
+              ArgumentsConstraint(2, 2)) {}
 
     DWORD run(const Context &context)
     {
-        if (context.args.size() != 2)
-        {
-            throw std::invalid_argument("Expected exactly 1 argument");
-        }
-
         DWORD pid = std::stoul(context.args[1]);
         for (auto &wrapper : context.client->get_subprocesses())
         {

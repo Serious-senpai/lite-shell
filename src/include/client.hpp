@@ -27,8 +27,6 @@ private:
 
     std::set<ProcessInfoWrapper> subprocesses;
 
-    std::vector<std::string> resolve_order;
-
     std::vector<CommandWrapper<BaseCommand>> wrappers;
     std::map<std::string, unsigned> commands;
 
@@ -54,6 +52,8 @@ private:
     }
 
 public:
+    std::vector<std::string> resolve_order;
+
     Client()
     {
         auto path = get_executable_path();
@@ -184,7 +184,7 @@ public:
         auto stripped_message = strip(message);
         try
         {
-            auto context = Context::get_context(this, stripped_message, false);
+            auto context = Context::get_context(this, stripped_message, ArgumentsConstraint());
 
             // Find an executable first
             auto executable = resolve(context.tokens[0]);
@@ -208,7 +208,8 @@ public:
             {
                 // Is a local command, throw if no match was found in get_command()
                 auto wrapper = get_command(context);
-                errorlevel = wrapper.run(wrapper.command->require_context_parsing ? context.parse() : context);
+                auto constraint = wrapper.command->constraint;
+                errorlevel = wrapper.run(constraint.require_context_parsing ? context.parse(constraint) : context);
             }
         }
         catch (std::exception &e)
