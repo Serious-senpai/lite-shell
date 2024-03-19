@@ -3,6 +3,7 @@
 #include "format.hpp"
 #include "standard.hpp"
 
+/* Represents the argument constraints for a command */
 class ArgumentsConstraint
 {
 private:
@@ -33,11 +34,30 @@ private:
     }
 
 public:
+    /* Whether this command require the context to be parsed */
     const bool require_context_parsing;
+
+    /*
+    Whether to perform arguments checking (check positional and named arguments) on command input. If `require_context_parsing`
+    is `false`, this attribute has no effect.
+    */
     const bool arguments_checking;
+
+    /*
+    The lower and upper bound of the number of positional arguments. If `require_context_parsing` or `arguments_checking` is
+    `false`, this attribute has no effect.
+    */
     const std::pair<unsigned, unsigned> args_bounds;
 
+    /* Construct an `ArgumentsConstraint` object with `require_context_parsing` set to `false` */
     ArgumentsConstraint() : ArgumentsConstraint(false, false, std::make_pair(0, 0)) {}
+
+    /*
+    Construct an `ArgumentsConstraint` object with `require_context_parsing` set to `true` and `arguments_checking` set to
+    `false`.
+
+    @param arguments_checking Must be `false`
+    */
     ArgumentsConstraint(const bool arguments_checking) : ArgumentsConstraint(true, arguments_checking, std::make_pair(0, 0))
     {
         if (arguments_checking)
@@ -45,19 +65,33 @@ public:
             throw std::invalid_argument("This overload does not allow arguments checking");
         }
     }
+
+    /*
+    Construct an `ArgumentsConstraint` object with `require_context_parsing` and `arguments_checking` set to `true`.
+
+    @param args_bounds The lower and upper bound of the number of positional arguments
+    */
     ArgumentsConstraint(const std::pair<unsigned, unsigned> &args_bounds) : ArgumentsConstraint(true, true, args_bounds) {}
+
+    /*
+    Construct an `ArgumentsConstraint` object with `require_context_parsing` and `arguments_checking` set to `true`.
+
+    @param args_lower The lower bound of the number of positional arguments
+    @param args_upper The upper bound of the number of positional arguments
+    */
     ArgumentsConstraint(const unsigned args_lower, const unsigned args_upper)
         : ArgumentsConstraint(true, true, std::make_pair(args_lower, args_upper)) {}
 
+    /* Throw an error if this constraint has `require_context_parsing` set to `false` */
     void check_context_parsing()
     {
         if (!require_context_parsing)
         {
-            throw std::invalid_argument("ArgumentsConstraint does not support context parsing");
+            throw std::invalid_argument("ArgumentsConstraint object does not support context parsing");
         }
     }
 
-    void add_argument(const std::string &__name, const std::string &__help)
+    ArgumentsConstraint *add_argument(const std::string &__name, const std::string &__help)
     {
         check_context_parsing();
         if (has_argument(__name))
@@ -67,10 +101,11 @@ public:
 
         names[__name] = help.size();
         help.push_back(__help);
+        return this;
     }
 
     template <typename... Args>
-    void add_argument(const Args &...aliases, const std::string &help)
+    ArgumentsConstraint *add_argument(const Args &...aliases, const std::string &help)
     {
         check_context_parsing();
         std::set<std::string> alias_group = {aliases...};
@@ -79,6 +114,8 @@ public:
         {
             add_argument(alias, help);
         }
+
+        return this;
     }
 
     bool has_argument(const std::string &name) const

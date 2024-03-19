@@ -6,20 +6,33 @@ import subprocess
 import time
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Tuple
+from typing import Any, Literal, Tuple, overload
 
 
 root_dir = Path(__file__).parent.parent
 build_dir = root_dir / "build"
 
 
-def execute_command(command: str, *, expected_exit_code: int = 0) -> Tuple[str, str]:
-    process = subprocess.Popen(
+@overload
+def open_shell(*, text: Literal[True]) -> subprocess.Popen[str]: ...
+@overload
+def open_shell(*, text: Literal[False]) -> subprocess.Popen[bytes]: ...
+
+
+def open_shell(*, text: bool) -> subprocess.Popen[Any]:
+    return subprocess.Popen(
         build_dir / "shell.exe",
+        bufsize=0,
+        cwd=root_dir,
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
+        text=text,
     )
+
+
+def execute_command(command: str, *, expected_exit_code: int = 0) -> Tuple[str, str]:
+    process = open_shell(text=False)
     stdout, stderr = process.communicate(f"{command}\nexit\n".encode("utf-8"))
     assert process.returncode == expected_exit_code
 
@@ -32,6 +45,10 @@ def execute_command(command: str, *, expected_exit_code: int = 0) -> Tuple[str, 
 def default_test(command: str) -> None:
     _, stderr = execute_command(command)
     assert stderr.strip() == ""
+
+
+def invalid_argument_test(command: str) -> None:
+    execute_command(command, expected_exit_code=901)  # src\include\constraint.hpp
 
 
 def assert_match(token: str, string: str) -> None:
@@ -51,7 +68,7 @@ def test_args() -> None:
     assert stderr.strip() == ""
 
 
-def test_cat() -> None:
+def test_cat_1() -> None:
     path = root_dir / "src" / "shell.cpp"
     with open(path, "r", encoding="utf-8") as file:
         data = file.read()
@@ -59,6 +76,13 @@ def test_cat() -> None:
     stdout, stderr = execute_command(f"cat {path}")
     assert_match(data, stdout)
     assert stderr.strip() == ""
+
+
+def test_cat_2() -> None:
+    invalid_argument_test("cat")
+    invalid_argument_test("cat -a")
+    invalid_argument_test("cat -a 2")
+    invalid_argument_test("cat foo bar")
 
 
 def test_date() -> None:
@@ -73,6 +97,13 @@ def test_date() -> None:
     assert_match(local_display, stdout)
 
     assert stderr.strip() == ""
+
+
+def test_date_2() -> None:
+    invalid_argument_test("date -a")
+    invalid_argument_test("date -a 2")
+    invalid_argument_test("date foo")
+    invalid_argument_test("date foo bar")
 
 
 def test_echo() -> None:
@@ -91,12 +122,24 @@ def test_exit() -> None:
     assert stderr.strip() == ""
 
 
+def test_exit_2() -> None:
+    invalid_argument_test("exit -a")
+    invalid_argument_test("exit -a 2")
+    invalid_argument_test("exit foo bar")
+
+
 def test_help() -> None:
     default_test("help")
     default_test("help help")
 
     _, stderr = execute_command("help halp", expected_exit_code=901)
     assert_match("Did you mean \"help\"?", stderr)
+
+
+def test_help_2() -> None:
+    invalid_argument_test("help -a")
+    invalid_argument_test("help -a 2")
+    invalid_argument_test("help foo bar")
 
 
 def test_sleep() -> None:
