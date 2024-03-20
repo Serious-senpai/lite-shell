@@ -122,4 +122,20 @@ public:
     {
         return names.count(name);
     }
+
+    std::string get_help(const std::string &name) const
+    {
+        auto iter = names.find(name);
+        if (iter == names.end())
+        {
+            throw std::invalid_argument(format("Argument %s does not exist", name.c_str()));
+        }
+
+        return help[iter->second];
+    }
+
+    std::set<std::set<std::string>> get_alias_groups() const
+    {
+        return alias_groups;
+    }
 };

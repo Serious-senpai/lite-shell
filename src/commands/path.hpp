@@ -13,7 +13,6 @@ public:
               "path",
               "View the current resolve paths",
               "",
-              "path",
               {},
               ArgumentsConstraint(1, 1)) {}
 

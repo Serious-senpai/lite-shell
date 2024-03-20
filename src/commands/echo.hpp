@@ -11,7 +11,6 @@ public:
               "echo",
               "Display a message",
               "",
-              "echo <message: optional>",
               {},
               ArgumentsConstraint()) {}
 

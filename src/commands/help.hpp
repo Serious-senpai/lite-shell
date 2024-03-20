@@ -17,7 +17,6 @@ public:
               "help",
               "Get all commands or get help for a specific command",
               __help_description,
-              "help <command: optional>",
               {},
               ArgumentsConstraint(1, 2)) {}
 
@@ -37,7 +36,7 @@ public:
             if (wrapper.has_value())
             {
                 std::cout << "Name: " << wrapper->command->name << std::endl;
-                std::cout << "Syntax: " << wrapper->command->syntax << std::endl;
+                std::cout << "Syntax: " << wrapper->command->syntax() << std::endl;
                 std::cout << "Description: " << wrapper->command->description << std::endl;
                 std::cout << wrapper->command->long_description << std::endl;
 

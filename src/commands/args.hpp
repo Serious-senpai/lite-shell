@@ -17,7 +17,6 @@ public:
               "args",
               "Describe the arguments that were passed in",
               __args_description,
-              "args <...>",
               {},
               ArgumentsConstraint(false)) {}
 

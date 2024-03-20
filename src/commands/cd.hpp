@@ -20,7 +20,6 @@ public:
               "cd",
               "Get or set the working directory",
               __cd_description,
-              "cd <target: optional>",
               {},
               ArgumentsConstraint(1, 2)) {}
 

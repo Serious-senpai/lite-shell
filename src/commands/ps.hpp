@@ -13,7 +13,6 @@ public:
               "ps",
               "Get all subprocesses of the current shell, regardless of their states",
               "",
-              "ps",
               {},
               ArgumentsConstraint(1, 1)) {}
 

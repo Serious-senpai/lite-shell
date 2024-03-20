@@ -22,9 +22,6 @@ public:
     /* A long description of the command that will be shown when running `>help <name>` */
     const std::string long_description;
 
-    /* The syntax of the command that will be shown when running `>help <name>` */
-    const std::string syntax;
-
     /* The list of aliases the command can be invoked under. */
     const std::vector<std::string> aliases;
 
@@ -35,13 +32,11 @@ public:
         const std::string &name,
         const std::string &description,
         const std::string &long_description,
-        const std::string &syntax,
         const std::initializer_list<std::string> &aliases,
         const ArgumentsConstraint &constraint)
         : name(name),
           description(description),
           long_description(long_description),
-          syntax(syntax),
           aliases(aliases),
           constraint(constraint) {}
 
@@ -54,4 +49,43 @@ public:
     @return The new errorlevel for the shell.
     */
     virtual DWORD run(const Context &context) = 0;
+
+    virtual std::string syntax() const final
+    {
+        std::string result = name + " ";
+        if (constraint.require_context_parsing && constraint.arguments_checking)
+        {
+            if (constraint.args_bounds.first == constraint.args_bounds.second)
+            {
+                result += format("<%d argument(s)>", constraint.args_bounds.first - 1);
+            }
+            else
+            {
+                result += format("<%d-%d argument(s)>", constraint.args_bounds.first - 1, constraint.args_bounds.second - 1);
+            }
+
+            for (auto &aliases : constraint.get_alias_groups())
+            {
+                result += " <";
+
+                if (aliases.empty())
+                {
+                    throw std::runtime_error("Alias group is unexpectedly empty");
+                }
+
+                std::vector<std::string> aliases_vector(aliases.begin(), aliases.end());
+                for (unsigned i = 0; i < aliases_vector.size() - 1; i++)
+                {
+                    result += aliases_vector[i] + "|";
+                }
+                result += aliases_vector.back() + "> <values...>";
+            }
+        }
+        else
+        {
+            result += "<...>";
+        }
+
+        return result;
+    }
 };

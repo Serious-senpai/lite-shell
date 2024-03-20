@@ -18,7 +18,6 @@ public:
               "cat",
               "Read a file",
               __cat_description,
-              "cat <file: required>",
               {"type"},
               ArgumentsConstraint(2, 2)) {}
 

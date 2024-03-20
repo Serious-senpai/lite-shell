@@ -12,7 +12,6 @@ public:
               "kill",
               "Kill a subprocess",
               "",
-              "kill <PID: required>",
               {},
               ArgumentsConstraint(2, 2)) {}
 

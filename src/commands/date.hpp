@@ -13,7 +13,6 @@ public:
               "date",
               "Retrieves the current system date and time",
               "",
-              "date",
               {},
               ArgumentsConstraint(1, 1)) {}
 

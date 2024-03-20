@@ -13,7 +13,6 @@ public:
               "mkdir",
               "Make a new directory",
               "",
-              "mkdir <name: required>",
               {"md"},
               ArgumentsConstraint(2, 2)) {}
 

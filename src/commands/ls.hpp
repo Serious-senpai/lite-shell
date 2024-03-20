@@ -14,7 +14,6 @@ public:
               "ls",
               "Display the content of a directory (default: the working directory)",
               "",
-              "ls <dir: optional>",
               {"dir"},
               ArgumentsConstraint(1, 2)) {}
 
