@@ -7,7 +7,7 @@
 /*
 Abstract base class for all local commands of the shell.
 
-All command must inherit this class.
+All built-in commands must inherit this class.
 */
 class BaseCommand
 {
