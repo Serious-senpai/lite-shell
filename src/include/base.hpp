@@ -11,7 +11,6 @@ All built-in commands must inherit this class.
 */
 class BaseCommand
 {
-private:
 public:
     /* The name of the command */
     const std::string name;
@@ -28,6 +27,7 @@ public:
     /* The arguments constraint for this command */
     const ArgumentsConstraint constraint;
 
+    /* Construct a new command and initialize attributes */
     BaseCommand(
         const std::string &name,
         const std::string &description,

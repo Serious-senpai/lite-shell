@@ -13,7 +13,7 @@ To execute the tests, simply invoke `pytest .` (or `pytest -v .` for more verbos
 ## Quickstart
 This section will guide you through adding a command to the application quickly. We will create a command `add` which calculates the sum of 2 numbers: `add 4 5` should print a value of `9`.
 
-Note that commands within the application always run in the main process. If you want to isolate the execution in a subprocess, create an external executable (with `int main(int argc, const char *argv[])`) in [src/external](/src/external) instead.
+Note that commands within the application always run in the main process. If you want to isolate the execution in a subprocess, create a standalone executable (with `int main(int argc, const char *argv[])`) in [src/external](/src/external) instead.
 
 First, navigate to [src/commands](/src/commands) and create a new file `add.hpp` (you can name this to whatever you want, but it should ends with `*.hpp`) then paste the following code:
 ```cpp
@@ -60,4 +60,4 @@ However, at this point, invoking `add 4 5` prints nothing to the screen! The rea
 ```
 The `context.args` attribute is a [vector](https://cplusplus.com/reference/vector/vector/) of 3 elements which contains the command positional arguments (e.g. `add`, `4` and `5`). Then, we use `std::stoll` to convert them to 2 `long long` values - `first` and `second`. Finally, we print `first + second` to stdout before returning `0` to indicate that the command succeeded.
 
-You can now build the shell again and test to see that the command worked as expected.
+You can now build the shell again and test to see that the command works as expected.
