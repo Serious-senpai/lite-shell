@@ -52,6 +52,9 @@ private:
     }
 
 public:
+    /*
+    @brief The path resolve order used by `.resolve()`
+    */
     std::vector<std::string> resolve_order;
 
     Client()
@@ -130,6 +133,11 @@ public:
         return this;
     }
 
+    /*
+    @brief Get the command prompt as a string
+
+    @return The command prompt as a string
+    */
     std::string get_prompt()
     {
         return format("liteshell(%d)~%s>", errorlevel, get_working_directory().c_str());
@@ -171,7 +179,7 @@ public:
     }
 
     /*
-    Process a command message.
+    @brief Process a command message.
 
     The process logic is as follows: If `message` points to an executable, it will be executed in a subprocess.
     Otherwise, the shell will attempt to find a command registered with `add_command()` and invoke it instead.
@@ -221,7 +229,7 @@ public:
     }
 
     /*
-    An error handler that process exceptions thrown during command execution.
+    @brief An error handler that process exceptions thrown during command execution.
 
     @param e The exception object that was thrown.
     */
@@ -248,7 +256,7 @@ public:
     }
 
     /*
-    Find an executable that `token` points to.
+    @brief Find an executable that `token` points to.
     The function will first look in the current working directory, then in the directories specified in `resolve_order`.
 
     @param token The token to resolve.
@@ -292,7 +300,7 @@ public:
     }
 
     /*
-    Spawn a subprocess and execute `command` in it.
+    @brief Spawn a subprocess and execute `command` in it.
 
     @param command The command to execute.
     @return A wrapper object containing information about the subprocess.
@@ -347,7 +355,7 @@ public:
     }
 
     /*
-    Get the shell current errorlevel
+    @brief Get the current errorlevel of the shell
 
     @return The current errorlevel
     */

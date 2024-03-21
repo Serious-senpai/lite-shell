@@ -34,11 +34,14 @@ private:
     }
 
 public:
-    /* Whether this command require the context to be parsed */
+    /*
+    @brief Whether this command require the context to be parsed. If this value if `false`, a context passed to the command callback
+    will have `.args` and `.kwargs` set to empty containers.
+    */
     const bool require_context_parsing;
 
     /*
-    Whether to perform arguments checking (check positional and named arguments) on command input. If `require_context_parsing`
+    @brief Whether to perform arguments checking (check positional and named arguments) on command input. If `require_context_parsing`
     is `false`, this attribute has no effect.
     */
     const bool arguments_checking;
@@ -49,11 +52,13 @@ public:
     */
     const std::pair<unsigned, unsigned> args_bounds;
 
-    /* Construct an `ArgumentsConstraint` object with `require_context_parsing` set to `false` */
+    /*
+    @brief Construct an `ArgumentsConstraint` object with `require_context_parsing` set to `false`.
+    */
     ArgumentsConstraint() : ArgumentsConstraint(false, false, std::make_pair(0, 0)) {}
 
     /*
-    Construct an `ArgumentsConstraint` object with `require_context_parsing` set to `true` and `arguments_checking` set to
+    @brief Construct an `ArgumentsConstraint` object with `require_context_parsing` set to `true` and `arguments_checking` set to
     `false`.
 
     @param arguments_checking Must be `false`
@@ -67,14 +72,14 @@ public:
     }
 
     /*
-    Construct an `ArgumentsConstraint` object with `require_context_parsing` and `arguments_checking` set to `true`.
+    @brief Construct an `ArgumentsConstraint` object with `require_context_parsing` and `arguments_checking` set to `true`.
 
     @param args_bounds The lower and upper bound of the number of positional arguments
     */
     ArgumentsConstraint(const std::pair<unsigned, unsigned> &args_bounds) : ArgumentsConstraint(true, true, args_bounds) {}
 
     /*
-    Construct an `ArgumentsConstraint` object with `require_context_parsing` and `arguments_checking` set to `true`.
+    @brief Construct an `ArgumentsConstraint` object with `require_context_parsing` and `arguments_checking` set to `true`.
 
     @param args_lower The lower bound of the number of positional arguments
     @param args_upper The upper bound of the number of positional arguments
@@ -91,6 +96,13 @@ public:
         }
     }
 
+    /*
+    @brief Register a named argument constraint
+
+    @param __name The name of the argument
+    @param __help The help message of the argument
+    @return A pointer to the current `ArgumentsConstraint` object
+    */
     ArgumentsConstraint *add_argument(const std::string &__name, const std::string &__help)
     {
         check_context_parsing();
@@ -118,6 +130,12 @@ public:
         return this;
     }
 
+    /*
+    @brief Whether the current constraint allows a specific named argument
+
+    @param name The argument name (e.g. "-v")
+    @return `true` if the argument is allowed, `false` otherwise
+    */
     bool has_argument(const std::string &name) const
     {
         return names.count(name);
