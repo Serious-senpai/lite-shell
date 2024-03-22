@@ -57,28 +57,57 @@ public:
         {
             if (constraint.args_bounds.first == constraint.args_bounds.second)
             {
-                result += format("<%d argument(s)>", constraint.args_bounds.first - 1);
+                result += format(
+                    "<%d %s>",
+                    constraint.args_bounds.first - 1,
+                    ngettext(constraint.args_bounds.second == 2, "argument", "arguments").c_str());
             }
             else
             {
-                result += format("<%d-%d argument(s)>", constraint.args_bounds.first - 1, constraint.args_bounds.second - 1);
+                result += format(
+                    "<%d-%d %s>",
+                    constraint.args_bounds.first - 1,
+                    constraint.args_bounds.second - 1,
+                    ngettext(constraint.args_bounds.second == 2, "argument", "arguments").c_str());
             }
 
             for (auto &aliases : constraint.get_alias_groups())
             {
-                result += " <";
-
                 if (aliases.empty())
                 {
                     throw std::runtime_error("Alias group is unexpectedly empty");
                 }
+
+                auto bounds = constraint.get_bounds(*aliases.begin());
+                auto brackets = bounds.first == 0 ? "[]" : "<>";
+                result += format(" %c", brackets[0]);
 
                 std::vector<std::string> aliases_vector(aliases.begin(), aliases.end());
                 for (unsigned i = 0; i < aliases_vector.size() - 1; i++)
                 {
                     result += aliases_vector[i] + "|";
                 }
-                result += aliases_vector.back() + "> <values...>";
+                result += aliases_vector.back();
+
+                if (bounds.first > 0)
+                {
+                    bounds.first--;
+                }
+
+                if (bounds.second == 1)
+                {
+                    // no-op
+                }
+                else if (bounds.first == bounds.second)
+                {
+                    result += format(" %d %s", bounds.first, ngettext(bounds.second == 2, "value", "values").c_str());
+                }
+                else
+                {
+                    result += format(" %d-%d %s", bounds.first, bounds.second - 1, ngettext(bounds.second == 2, "value", "values").c_str());
+                }
+
+                result += brackets[1];
             }
         }
         else

@@ -15,7 +15,6 @@ class is not created manually and is instead passed around to commands as the on
  */
 class Context
 {
-private:
 public:
     /* A suffix indicating that a command message should be run in a background */
     const char BACKGROUND_SUFFIX = '%';
@@ -206,6 +205,19 @@ Context Context::get_context(const Client *client, const std::string &message, c
             }
         };
 
+        auto is_math_expression = [](const std::string &token)
+        {
+            for (auto &c : token)
+            {
+                if (!(c == '+' || c == '-' || c == '*' || c == '/' || ('0' <= c && c <= '9')))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        };
+
         for (auto &token : tokens)
         {
             if (token[0] == '-')
@@ -213,6 +225,10 @@ Context Context::get_context(const Client *client, const std::string &message, c
                 if (token.size() == 1) // Token "-"
                 {
                     throw std::invalid_argument("Input pipe is not supported");
+                }
+                else if (is_math_expression(token)) // Treat it as a numeric value
+                {
+                    add_token(token);
                 }
                 else if (token[1] != '-') // Token of type "-abc", treat it as "-a", "-b", "-c"
                 {
@@ -247,12 +263,25 @@ Context Context::get_context(const Client *client, const std::string &message, c
     {
         if (args.size() < constraint.args_bounds.first)
         {
-            throw std::invalid_argument(format("Too few positional arguments: %d", args.size()));
+            throw std::invalid_argument(format("Too few positional arguments: %d < %d", args.size(), constraint.args_bounds.first));
         }
 
         if (args.size() > constraint.args_bounds.second)
         {
-            throw std::invalid_argument(format("Too many positional arguments: %d", args.size()));
+            throw std::invalid_argument(format("Too many positional arguments: %d > %d", args.size(), constraint.args_bounds.second));
+        }
+
+        for (auto &[name, values] : kwargs)
+        {
+            auto bounds = constraint.get_bounds(name);
+            if (values.size() < bounds.first)
+            {
+                throw std::invalid_argument(format("Too few values for argument %s: %d < %d", name.c_str(), values.size(), bounds.first));
+            }
+            if (values.size() > bounds.second)
+            {
+                throw std::invalid_argument(format("Too many values for argument %s: %d > %d", name.c_str(), values.size(), bounds.second));
+            }
         }
     }
 

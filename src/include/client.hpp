@@ -31,6 +31,8 @@ private:
     std::vector<CommandWrapper<BaseCommand>> wrappers;
     std::map<std::string, unsigned> commands;
 
+    Environment *environment = nullptr;
+
     CommandWrapper<BaseCommand> get_command(const std::string &name)
     {
         auto iter = commands.find(name);
@@ -53,11 +55,6 @@ private:
     }
 
 public:
-    /*
-    @brief A pointer to the environment of the shell
-    */
-    Environment *const environment;
-
     Client() : environment(new Environment())
     {
         auto path = get_executable_path();
@@ -68,6 +65,11 @@ public:
         }
 
         environment->set_variable("PATH", path.substr(0, size));
+    }
+
+    Environment *get_environment() const
+    {
+        return environment;
     }
 
     ~Client()
@@ -184,6 +186,59 @@ public:
         }
     }
 
+    std::string resolve_environment(const std::string &message)
+    {
+        std::string result, variable;
+        bool is_variable = false;
+
+        auto append_variable = [this, &result, &variable, &is_variable]()
+        {
+            result += this->environment->get_value(variable);
+            variable.clear();
+            is_variable = false;
+        };
+
+        for (unsigned i = 0; i < message.size(); i++)
+        {
+            if (message[i] == '$')
+            {
+                if (!variable.empty())
+                {
+                    append_variable();
+                }
+
+                is_variable = true;
+            }
+            else if ((('a' <= message[i] && message[i] <= 'z') || ('A' <= message[i] && message[i] <= 'Z') || message[i] == '_'))
+            {
+                if (is_variable)
+                {
+                    variable += message[i];
+                }
+                else
+                {
+                    result += message[i];
+                }
+            }
+            else
+            {
+                if (is_variable)
+                {
+                    append_variable();
+                }
+
+                result += message[i];
+            }
+        }
+
+        if (!variable.empty())
+        {
+            append_variable();
+        }
+
+        return result;
+    }
+
     /*
     @brief Process a command message.
 
@@ -195,7 +250,7 @@ public:
     */
     Client *process_command(const std::string &message)
     {
-        auto stripped_message = strip(message);
+        auto stripped_message = resolve_environment(strip(message));
         try
         {
             auto context = Context::get_context(this, stripped_message, ArgumentsConstraint());

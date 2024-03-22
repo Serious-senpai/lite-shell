@@ -119,58 +119,73 @@ def test_echo() -> None:
 
 
 def test_eval() -> None:
-    default_test("eval")
+    invalid_argument_test("eval")
 
 
 def test_eval_2() -> None:
-    default_test("eval ++2")
+    default_test("eval ++2 -m")
 
 
 def test_eval_3() -> None:
-    default_test("eval --2")
+    default_test("eval \"--2\" -m")
 
 
 def test_eval_4() -> None:
-    default_test("eval +-+-2")
+    default_test("eval +-+-2 -m")
 
 
 def test_eval_5() -> None:
     expression = "1949 + 18 * (38 - 91) / 6"
-    stdout, stderr = execute_command(f"eval {expression}")
+    stdout, stderr = execute_command(f"eval \"{expression}\" -m")
     assert_match(str(int(eval(expression))), stdout)
     assert stderr.strip() == ""
 
 
 def test_eval_7() -> None:
-    runtime_error_test("eval -a")
+    invalid_argument_test("eval -a")
 
 
 def test_eval_8() -> None:
-    runtime_error_test("eval a")
+    runtime_error_test("eval a -m")
 
 
 def test_eval_9() -> None:
-    runtime_error_test("eval 4 / 0")
+    runtime_error_test("eval \"4 / 0\" -m")
 
 
 def test_eval_10() -> None:
-    runtime_error_test("eval ((2 + 3) * 4")
+    runtime_error_test("eval \"((2 + 3) * 4\" -m")
 
 
 def test_eval_11() -> None:
-    runtime_error_test("eval 5 / (1 - 2) )")
+    runtime_error_test("eval \"5 / (1 - 2) )\" -m")
 
 
 def test_eval_12() -> None:
-    runtime_error_test("eval 2 +")
+    runtime_error_test("eval \"2 +\" -m")
 
 
 def test_eval_13() -> None:
-    runtime_error_test("eval * 2")
+    runtime_error_test("eval \"* 2\" -m")
 
 
 def test_eval_14() -> None:
-    runtime_error_test("eval 5 */ 3")
+    runtime_error_test("eval \"5 */ 3\" -m")
+
+
+def test_eval_15() -> None:
+    command = "eval Hello -s f\neval World! -s s\necho $f $s"
+    stdout, stderr = execute_command(command)
+    assert_match("Hello World!", stdout)
+    assert stderr.strip() == ""
+
+
+def test_eval_16() -> None:
+    command = "eval \"8*(10-6)   /4  -3\" -ms FiRsT\neval \"((6-9) *  7)*  4*3\" -ms sEcOnD\neval \"$FiRsT + $sEcOnD\" -m"
+    print(command)
+    stdout, stderr = execute_command(command)
+    assert_match("-247", stdout)
+    assert stderr.strip() == ""
 
 
 def test_exit() -> None:

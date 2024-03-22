@@ -200,3 +200,8 @@ _ForwardIterator fuzzy_search(_ForwardIterator first, _ForwardIterator last, con
 
     return result;
 }
+
+std::string ngettext(const bool predicate, const std::string &first, const std::string &second)
+{
+    return predicate ? first : second;
+}

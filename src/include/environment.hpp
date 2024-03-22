@@ -26,6 +26,11 @@ public:
         return iter->second;
     }
 
+    std::map<std::string, std::string> get_values() const
+    {
+        return variables;
+    }
+
     long long eval_ll(const std::string &expression) const
     {
         for (auto &c : expression)

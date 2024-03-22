@@ -2,26 +2,25 @@
 
 #include <base.hpp>
 #include <client.hpp>
-#include <standard.hpp>
 #include <tables.hpp>
 
-class PathCommand : public BaseCommand
+class EnvCommand : public BaseCommand
 {
 public:
-    PathCommand()
+    EnvCommand()
         : BaseCommand(
-              "path",
-              "View the current resolve paths",
+              "env",
+              "Display all environment variables",
               "",
               {},
               ArgumentsConstraint(1, 1)) {}
 
     DWORD run(const Context &context)
     {
-        Table displayer({"path"});
-        for (auto &directory : context.client->get_resolve_order())
+        Table displayer({"Name", "Value"});
+        for (auto &[name, value] : context.client->get_environment()->get_values())
         {
-            displayer.add_row({directory});
+            displayer.add_row({name, value});
         }
 
         std::cout << displayer.display() << std::endl;
