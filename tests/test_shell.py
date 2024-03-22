@@ -47,8 +47,12 @@ def default_test(command: str) -> None:
     assert stderr.strip() == ""
 
 
+def runtime_error_test(command: str) -> None:
+    execute_command(command, expected_exit_code=900)
+
+
 def invalid_argument_test(command: str) -> None:
-    execute_command(command, expected_exit_code=901)  # src\include\constraint.hpp
+    execute_command(command, expected_exit_code=901)
 
 
 def assert_match(token: str, string: str) -> None:
@@ -68,7 +72,7 @@ def test_args() -> None:
     assert stderr.strip() == ""
 
 
-def test_cat_1() -> None:
+def test_cat() -> None:
     path = root_dir / "src" / "shell.cpp"
     with open(path, "r", encoding="utf-8") as file:
         data = file.read()
@@ -112,6 +116,61 @@ def test_echo() -> None:
     stdout, stderr = execute_command(f"echo {test_string}")
     assert_match(test_string, stdout)
     assert stderr.strip() == ""
+
+
+def test_eval() -> None:
+    default_test("eval")
+
+
+def test_eval_2() -> None:
+    default_test("eval ++2")
+
+
+def test_eval_3() -> None:
+    default_test("eval --2")
+
+
+def test_eval_4() -> None:
+    default_test("eval +-+-2")
+
+
+def test_eval_5() -> None:
+    expression = "1949 + 18 * (38 - 91) / 6"
+    stdout, stderr = execute_command(f"eval {expression}")
+    assert_match(str(int(eval(expression))), stdout)
+    assert stderr.strip() == ""
+
+
+def test_eval_7() -> None:
+    runtime_error_test("eval -a")
+
+
+def test_eval_8() -> None:
+    runtime_error_test("eval a")
+
+
+def test_eval_9() -> None:
+    runtime_error_test("eval 4 / 0")
+
+
+def test_eval_10() -> None:
+    runtime_error_test("eval ((2 + 3) * 4")
+
+
+def test_eval_11() -> None:
+    runtime_error_test("eval 5 / (1 - 2) )")
+
+
+def test_eval_12() -> None:
+    runtime_error_test("eval 2 +")
+
+
+def test_eval_13() -> None:
+    runtime_error_test("eval * 2")
+
+
+def test_eval_14() -> None:
+    runtime_error_test("eval 5 */ 3")
 
 
 def test_exit() -> None:

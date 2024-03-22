@@ -12,7 +12,7 @@ public:
               "Evaluate an expression",
               "",
               {},
-              ArgumentsConstraint(false)) {}
+              ArgumentsConstraint()) {}
 
     DWORD run(const Context &context)
     {

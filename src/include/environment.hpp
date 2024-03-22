@@ -116,6 +116,11 @@ public:
                     st.push(l * r);
                     break;
                 case '/':
+                    if (r == 0)
+                    {
+                        throw std::runtime_error("Invalid expression - division by zero");
+                    }
+
                     st.push(l / r);
                     break;
                 }
@@ -180,6 +185,7 @@ public:
             process_op(op.top());
             op.pop();
         }
-        return st.top();
+
+        return st.empty() ? 0 : st.top();
     }
 };
