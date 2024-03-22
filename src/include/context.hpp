@@ -136,6 +136,27 @@ public:
         return copy();
     }
 
+    std::string get_arguments_string() const
+    {
+        std::string result;
+        bool ok = false;
+        for (auto &c : message)
+        {
+            if (!ok && c == ' ')
+            {
+                ok = true;
+                continue;
+            }
+
+            if (ok)
+            {
+                result += c;
+            }
+        }
+
+        return result;
+    }
+
     /*
     Determine whether this context is requesting to run in a background process.
 

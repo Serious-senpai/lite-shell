@@ -7,6 +7,7 @@
 #include "commands/cd.hpp"
 #include "commands/date.hpp"
 #include "commands/echo.hpp"
+#include "commands/eval.hpp"
 #include "commands/exit.hpp"
 #include "commands/help.hpp"
 #include "commands/kill.hpp"
@@ -22,6 +23,7 @@ void initialize(Client *client)
         ->add_command(std::make_shared<CdCommand>())
         ->add_command(std::make_shared<DateCommand>())
         ->add_command(std::make_shared<EchoCommand>())
+        ->add_command(std::make_shared<EvalCommand>())
         ->add_command(std::make_shared<ExitCommand>())
         ->add_command(std::make_shared<HelpCommand>())
         ->add_command(std::make_shared<KillCommand>())

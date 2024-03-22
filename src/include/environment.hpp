@@ -5,6 +5,8 @@
 class Environment
 {
 private:
+    const std::string allowed_symbols = "0123456789+-*/ ()";
+
     std::map<std::string, std::string> variables;
 
 public:
@@ -24,8 +26,16 @@ public:
         return iter->second;
     }
 
-    long long eval_ll(const std::string &expression)
+    long long eval_ll(const std::string &expression) const
     {
+        for (auto &c : expression)
+        {
+            if (allowed_symbols.find(c) == std::string::npos)
+            {
+                throw std::runtime_error(format("Unregognized symbol: %c", c));
+            }
+        }
+
         // https://cp-algorithms.com/string/expression_parsing.html
 
         std::stack<long long> st;
@@ -61,6 +71,11 @@ public:
         {
             if (op < 0)
             {
+                if (st.empty())
+                {
+                    throw std::runtime_error("Invalid expression at unary operator");
+                }
+
                 long long l = st.top();
                 st.pop();
                 switch (-op)
@@ -75,10 +90,20 @@ public:
             }
             else
             {
+                if (st.empty())
+                {
+                    throw std::runtime_error("Invalid expression at binary operator");
+                }
                 long long r = st.top();
                 st.pop();
+
+                if (st.empty())
+                {
+                    throw std::runtime_error("Invalid expression at binary operator");
+                }
                 long long l = st.top();
                 st.pop();
+
                 switch (op)
                 {
                 case '+':
@@ -114,7 +139,13 @@ public:
                 {
                     process_op(op.top());
                     op.pop();
+
+                    if (op.empty())
+                    {
+                        throw std::runtime_error("Invalid expression - missing bracket");
+                    }
                 }
+
                 op.pop();
                 may_be_unary = false;
             }
@@ -142,7 +173,7 @@ public:
                 st.push(number);
                 may_be_unary = false;
             }
-        };
+        }
 
         while (!op.empty())
         {

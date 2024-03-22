@@ -16,23 +16,7 @@ public:
 
     DWORD run(const Context &context)
     {
-        std::string filtered;
-        bool ok = false;
-        for (auto &c : context.message)
-        {
-            if (!ok && c == ' ')
-            {
-                ok = true;
-                continue;
-            }
-
-            if (ok)
-            {
-                filtered += c;
-            }
-        }
-
-        std::cout << filtered << std::endl;
+        std::cout << context.get_arguments_string() << std::endl;
         return 0;
     }
 };
