@@ -19,7 +19,7 @@ public:
     DWORD run(const Context &context)
     {
         Table displayer({"path"});
-        for (auto &directory : context.client->resolve_order)
+        for (auto &directory : context.client->get_resolve_order())
         {
             displayer.add_row({directory});
         }

@@ -2,6 +2,7 @@
 
 #include "base.hpp"
 #include "context.hpp"
+#include "environment.hpp"
 #include "error.hpp"
 #include "format.hpp"
 #include "standard.hpp"
@@ -53,11 +54,11 @@ private:
 
 public:
     /*
-    @brief The path resolve order used by `.resolve()`
+    @brief A pointer to the environment of the shell
     */
-    std::vector<std::string> resolve_order;
+    Environment *const environment;
 
-    Client()
+    Client() : environment(new Environment())
     {
         auto path = get_executable_path();
         auto size = path.size();
@@ -66,7 +67,12 @@ public:
             size--;
         }
 
-        resolve_order.push_back(path.substr(0, size));
+        environment->set_variable("PATH", path.substr(0, size));
+    }
+
+    ~Client()
+    {
+        delete environment;
     }
 
     /*
@@ -255,6 +261,31 @@ public:
 #undef ERROR_CODE
     }
 
+    std::vector<std::string> get_resolve_order() const
+    {
+        std::vector<std::string> result;
+        std::string current;
+        for (auto c : environment->get_value("PATH"))
+        {
+            if (c == ';')
+            {
+                result.emplace_back(current);
+                current.clear();
+            }
+            else
+            {
+                current += c;
+            }
+        }
+
+        if (!current.empty())
+        {
+            result.push_back(current);
+        }
+
+        return result;
+    }
+
     /*
     @brief Find an executable that `token` points to.
     The function will first look in the current working directory, then in the directories specified in `resolve_order`.
@@ -287,7 +318,7 @@ public:
             return *result;
         }
 
-        for (const auto &directory : resolve_order)
+        for (const auto &directory : get_resolve_order())
         {
             result = find_executable(directory);
             if (result.has_value())

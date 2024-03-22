@@ -10,6 +10,7 @@
 #include <memory>
 #include <optional>
 #include <set>
+#include <stack>
 #include <stdexcept>
 #include <string>
 #include <vector>
