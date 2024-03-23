@@ -45,26 +45,10 @@ void set_ignore_ctrl_c(bool ignore)
     }
 }
 
-std::string join(const std::vector<std::string> &tokens)
-{
-    std::string result;
-    if (!tokens.empty())
-    {
-        for (unsigned i = 0; i < tokens.size() - 1; i++)
-        {
-            result += tokens[i];
-            result += ' ';
-        }
-        result += tokens.back();
-    }
-
-    return result;
-}
-
 std::string strip(const std::string &original)
 {
     std::deque<char> result(original.begin(), original.end());
-    while (!result.empty() && result.front() == ' ')
+    while (!result.empty() && (result.front() == ' ' || result.front() == '\n' || result.front() == '\r'))
     {
         result.pop_front();
     }
@@ -95,6 +79,18 @@ std::vector<std::string> split(const std::string &original)
     }
 
     return args;
+}
+
+std::vector<std::string> split(const std::string &original, const char delimiter)
+{
+    std::vector<std::string> result;
+    std::istringstream stream(original);
+    std::string token;
+    while (std::getline(stream, token, delimiter))
+    {
+        result.push_back(token);
+    }
+    return result;
 }
 
 std::string join(std::string first, std::string second)
@@ -241,4 +237,9 @@ _ForwardIterator fuzzy_search(_ForwardIterator first, _ForwardIterator last, con
 std::string ngettext(const bool predicate, const std::string &first, const std::string &second)
 {
     return predicate ? first : second;
+}
+
+bool is_math_symbol(char c)
+{
+    return c == '+' || c == '-' || c == '*' || c == '/' || c == ' ' || c == '%' || ('0' <= c && c <= '9') || c == '(' || c == ')';
 }

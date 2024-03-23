@@ -6,11 +6,13 @@
 #include "error.hpp"
 #include "format.hpp"
 #include "standard.hpp"
+#include "stream.hpp"
 #include "subprocess.hpp"
 #include "utils.hpp"
 #include "wrapper.hpp"
 
 #define BATCH_EXT ".firefly"
+#define BUFFER_SIZE 4096
 
 /*
 Represents a command shell client. The application should hold only one instance of this class.
@@ -22,8 +24,6 @@ class Client
 {
 private:
     const std::vector<std::string> extensions = {".exe", BATCH_EXT};
-
-    std::ifstream *stream_ptr = nullptr;
 
     DWORD errorlevel = 0;
 
@@ -56,6 +56,8 @@ private:
     }
 
 public:
+    InputStream stream;
+
     Client() : environment(new Environment())
     {
         auto path = get_executable_path();
@@ -76,10 +78,6 @@ public:
     ~Client()
     {
         delete environment;
-        if (stream_ptr != nullptr)
-        {
-            delete stream_ptr;
-        }
     }
 
     /*
@@ -146,58 +144,18 @@ public:
         return this;
     }
 
-    /*
-    @brief Get the command prompt as a string
-
-    @return The command prompt as a string
-    */
-    std::string get_prompt()
-    {
-        return format("liteshell~%s>", get_working_directory().c_str());
-    }
-
-    std::string getline()
-    {
-        std::string input;
-
-        while (true)
-        {
-            if (stream_ptr == nullptr)
-            {
-                std::getline(std::cin, input);
-
-                if (std::cin.fail() || std::cin.eof() || input.empty())
-                {
-                    std::cin.clear();
-                    continue;
-                }
-            }
-            else
-            {
-                std::getline(*stream_ptr, input);
-                if (stream_ptr->fail() || stream_ptr->eof()) // allow empty lines from file stream
-                {
-                    delete stream_ptr;
-                    stream_ptr = nullptr;
-                    continue;
-                }
-            }
-
-            std::cout << input << std::endl;
-            return input;
-        }
-    }
-
     void run_forever()
     {
         set_ignore_ctrl_c(true);
         while (true)
         {
-            std::cout << "\n"
-                      << get_prompt();
-            std::cout.flush();
+            if (stream.peek_echo())
+            {
+                std::cout << format("\nliteshell~%s>", get_working_directory().c_str());
+                std::cout.flush();
+            }
 
-            process_command(getline());
+            process_command(stream.getline());
         }
     }
 
@@ -475,12 +433,23 @@ public:
 
     Client *process_batch_file(const std::string &path)
     {
-        if (stream_ptr != nullptr)
+        std::ifstream fstream(path);
+        std::vector<std::string> lines;
+        while (!fstream.eof())
         {
-            throw std::runtime_error(format("Cannot open %s: only one script can be run at a time", path.c_str()));
+            std::string line;
+            std::getline(fstream, line);
+            lines.push_back(line);
         }
 
-        stream_ptr = new std::ifstream(path);
+        lines.push_back("@ON"); // turn echo back to ON at the end of file
+
+        std::reverse(lines.begin(), lines.end());
+        for (const auto &line : lines)
+        {
+            stream.write_front(line);
+        }
+
         return this;
     }
 

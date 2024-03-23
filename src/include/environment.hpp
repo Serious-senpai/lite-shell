@@ -5,8 +5,6 @@
 class Environment
 {
 private:
-    const std::string allowed_symbols = "0123456789+-*/ ()";
-
     std::map<std::string, std::string> variables;
 
 public:
@@ -35,9 +33,9 @@ public:
     {
         for (auto &c : expression)
         {
-            if (allowed_symbols.find(c) == std::string::npos)
+            if (!is_math_symbol(c))
             {
-                throw std::runtime_error(format("Unregognized symbol: %c", c));
+                throw std::runtime_error(format("Unrecognized symbol: %c", c));
             }
         }
 
@@ -53,7 +51,7 @@ public:
 
         auto is_op = [](char c)
         {
-            return c == '+' || c == '-' || c == '*' || c == '/';
+            return c == '+' || c == '-' || c == '*' || c == '/' || c == '%';
         };
 
         auto is_unary = [](char c)
@@ -67,7 +65,7 @@ public:
                 return 3;
             if (op == '+' || op == '-')
                 return 1;
-            if (op == '*' || op == '/')
+            if (op == '*' || op == '/' || op == '%')
                 return 2;
             return -1;
         };
@@ -128,6 +126,16 @@ public:
 
                     st.push(l / r);
                     break;
+                case '%':
+                    if (r == 0)
+                    {
+                        throw std::runtime_error("Invalid expression - division by zero");
+                    }
+
+                    st.push(l % r);
+                    break;
+                default:
+                    throw std::runtime_error(format("Invalid expression - unknown operator %c", op));
                 }
             }
         };

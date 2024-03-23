@@ -9,9 +9,6 @@ const char __cat_description[] = "Displays the contents of a text file";
 
 class CatCommand : public BaseCommand
 {
-private:
-    const DWORD BUFFER_SIZE = 2048;
-
 public:
     CatCommand()
         : BaseCommand(

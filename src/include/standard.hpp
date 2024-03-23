@@ -11,6 +11,7 @@
 #include <memory>
 #include <optional>
 #include <set>
+#include <sstream>
 #include <stack>
 #include <stdexcept>
 #include <string>

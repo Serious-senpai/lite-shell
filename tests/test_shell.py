@@ -256,3 +256,13 @@ def test_script_2() -> None:
         assert_match(f"2 * {i} = {2 * i}", stdout)
 
     assert stderr.strip() == ""
+
+
+def test_script_3() -> None:
+    stdout, stderr = execute_command("tests/shell-script-3")
+    assert_match("Starting test", stdout)
+
+    for i in range(1000, 2001, 2):
+        assert_match(f"{i} is even", stdout)
+
+    assert stderr.strip() == ""

@@ -9,8 +9,8 @@ public:
     ForCommand()
         : BaseCommand(
               "for",
-              "Iterate the loop variable over a specified integer range",
-              "",
+              "Iterate the loop variable over a specified integer range.",
+              "To end the loop section, type \"endfor\"",
               {},
               ArgumentsConstraint(3, 4)) {}
 
@@ -27,10 +27,13 @@ public:
         std::vector<std::string> lines;
         while (true)
         {
-            std::cout << "for>";
-            std::cout.flush();
+            if (context.client->stream.echo)
+            {
+                std::cout << "for>";
+                std::cout.flush();
+            }
 
-            auto input = strip(context.client->getline());
+            auto input = strip(context.client->stream.getline());
             if (input == "endfor")
             {
                 break;
@@ -39,13 +42,16 @@ public:
             lines.push_back(input);
         }
 
-        for (auto value = start; value <= end; value++)
+        std::reverse(lines.begin(), lines.end());
+
+        for (auto value = end; value >= start; value--)
         {
-            context.client->get_environment()->set_variable(loop_var, std::to_string(value));
             for (const auto &line : lines)
             {
-                context.client->process_command(line);
+                context.client->stream.write_front(line);
             }
+
+            context.client->stream.write_front(format("eval %lld -s %s", value, loop_var.c_str()));
         }
 
         return 0;
