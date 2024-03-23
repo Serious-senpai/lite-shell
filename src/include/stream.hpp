@@ -36,7 +36,7 @@ public:
 
         if (peek() == "@OFF")
         {
-            return true;
+            return false;
         }
 
         return echo;
@@ -52,9 +52,9 @@ public:
         return queue.front();
     }
 
-    std::string getline()
+    std::string getline(bool force_stdin = false)
     {
-        if (queue.empty())
+        if (force_stdin || queue.empty())
         {
             while (true)
             {

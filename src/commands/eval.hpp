@@ -31,7 +31,7 @@ public:
             std::cout << input;
             std::cout.flush();
 
-            input = context.client->stream.getline();
+            input = context.client->stream.getline(true);
         }
 
         auto result = context.kwargs.count("-m") ? std::to_string(context.client->get_environment()->eval_ll(input)) : input;
