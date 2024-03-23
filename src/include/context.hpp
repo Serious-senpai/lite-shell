@@ -46,7 +46,7 @@ public:
     const std::map<std::string, std::vector<std::string>> kwargs;
 
     /* A pointer to the client that contains the command being executed. */
-    const Client *client;
+    Client *const client;
 
     /* The arguments constraint of this context object */
     const ArgumentsConstraint constraint;
@@ -56,7 +56,7 @@ public:
         const std::vector<std::string> &tokens,
         const std::vector<std::string> &args,
         const std::map<std::string, std::vector<std::string>> &kwargs,
-        const Client *client,
+        Client *const client,
         const ArgumentsConstraint &constraint)
         : message(message),
           tokens(tokens),
@@ -174,10 +174,10 @@ public:
     @param constraint The constraint to parse the context with
     @return A new context object
     */
-    static Context get_context(const Client *client, const std::string &message, const ArgumentsConstraint &constraint);
+    static Context get_context(Client *const client, const std::string &message, const ArgumentsConstraint &constraint);
 };
 
-Context Context::get_context(const Client *client, const std::string &message, const ArgumentsConstraint &constraint)
+Context Context::get_context(Client *const client, const std::string &message, const ArgumentsConstraint &constraint)
 {
     auto tokens = split(message);
 

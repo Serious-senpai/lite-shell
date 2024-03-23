@@ -12,11 +12,6 @@
 
 #define BATCH_EXT ".firefly"
 
-BOOL WINAPI ctrl_handler(DWORD ctrl_type)
-{
-    return ctrl_type == CTRL_C_EVENT;
-}
-
 /*
 Represents a command shell client. The application should hold only one instance of this class.
 
@@ -27,6 +22,8 @@ class Client
 {
 private:
     const std::vector<std::string> extensions = {".exe", BATCH_EXT};
+
+    std::ifstream *stream_ptr = nullptr;
 
     DWORD errorlevel = 0;
 
@@ -79,6 +76,10 @@ public:
     ~Client()
     {
         delete environment;
+        if (stream_ptr != nullptr)
+        {
+            delete stream_ptr;
+        }
     }
 
     /*
@@ -98,7 +99,7 @@ public:
     @param name The name of the command to get.
     @return The command that was requested. If not found, returns an empty optional.
     */
-    const std::optional<CommandWrapper<BaseCommand>> get_command(const std::string &name) const
+    const std::optional<CommandWrapper<BaseCommand>> get_optional_command(const std::string &name) const
     {
         auto iter = commands.find(name);
         if (iter == commands.end())
@@ -152,14 +153,38 @@ public:
     */
     std::string get_prompt()
     {
-        return format("liteshell(%d)~%s>", errorlevel, get_working_directory().c_str());
+        return format("liteshell~%s>", get_working_directory().c_str());
     }
 
-    void set_ignore_ctrl_c(bool ignore)
+    std::string getline()
     {
-        if (!SetConsoleCtrlHandler(ctrl_handler, ignore))
+        std::string input;
+
+        while (true)
         {
-            std::cerr << format_last_error("Warning: SetConsoleCtrlHandler ERROR") << std::endl;
+            if (stream_ptr == nullptr)
+            {
+                std::getline(std::cin, input);
+
+                if (std::cin.fail() || std::cin.eof() || input.empty())
+                {
+                    std::cin.clear();
+                    continue;
+                }
+            }
+            else
+            {
+                std::getline(*stream_ptr, input);
+                if (stream_ptr->fail() || stream_ptr->eof()) // allow empty lines from file stream
+                {
+                    delete stream_ptr;
+                    stream_ptr = nullptr;
+                    continue;
+                }
+            }
+
+            std::cout << input << std::endl;
+            return input;
         }
     }
 
@@ -172,21 +197,7 @@ public:
                       << get_prompt();
             std::cout.flush();
 
-            std::string input;
-            std::getline(std::cin, input);
-
-            if (std::cin.fail() || std::cin.eof())
-            {
-                std::cin.clear();
-                continue;
-            }
-
-            if (input.empty())
-            {
-                continue;
-            }
-
-            process_command(input);
+            process_command(getline());
         }
     }
 
@@ -381,7 +392,6 @@ public:
                 {
                     if (endswith(filename, extension))
                     {
-                        std::cout << "Resolved to " << join(directory, token + extension) << std::endl;
                         return join(directory, token + extension);
                     }
                 }
@@ -465,14 +475,12 @@ public:
 
     Client *process_batch_file(const std::string &path)
     {
-        std::ifstream stream(path);
-
-        std::string line;
-        while (!std::getline(stream, line).eof())
+        if (stream_ptr != nullptr)
         {
-            process_command(line);
+            throw std::runtime_error(format("Cannot open %s: only one script can be run at a time", path.c_str()));
         }
 
+        stream_ptr = new std::ifstream(path);
         return this;
     }
 

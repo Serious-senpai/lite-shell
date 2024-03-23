@@ -32,6 +32,19 @@ std::string get_executable_path()
     return utf_convert(std::wstring(buffer, buffer + size));
 }
 
+BOOL WINAPI ctrl_handler(DWORD ctrl_type)
+{
+    return ctrl_type == CTRL_C_EVENT;
+}
+
+void set_ignore_ctrl_c(bool ignore)
+{
+    if (!SetConsoleCtrlHandler(ctrl_handler, ignore))
+    {
+        std::cerr << format_last_error("Warning: SetConsoleCtrlHandler ERROR") << std::endl;
+    }
+}
+
 std::string join(const std::vector<std::string> &tokens)
 {
     std::string result;

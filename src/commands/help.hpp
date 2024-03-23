@@ -32,7 +32,7 @@ public:
         else // Get help for a specific command
         {
             auto name = context.args[1];
-            auto wrapper = context.client->get_command(name);
+            auto wrapper = context.client->get_optional_command(name);
             if (wrapper.has_value())
             {
                 std::cout << "Name: " << wrapper->command->name << std::endl;

@@ -10,6 +10,7 @@
 #include "commands/env.hpp"
 #include "commands/eval.hpp"
 #include "commands/exit.hpp"
+#include "commands/for.hpp"
 #include "commands/help.hpp"
 #include "commands/kill.hpp"
 #include "commands/ls.hpp"
@@ -26,6 +27,7 @@ void initialize(Client *client)
         ->add_command(std::make_shared<EnvCommand>())
         ->add_command(std::make_shared<EvalCommand>())
         ->add_command(std::make_shared<ExitCommand>())
+        ->add_command(std::make_shared<ForCommand>())
         ->add_command(std::make_shared<HelpCommand>())
         ->add_command(std::make_shared<KillCommand>())
         ->add_command(std::make_shared<LsCommand>())

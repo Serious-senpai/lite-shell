@@ -241,8 +241,18 @@ def test_sleep() -> None:
     assert end - start > 1.0
 
 
-def test_script() -> None:
+def test_script_1() -> None:
     stdout, stderr = execute_command("tests/shell-script-1")
     assert_match("Starting test", stdout)
     assert_match("6969", stdout)
+    assert stderr.strip() == ""
+
+
+def test_script_2() -> None:
+    stdout, stderr = execute_command("tests/shell-script-2")
+    assert_match("Starting test", stdout)
+
+    for i in range(5, 11):
+        assert_match(f"2 * {i} = {2 * i}", stdout)
+
     assert stderr.strip() == ""
