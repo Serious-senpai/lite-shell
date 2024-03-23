@@ -202,12 +202,25 @@ public:
         {
             if (message[i] == '$')
             {
-                if (!variable.empty())
+                if (i > 0 && message[i - 1] == '$') // Escape character $$ -> $
                 {
-                    append_variable();
-                }
+                    if (!variable.empty())
+                    {
+                        throw std::runtime_error(format("Unexpected error when resolving environment variable %s", variable.c_str()));
+                    }
 
-                is_variable = true;
+                    result += '$';
+                    is_variable = false;
+                }
+                else
+                {
+                    if (!variable.empty())
+                    {
+                        append_variable();
+                    }
+
+                    is_variable = true;
+                }
             }
             else if ((('a' <= message[i] && message[i] <= 'z') || ('A' <= message[i] && message[i] <= 'Z') || message[i] == '_'))
             {

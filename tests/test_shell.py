@@ -63,6 +63,12 @@ def assert_match(token: str, string: str) -> None:
     assert re.search(pattern, string) is not None
 
 
+def test_escape() -> None:
+    stdout, stderr = execute_command("echo $$Hello World$$")
+    assert_match("$Hello World$", stdout)
+    assert stderr.strip() == ""
+
+
 def test_args() -> None:
     stdout, stderr = execute_command("args hello world -abc test --b-c 1")
     assert_match("-a", stdout)
