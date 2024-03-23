@@ -10,6 +10,8 @@
 #include "utils.hpp"
 #include "wrapper.hpp"
 
+#define BATCH_EXT ".firefly"
+
 BOOL WINAPI ctrl_handler(DWORD ctrl_type)
 {
     return ctrl_type == CTRL_C_EVENT;
@@ -24,6 +26,8 @@ to run the shell indefinitely.
 class Client
 {
 private:
+    const std::vector<std::string> extensions = {".exe", BATCH_EXT};
+
     DWORD errorlevel = 0;
 
     std::set<ProcessInfoWrapper> subprocesses;
@@ -270,25 +274,30 @@ public:
 
             // Find an executable first
             auto executable = resolve(context.tokens[0]);
-            if (executable.has_value())
+            if (executable.has_value()) // Is an executable or batch file
             {
-                // Is an executable
-                auto final_context = context.replace_call(*executable);
-
-                auto subprocess = spawn_subprocess(final_context);
-                if (final_context.is_background_request())
+                if (endswith(*executable, ".exe"))
                 {
-                    errorlevel = 0;
+                    auto final_context = context.replace_call(*executable);
+
+                    auto subprocess = spawn_subprocess(final_context);
+                    if (final_context.is_background_request())
+                    {
+                        errorlevel = 0;
+                    }
+                    else
+                    {
+                        WaitForSingleObject(subprocess.info.hProcess, INFINITE);
+                        GetExitCodeProcess(subprocess.info.hProcess, &errorlevel);
+                    }
                 }
                 else
                 {
-                    WaitForSingleObject(subprocess.info.hProcess, INFINITE);
-                    GetExitCodeProcess(subprocess.info.hProcess, &errorlevel);
+                    process_batch_file(*executable);
                 }
             }
-            else
+            else // Is a local command, throw if no match was found in get_command()
             {
-                // Is a local command, throw if no match was found in get_command()
                 auto wrapper = get_command(context);
                 auto constraint = wrapper.command->constraint;
                 errorlevel = wrapper.run(constraint.require_context_parsing ? context.parse(constraint) : context);
@@ -358,23 +367,24 @@ public:
     @brief Find an executable that `token` points to.
     The function will first look in the current working directory, then in the directories specified in `resolve_order`.
 
-    @param token The token to resolve.
+    @param token The token to resolve. This token may contain path separators.
     @return The path to the executable if found, `std::nullopt` otherwise.
     */
     std::optional<std::string> resolve(const std::string &token)
     {
-        auto find_executable = [&token](const std::string &directory) -> std::optional<std::string>
+        auto find_executable = [this, &token](const std::string &directory) -> std::optional<std::string>
         {
-            auto name = join(directory, token);
-            if (is_executable(utf_convert(name).c_str()))
+            for (const auto &file : explore_directory(directory, token + "*"))
             {
-                return name;
-            }
-
-            name += ".exe";
-            if (is_executable(utf_convert(name).c_str()))
-            {
-                return name;
+                auto filename = utf_convert(std::wstring(file.cFileName));
+                for (auto &extension : extensions)
+                {
+                    if (endswith(filename, extension))
+                    {
+                        std::cout << "Resolved to " << join(directory, token + extension) << std::endl;
+                        return join(directory, token + extension);
+                    }
+                }
             }
 
             return std::nullopt;
@@ -451,6 +461,19 @@ public:
             wrapper.close();
             throw SubprocessCreationError(format_last_error(format("Unable to create subprocess: %s", final_context.message.c_str())));
         }
+    }
+
+    Client *process_batch_file(const std::string &path)
+    {
+        std::ifstream stream(path);
+
+        std::string line;
+        while (!std::getline(stream, line).eof())
+        {
+            process_command(line);
+        }
+
+        return this;
     }
 
     /*

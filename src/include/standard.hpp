@@ -3,6 +3,7 @@
 #include <cassert>
 #include <codecvt>
 #include <deque>
+#include <fstream>
 #include <functional>
 #include <iostream>
 #include <locale>

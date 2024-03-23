@@ -84,40 +84,6 @@ std::vector<std::string> split(const std::string &original)
     return args;
 }
 
-std::vector<WIN32_FIND_DATAW> explore_directory(const std::string &__directory, const std::string &__suffix = "\\*")
-{
-    auto directory = __directory + __suffix;
-    std::cout << "Exploring " << directory << std::endl;
-    std::vector<WIN32_FIND_DATAW> results(1);
-
-    HANDLE h_file = FindFirstFileW(utf_convert(directory).c_str(), &results[0]);
-    if (h_file == INVALID_HANDLE_VALUE)
-    {
-        throw std::runtime_error(format_last_error("Error when listing directory"));
-    }
-
-    do
-    {
-        results.emplace_back();
-    } while (FindNextFileW(h_file, &results.back()));
-
-    results.pop_back();
-
-    if (!FindClose(h_file))
-    {
-        throw std::runtime_error(format_last_error("Error when closing file search handle"));
-    }
-
-    CloseHandle(h_file);
-    return results;
-}
-
-bool is_executable(LPCWSTR name)
-{
-    DWORD _;
-    return GetBinaryTypeW(name, &_);
-}
-
 std::string join(std::string first, std::string second)
 {
     {
@@ -139,6 +105,64 @@ std::string join(std::string first, std::string second)
     }
 
     return first + '\\' + second;
+}
+
+std::vector<WIN32_FIND_DATAW> explore_directory(const std::string &__directory, const std::string &__pattern = "\\*")
+{
+    auto directory = join(__directory, __pattern);
+    std::vector<WIN32_FIND_DATAW> results(1);
+
+    HANDLE h_file = FindFirstFileW(utf_convert(directory).c_str(), &results[0]);
+    if (h_file == INVALID_HANDLE_VALUE)
+    {
+        if (GetLastError() == ERROR_FILE_NOT_FOUND) // No file with the specified pattern was found
+        {
+            return {};
+        }
+        else
+        {
+            throw std::runtime_error(format_last_error("Error when listing directory"));
+        }
+    }
+
+    do
+    {
+        results.emplace_back();
+    } while (FindNextFileW(h_file, &results.back()));
+
+    results.pop_back();
+
+    if (!FindClose(h_file))
+    {
+        throw std::runtime_error(format_last_error("Error when closing file search handle"));
+    }
+
+    CloseHandle(h_file);
+    return results;
+}
+
+bool endswith(const std::string &string, const std::string &suffix)
+{
+    if (string.size() < suffix.size())
+    {
+        return false;
+    }
+
+    for (unsigned i = string.size() - suffix.size(); i < string.size(); i++)
+    {
+        if (string[i] != suffix[i + suffix.size() - string.size()])
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool is_executable(LPCWSTR name)
+{
+    DWORD _;
+    return GetBinaryTypeW(name, &_);
 }
 
 template <typename _ForwardIterator>

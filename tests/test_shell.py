@@ -228,3 +228,10 @@ def test_sleep() -> None:
     end = time.perf_counter()
 
     assert end - start > 1.0
+
+
+def test_script() -> None:
+    stdout, stderr = execute_command("tests/shell-script-1")
+    assert_match("Starting test", stdout)
+    assert_match("6969", stdout)
+    assert stderr.strip() == ""

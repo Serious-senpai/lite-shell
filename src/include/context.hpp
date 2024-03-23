@@ -209,10 +209,12 @@ Context Context::get_context(const Client *client, const std::string &message, c
         {
             for (auto &c : token)
             {
-                if (!(c == '+' || c == '-' || c == '*' || c == '/' || ('0' <= c && c <= '9')))
+                if (c == '+' || c == '-' || c == '*' || c == '/' || c == ' ' || ('0' <= c && c <= '9'))
                 {
-                    return false;
+                    continue;
                 }
+
+                return false;
             }
 
             return true;
