@@ -57,9 +57,7 @@ def invalid_argument_test(command: str) -> None:
 
 def assert_match(token: str, string: str) -> None:
     pattern = r"(?:[^\w]|^)" + re.escape(token) + r"(?:[^\w]|$)"
-    print(pattern)
-    print("-" * 20)
-    print(repr(string))
+    print(f"Matching token:\n{token!r}\n" + "-" * 30 + f"\n{string!r}")
     assert re.search(pattern, string) is not None
 
 
@@ -188,9 +186,22 @@ def test_eval_15() -> None:
 
 def test_eval_16() -> None:
     command = "eval \"8*(10-6)   /4  -3\" -ms FiRsT\neval \"((6-9) *  7)*  4*3\" -ms sEcOnD\neval \"$FiRsT + $sEcOnD\" -m"
-    print(command)
     stdout, stderr = execute_command(command)
     assert_match("-247", stdout)
+    assert stderr.strip() == ""
+
+
+def test_eval_17() -> None:
+    command = "eval \"input>\" -ps input\nrandom bullshit go\necho $input"
+    stdout, stderr = execute_command(command)
+    assert_match("random bullshit go", stdout)
+    assert stderr.strip() == ""
+
+
+def test_eval_18() -> None:
+    command = "eval \"input>\" -mps input\n11669 - 4700\necho $input"
+    stdout, stderr = execute_command(command)
+    assert_match("6969", stdout)
     assert stderr.strip() == ""
 
 
