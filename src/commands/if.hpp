@@ -148,7 +148,9 @@ public:
             }
         }
 
-        for (const auto &line : result ? if_true : if_false)
+        std::vector<std::string> lines = result ? if_true : if_false;
+        std::reverse(lines.begin(), lines.end());
+        for (const auto &line : lines)
         {
             context.client->stream.write_front(line);
         }
