@@ -1,12 +1,26 @@
 @OFF
 eval "Enter n = " -ps n
+
+if $n == 0
+    jump :is_not_prime
+endif
+
+if $n == 1
+    jump :is_not_prime
+endif
+
 eval "$n / 2" -ms limit
 for div 2 $limit
     eval "$n % $div" -ms r
     if $r == 0
-        echo $n is not a prime
-        jump :EOF
+        jump :is_not_prime
     endif
 endfor
 
+:is_prime
 echo $n is a prime
+jump :EOF
+
+:is_not_prime
+echo $n is not a prime
+jump :EOF

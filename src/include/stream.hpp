@@ -113,12 +113,20 @@ public:
 
     void jump(const std::string &label)
     {
-        while (iterator != list.end())
+        for (auto iter = iterator; iter != list.end(); iter++)
         {
-            auto next = *iterator++;
-
-            if (next == label)
+            if (strip(*iter) == label)
             {
+                iterator = iter;
+                return;
+            }
+        }
+
+        for (auto iter = list.begin(); iter != iterator; iter++)
+        {
+            if (strip(*iter) == label)
+            {
+                iterator = iter;
                 return;
             }
         }

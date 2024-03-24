@@ -241,6 +241,31 @@ def test_sleep() -> None:
     assert end - start > 1.0
 
 
+def is_prime(value: int, /) -> bool:
+    if value < 2:
+        return False
+
+    div = 2
+    while div * div <= value:
+        if value % div == 0:
+            return False
+
+        div += 1
+
+    return True
+
+
+def test_script_prime() -> None:
+    for value in range(20):
+        stdout, stderr = execute_command(f"tests/prime\n{value}")
+        if is_prime(value):
+            assert_match(f"{value} is a prime", stdout)
+        else:
+            assert_match(f"{value} is not a prime", stdout)
+
+        assert stderr.strip() == ""
+
+
 def test_script_1() -> None:
     stdout, stderr = execute_command("tests/shell-script-1")
     assert_match("Starting test", stdout)
