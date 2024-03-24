@@ -17,11 +17,11 @@ public:
     DWORD run(const Context &context)
     {
         auto loop_var = context.args[1];
-        auto start = 0ll, end = std::stoll(context.args[2]);
+        auto start = 0ll, end = context.client->get_environment()->eval_ll(context.args[2]);
         if (context.args.size() == 4)
         {
             start = end;
-            end = std::stoll(context.args[3]);
+            end = context.client->get_environment()->eval_ll(context.args[3]);
         }
 
         std::vector<std::string> lines;

@@ -8,7 +8,7 @@ The command syntax is: if <value> <operator> <value>
 where <operator> must be one of the values: "==", "!=", "<", ">", "<=", ">=".
 
 The strings are compared using the lexicography order.
-If the flag -m is set, perform mathematical comparisons instead.
+If the flag -m is set, perform mathematical evaluation before making comparisons instead.
 To end each condition section, use "else"/"endif"
 )";
 
@@ -113,7 +113,8 @@ public:
         bool result;
         if (context.kwargs.count("-m"))
         {
-            auto f = std::stoll(first), s = std::stoll(second);
+            auto f = context.client->get_environment()->eval_ll(first),
+                 s = context.client->get_environment()->eval_ll(second);
             if (op == "==")
             {
                 result = f == s;

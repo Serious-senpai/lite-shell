@@ -9,10 +9,8 @@ if $n == 1
     jump :is_not_prime
 endif
 
-eval "$n / 2" -ms limit
-for div 2 $limit
-    eval "$n % $div" -ms r
-    if $r == 0
+for div 2 "$n / 2"
+    if "$n % $div" == 0 -m
         jump :is_not_prime
     endif
 endfor
