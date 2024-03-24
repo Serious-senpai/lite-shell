@@ -18,9 +18,9 @@ for div 2 $limit
 endfor
 
 :is_prime
-echo $n is a prime
+echoln $n is a prime
 jump :EOF
 
 :is_not_prime
-echo $n is not a prime
+echoln $n is not a prime
 jump :EOF

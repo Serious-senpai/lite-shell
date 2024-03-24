@@ -1,6 +1,6 @@
 @OFF
 for i 100 200
     for j $i 200
-        echo $i $j
+        echoln $i $j
     endfor
 endfor

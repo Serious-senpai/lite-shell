@@ -3,13 +3,13 @@
 #include <base.hpp>
 #include <standard.hpp>
 
-class EchoCommand : public BaseCommand
+class EcholnCommand : public BaseCommand
 {
 public:
-    EchoCommand()
+    EcholnCommand()
         : BaseCommand(
-              "echo",
-              "Display a message",
+              "echoln",
+              "Print to stdout and add a newline at the end",
               "",
               {},
               ArgumentsConstraint()) {}

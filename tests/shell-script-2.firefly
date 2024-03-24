@@ -1,6 +1,6 @@
 @OFF
-echo Starting test
+echoln Starting test
 for i 5 10
-eval "2 * $i" -ms d
-echo 2 * $i = $d
+    eval "2 * $i" -ms d
+    echoln 2 * $i = $d
 endfor

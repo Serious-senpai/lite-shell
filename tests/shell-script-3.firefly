@@ -1,10 +1,10 @@
 @OFF
-echo Starting test
+echoln Starting test
 for i 1000 2000
     eval "$i % 2" -ms r
         if $r == 0 -m
-            echo $i is even
+            echoln $i is even
         else
-            echo $i is odd
+            echoln $i is odd
         endif
 endfor

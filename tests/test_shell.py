@@ -62,7 +62,7 @@ def assert_match(token: str, string: str) -> None:
 
 
 def test_escape() -> None:
-    stdout, stderr = execute_command("echo $$Hello World$$")
+    stdout, stderr = execute_command("echoln $$Hello World$$")
     assert_match("$Hello World$", stdout)
     assert stderr.strip() == ""
 
@@ -117,7 +117,7 @@ def test_date_2() -> None:
 def test_echo() -> None:
     # Do not include white spaces at both ends
     test_string = "hello world    1 2 --3 4 -abc3 --4 \"in quotes\""
-    stdout, stderr = execute_command(f"echo {test_string}")
+    stdout, stderr = execute_command(f"echoln {test_string}")
     assert_match(test_string, stdout)
     assert stderr.strip() == ""
 
@@ -178,7 +178,7 @@ def test_eval_14() -> None:
 
 
 def test_eval_15() -> None:
-    command = "eval Hello -s f\neval World! -s s\necho $f $s"
+    command = "eval Hello -s f\neval World! -s s\necholn $f $s"
     stdout, stderr = execute_command(command)
     assert_match("Hello World!", stdout)
     assert stderr.strip() == ""
@@ -192,14 +192,14 @@ def test_eval_16() -> None:
 
 
 def test_eval_17() -> None:
-    command = "eval \"input>\" -ps input\nrandom bullshit go\necho $input"
+    command = "eval \"input>\" -ps input\nrandom bullshit go\necholn $input"
     stdout, stderr = execute_command(command)
     assert_match("random bullshit go", stdout)
     assert stderr.strip() == ""
 
 
 def test_eval_18() -> None:
-    command = "eval \"input>\" -mps input\n11669 - 4700\necho $input"
+    command = "eval \"input>\" -mps input\n11669 - 4700\necholn $input"
     stdout, stderr = execute_command(command)
     assert_match("6969", stdout)
     assert stderr.strip() == ""
