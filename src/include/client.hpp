@@ -251,7 +251,7 @@ public:
                     auto subprocess = spawn_subprocess(final_context);
                     if (final_context.is_background_request())
                     {
-                        environment->set_variable("errorlevel", 0);
+                        environment->set_variable("errorlevel", "0");
                     }
                     else
                     {
