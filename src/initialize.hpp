@@ -6,6 +6,7 @@
 #include "commands/cat.hpp"
 #include "commands/cd.hpp"
 #include "commands/date.hpp"
+#include "commands/echo.hpp"
 #include "commands/echoln.hpp"
 #include "commands/env.hpp"
 #include "commands/eval.hpp"
@@ -25,6 +26,7 @@ void initialize(Client *client)
         ->add_command(std::make_shared<CatCommand>())
         ->add_command(std::make_shared<CdCommand>())
         ->add_command(std::make_shared<DateCommand>())
+        ->add_command(std::make_shared<EchoCommand>())
         ->add_command(std::make_shared<EcholnCommand>())
         ->add_command(std::make_shared<EnvCommand>())
         ->add_command(std::make_shared<EvalCommand>())

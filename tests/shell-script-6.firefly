@@ -1,0 +1,7 @@
+@OFF
+echo 1
+echo 2
+echo 3
+echoln 4
+echoln 5
+echoln 6

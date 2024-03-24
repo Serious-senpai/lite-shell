@@ -310,3 +310,10 @@ def test_script_5() -> None:
 
     assert_match("\n".join(lines), stdout)
     assert stderr.strip() == ""
+
+
+def test_script_6() -> None:
+    stdout, stderr = execute_command("tests/shell-script-6")
+
+    assert_match("1234\n5\n6\n", stdout)
+    assert stderr.strip() == ""
