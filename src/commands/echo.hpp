@@ -12,7 +12,7 @@ public:
               "Print to stdout but do not add a newline like \"echoln\"",
               "",
               {},
-              ArgumentsConstraint()) {}
+              CommandConstraint()) {}
 
     DWORD run(const Context &context)
     {

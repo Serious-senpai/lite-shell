@@ -14,7 +14,7 @@ public:
               "Get all subprocesses of the current shell, regardless of their states",
               "",
               {},
-              ArgumentsConstraint(1, 1)) {}
+              CommandConstraint(1, 1)) {}
 
     DWORD run(const Context &context)
     {

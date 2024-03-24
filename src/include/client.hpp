@@ -254,7 +254,7 @@ public:
         {
             try
             {
-                auto context = Context::get_context(this, stripped_message, ArgumentsConstraint());
+                auto context = Context::get_context(this, stripped_message, CommandConstraint());
 
                 // Find an executable first
                 auto executable = resolve(context.tokens[0]);

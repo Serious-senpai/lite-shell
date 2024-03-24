@@ -14,7 +14,7 @@ public:
               "Retrieves the current system date and time",
               "",
               {},
-              ArgumentsConstraint(1, 1)) {}
+              CommandConstraint(1, 1)) {}
 
     DWORD run(const Context &context)
     {

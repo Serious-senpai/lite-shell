@@ -18,34 +18,33 @@ public:
               "Describe the arguments that were passed in",
               __args_description,
               {},
-              ArgumentsConstraint(false)) {}
+              CommandConstraint(false)) {}
 
     DWORD run(const Context &context)
     {
-        std::cout << "Positional arguments (" << context.args.size() << "): ";
-        if (!context.args.empty())
+        std::vector<std::string> args;
+        for (auto &name : context.args)
         {
-            for (unsigned i = 0; i < context.args.size() - 1; i++)
-            {
-                std::cout << "\"" << context.args[i] << "\", ";
-            }
-            std::cout << "\"" << context.args.back() << "\"";
+            args.push_back("\"" + name + "\"");
         }
-        std::cout << std::endl;
+        std::cout << "Positional arguments (" << context.args.size() << "): " << join(args.begin(), args.end(), ", ") << std::endl;
 
-        std::cout << "Named arguments:" << std::endl;
-        for (const auto &[name, values] : context.kwargs)
+        std::vector<std::string> present;
+        for (auto &name : context.present)
         {
-            std::cout << name << ": ";
-            if (!values.empty())
+            present.push_back("\"" + name + "\"");
+        }
+
+        std::cout << "Named arguments (" << present.size() << "): " << join(present.begin(), present.end(), ", ") << std::endl;
+        for (auto &[name, values] : context.kwargs)
+        {
+            std::vector<std::string> values_str;
+            for (auto &value : values)
             {
-                for (unsigned i = 0; i < values.size() - 1; i++)
-                {
-                    std::cout << "\"" << values[i] << "\", ";
-                }
-                std::cout << "\"" << values.back() << "\"";
+                values_str.push_back("\"" + value + "\"");
             }
-            std::cout << std::endl;
+
+            std::cout << name << ": " << join(values_str.begin(), values_str.end(), ", ") << std::endl;
         }
 
         return 0;

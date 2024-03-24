@@ -25,7 +25,7 @@ public:
     const std::vector<std::string> aliases;
 
     /* The arguments constraint for this command */
-    const ArgumentsConstraint constraint;
+    const CommandConstraint constraint;
 
     /* Construct a new command and initialize attributes */
     BaseCommand(
@@ -33,7 +33,7 @@ public:
         const std::string &description,
         const std::string &long_description,
         const std::initializer_list<std::string> &aliases,
-        const ArgumentsConstraint &constraint)
+        const CommandConstraint &constraint)
         : name(name),
           description(description),
           long_description(long_description),
@@ -78,7 +78,7 @@ public:
                     throw std::runtime_error("Alias group is unexpectedly empty");
                 }
 
-                auto bounds = constraint.get_bounds(*aliases.begin());
+                auto bounds = constraint.get_constraint(*aliases.begin()).bounds;
                 auto brackets = bounds.first == 0 ? "[]" : "<>";
                 result += format(" %c", brackets[0]);
 

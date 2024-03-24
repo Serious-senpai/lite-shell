@@ -21,7 +21,7 @@ public:
               "Get or set the working directory",
               __cd_description,
               {},
-              ArgumentsConstraint(1, 2)) {}
+              CommandConstraint(1, 2)) {}
 
     DWORD run(const Context &context)
     {

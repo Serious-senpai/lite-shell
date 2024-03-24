@@ -15,7 +15,7 @@ public:
               "Display the content of a directory (default: the working directory)",
               "",
               {"dir"},
-              ArgumentsConstraint(1, 2)) {}
+              CommandConstraint(1, 2)) {}
 
     DWORD run(const Context &context)
     {

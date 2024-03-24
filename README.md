@@ -24,7 +24,7 @@ First, navigate to [src/commands](/src/commands) and create a new file `add.hpp`
 class AddCommand : public BaseCommand
 {
 public:
-    AddCommand() : BaseCommand("add", "Add 2 numbers", "", {}, ArgumentsConstraint(3, 3)) {}
+    AddCommand() : BaseCommand("add", "Add 2 numbers", "", {}, CommandConstraint(3, 3)) {}
 
     DWORD run(const Context &context)
     {
@@ -34,12 +34,12 @@ public:
 ```
 - The preprocessor directive `#pragma once` ensures that this header file will be included only once within the application code, you can read more about it [here](https://en.wikipedia.org/wiki/Pragma_once).
 - The directive `#include <base.hpp>` ensures that the declaration of class `BaseCommand` is available when compiling. All commands must be a subclass of `BaseCommand`, hence we define the class as `class AddCommand : public BaseCommand`.
-- All commands must have a default constructor that accepts no argument, so we define a constructor `AddCommand() : BaseCommand("add", "Add 2 numbers", "", {}, ArgumentsConstraint(3, 3)) {}`. When calling `AddCommand()`, it will propagate to the constructor of `BaseCommand`, which initializes the following attributes:
+- All commands must have a default constructor that accepts no argument, so we define a constructor `AddCommand() : BaseCommand("add", "Add 2 numbers", "", {}, CommandConstraint(3, 3)) {}`. When calling `AddCommand()`, it will propagate to the constructor of `BaseCommand`, which initializes the following attributes:
   - Command name: `add`
   - Command help: `Add 2 numbers` - this will show up when using `help` or `help add`
   - Command long description: this will show up when using `help add`, we are currently using an empty string for this command since it's quite simple anyway.
   - Command aliases: `{}`, which denotes an empty list. If, for example, you add `sum` here (i.e. `{"sum"}`), then invoking `sum 4 5` will have the same effect as invoking `add 4 5`
-  - Arguments constraint: `ArgumentsConstraint(3, 3)` means that the command accepts *from* 3 *to* 3 positional arguments (i.e. exactly **3** positional arguments): Note that the command name is treated as a positional argument too (e.g. `add 4 5` has 3 arguments: `add`, `4` and `5`).
+  - Arguments constraint: `CommandConstraint(3, 3)` means that the command accepts *from* 3 *to* 3 positional arguments (i.e. exactly **3** positional arguments): Note that the command name is treated as a positional argument too (e.g. `add 4 5` has 3 arguments: `add`, `4` and `5`).
 - The method `DWORD run(const Context &context)` is the command callback, it is called whenever this command is invoked and should return a `DWORD` value (i.e. an integer). If the command succeeds, a value of `0` is usually returned.
 
 Second, navigate to [src/initialize.hpp](/src/initialize.hpp) and add a directive `#include "commands/add.hpp"`. In the function `void initialize(Client *client)`, add a call `client->add_command(std::make_shared<AddCommand>())`.

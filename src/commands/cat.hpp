@@ -16,7 +16,7 @@ public:
               "Read a file",
               __cat_description,
               {"type"},
-              ArgumentsConstraint(2, 2)) {}
+              CommandConstraint(2, 2)) {}
 
     DWORD run(const Context &context)
     {

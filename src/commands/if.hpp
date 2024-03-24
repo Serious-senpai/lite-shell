@@ -12,10 +12,10 @@ If the flag -m is set, perform mathematical evaluation before making comparisons
 To end each condition section, use "else"/"endif"
 )";
 
-ArgumentsConstraint __constraint_IfCommand()
+CommandConstraint __constraint_IfCommand()
 {
-    ArgumentsConstraint constraint(4, 4);
-    constraint.add_argument("-m", "perform mathematical comparison instead of string comparison", 0, 1);
+    CommandConstraint constraint(4, 4);
+    constraint.add_argument(false, "perform mathematical comparison instead of string comparison", 0, 0, "-m");
     return constraint;
 }
 
@@ -111,7 +111,7 @@ public:
         }
 
         bool result;
-        if (context.kwargs.count("-m"))
+        if (context.present.count("-m"))
         {
             auto f = context.client->get_environment()->eval_ll(first),
                  s = context.client->get_environment()->eval_ll(second);

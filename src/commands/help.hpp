@@ -18,7 +18,7 @@ public:
               "Get all commands or get help for a specific command",
               __help_description,
               {},
-              ArgumentsConstraint(1, 2)) {}
+              CommandConstraint(1, 2)) {}
 
     DWORD run(const Context &context)
     {

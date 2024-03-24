@@ -12,7 +12,7 @@ public:
               "Print to stdout and add a newline at the end",
               "",
               {},
-              ArgumentsConstraint()) {}
+              CommandConstraint()) {}
 
     DWORD run(const Context &context)
     {

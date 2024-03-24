@@ -13,7 +13,7 @@ public:
               "Kill a subprocess",
               "",
               {},
-              ArgumentsConstraint(2, 2)) {}
+              CommandConstraint(2, 2)) {}
 
     DWORD run(const Context &context)
     {

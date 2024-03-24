@@ -1,6 +1,10 @@
 @OFF
 eval "Enter n = " -ps n
 
+if $n < 0
+    jump :is_not_prime
+endif
+
 if $n == 0
     jump :is_not_prime
 endif

@@ -3,16 +3,37 @@
 #include "format.hpp"
 #include "standard.hpp"
 
-/* Represents the argument constraints for a command */
-class ArgumentsConstraint
+class ArgumentConstraint
+{
+public:
+    const std::string help;
+    const std::pair<unsigned, unsigned> bounds;
+    const std::set<std::string> aliases;
+    const bool required;
+
+    ArgumentConstraint(
+        const std::string &help,
+        const unsigned lower_bound,
+        const unsigned upper_bound,
+        const std::set<std::string> &aliases,
+        const bool required)
+        : help(help), bounds(std::make_pair(lower_bound, upper_bound)), aliases(aliases), required(required)
+    {
+        if (lower_bound > upper_bound)
+        {
+            throw std::invalid_argument(format("lower_bound = %d > upper_bound = %d", lower_bound, upper_bound));
+        }
+    }
+};
+
+/* Represents the constraints for a command */
+class CommandConstraint
 {
 private:
-    std::vector<std::string> help;
-    std::vector<std::pair<unsigned, unsigned>> bounds;
+    std::vector<ArgumentConstraint> constraints;
     std::map<std::string, unsigned> names;
-    std::set<std::set<std::string>> alias_groups;
 
-    ArgumentsConstraint(
+    CommandConstraint(
         const bool require_context_parsing,
         const bool arguments_checking,
         const std::pair<unsigned, unsigned> &args_bounds)
@@ -54,17 +75,17 @@ public:
     const std::pair<unsigned, unsigned> args_bounds;
 
     /*
-    @brief Construct an `ArgumentsConstraint` object with `require_context_parsing` set to `false`.
+    @brief Construct an `CommandConstraint` object with `require_context_parsing` set to `false`.
     */
-    ArgumentsConstraint() : ArgumentsConstraint(false, false, std::make_pair(0, 0)) {}
+    CommandConstraint() : CommandConstraint(false, false, std::make_pair(0, 0)) {}
 
     /*
-    @brief Construct an `ArgumentsConstraint` object with `require_context_parsing` set to `true` and `arguments_checking` set to
+    @brief Construct an `CommandConstraint` object with `require_context_parsing` set to `true` and `arguments_checking` set to
     `false`.
 
     @param arguments_checking Must be `false`
     */
-    ArgumentsConstraint(const bool arguments_checking) : ArgumentsConstraint(true, false, std::make_pair(0, 0))
+    CommandConstraint(const bool arguments_checking) : CommandConstraint(true, false, std::make_pair(0, 0))
     {
         if (arguments_checking)
         {
@@ -73,74 +94,45 @@ public:
     }
 
     /*
-    @brief Construct an `ArgumentsConstraint` object with `require_context_parsing` and `arguments_checking` set to `true`.
+    @brief Construct an `CommandConstraint` object with `require_context_parsing` and `arguments_checking` set to `true`.
 
     @param args_lower The lower bound of the number of positional arguments
     @param args_upper The upper bound of the number of positional arguments
     */
-    ArgumentsConstraint(const unsigned args_lower, const unsigned args_upper)
-        : ArgumentsConstraint(true, true, std::make_pair(args_lower, args_upper)) {}
+    CommandConstraint(const unsigned args_lower, const unsigned args_upper)
+        : CommandConstraint(true, true, std::make_pair(args_lower, args_upper)) {}
 
     /* Throw an error if this constraint has `require_context_parsing` set to `false` */
     void check_context_parsing()
     {
         if (!require_context_parsing)
         {
-            throw std::invalid_argument("ArgumentsConstraint object does not support context parsing");
+            throw std::invalid_argument("CommandConstraint object does not support context parsing");
         }
-    }
-
-    /*
-    @brief Register a named argument constraint
-
-    @param __name The name of the argument
-    @param __help The help message of the argument
-    @return A pointer to the current `ArgumentsConstraint` object
-    */
-    ArgumentsConstraint *add_argument(
-        const std::string &__name,
-        const std::string &__help,
-        const unsigned lower_bound,
-        const unsigned upper_bound,
-        const bool add_to_alias_group = true)
-    {
-        check_context_parsing();
-        if (has_argument(__name))
-        {
-            throw std::invalid_argument(format("Argument %s already exists", __name.c_str()));
-        }
-
-        if (help.size() != bounds.size())
-        {
-            throw std::runtime_error(format("Unexpected different sizes of .help and .bounds: %d vs %d", help.size(), bounds.size()));
-        }
-
-        if (lower_bound > upper_bound)
-        {
-            throw std::invalid_argument(format("lower_bound = %d > upper_bound = %d", lower_bound, upper_bound));
-        }
-
-        if (add_to_alias_group)
-        {
-            alias_groups.insert({__name});
-        }
-
-        names[__name] = help.size();
-        help.push_back(__help);
-        bounds.push_back(std::make_pair(lower_bound, upper_bound));
-
-        return this;
     }
 
     template <typename... Args>
-    ArgumentsConstraint *add_argument(const Args &...aliases, const std::string &help, const unsigned lower_bound, const unsigned upper_bound)
+    CommandConstraint *add_argument(
+        const bool required,
+        const std::string &help,
+        const unsigned lower_bound,
+        const unsigned upper_bound,
+        const std::string &name,
+        const Args &...aliases)
     {
         check_context_parsing();
-        std::set<std::string> alias_group = {aliases...};
-        alias_groups.insert(alias_group);
-        for (auto &alias : {aliases...})
+
+        std::set<std::string> alias_group = {name, aliases...};
+        constraints.emplace_back(help, lower_bound, upper_bound, alias_group, required);
+
+        for (auto &alias : alias_group)
         {
-            add_argument(alias, help, lower_bound, upper_bound, false);
+            if (has_argument(alias))
+            {
+                throw std::invalid_argument(format("Argument %s already exists", alias.c_str()));
+            }
+
+            names[alias] = constraints.size() - 1;
         }
 
         return this;
@@ -157,7 +149,7 @@ public:
         return names.count(name);
     }
 
-    std::string get_help(const std::string &name) const
+    ArgumentConstraint get_constraint(const std::string &name) const
     {
         auto iter = names.find(name);
         if (iter == names.end())
@@ -165,22 +157,17 @@ public:
             throw std::invalid_argument(format("Argument %s does not exist", name.c_str()));
         }
 
-        return help[iter->second];
-    }
-
-    std::pair<unsigned, unsigned> get_bounds(const std::string &name) const
-    {
-        auto iter = names.find(name);
-        if (iter == names.end())
-        {
-            throw std::invalid_argument(format("Argument %s does not exist", name.c_str()));
-        }
-
-        return bounds[iter->second];
+        return constraints[iter->second];
     }
 
     std::set<std::set<std::string>> get_alias_groups() const
     {
+        std::set<std::set<std::string>> alias_groups;
+        for (auto &constraint : constraints)
+        {
+            alias_groups.insert(constraint.aliases);
+        }
+
         return alias_groups;
     }
 };

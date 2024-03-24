@@ -13,7 +13,7 @@ public:
               "Display all environment variables",
               "",
               {},
-              ArgumentsConstraint(1, 1)) {}
+              CommandConstraint(1, 1)) {}
 
     DWORD run(const Context &context)
     {

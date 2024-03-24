@@ -12,7 +12,7 @@ public:
               "Skip the input stream to the specified label",
               "",
               {},
-              ArgumentsConstraint(2, 2)) {}
+              CommandConstraint(2, 2)) {}
 
     DWORD run(const Context &context)
     {

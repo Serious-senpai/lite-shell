@@ -12,7 +12,7 @@ public:
               "Iterate the loop variable over a specified integer range.",
               "To end the loop section, type \"endfor\"",
               {},
-              ArgumentsConstraint(3, 4)) {}
+              CommandConstraint(3, 4)) {}
 
     DWORD run(const Context &context)
     {

@@ -93,6 +93,27 @@ std::vector<std::string> split(const std::string &original, const char delimiter
     return result;
 }
 
+template <typename _ForwardIterator>
+std::string join(
+    const _ForwardIterator &__begin,
+    const _ForwardIterator &__end,
+    const std::string &delimiter)
+{
+    std::string result;
+    for (auto iter = __begin; iter != __end; iter++)
+    {
+        result += *iter;
+
+        auto peek = iter;
+        if (++peek != __end)
+        {
+            result += delimiter;
+        }
+    }
+
+    return result;
+}
+
 std::string join(std::string first, std::string second)
 {
     {

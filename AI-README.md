@@ -63,7 +63,7 @@ add 4 5
 
    class AddCommand : public BaseCommand {
    public:
-       AddCommand() : BaseCommand("add", "Add 2 numbers", "", {}, ArgumentsConstraint(3, 3)) {}
+       AddCommand() : BaseCommand("add", "Add 2 numbers", "", {}, CommandConstraint(3, 3)) {}
 
        DWORD run(const Context &context) override {
            // Implement command logic here
@@ -80,7 +80,7 @@ add 4 5
        - Help: `Add 2 numbers` (displayed with `help` or `help add`)
        - Description: (empty string for simplicity)
        - Aliases: `{}` (no aliases)
-       - Arguments: `ArgumentsConstraint(3, 3)` (requires exactly 3 arguments)
+       - Arguments: `CommandConstraint(3, 3)` (requires exactly 3 arguments)
      - The `run` method (overridden from `BaseCommand`) is the core of the command. It takes a `Context` object and returns a `DWORD` (integer) value. A return value of `0` typically indicates success.
 
 2. **Register the Command:**

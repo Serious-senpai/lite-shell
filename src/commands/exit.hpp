@@ -12,7 +12,7 @@ public:
               "Exit the shell with the specified exit code",
               "If no exit code is specified, the shell will exit with the current errorlevel.",
               {},
-              ArgumentsConstraint(1, 2)) {}
+              CommandConstraint(1, 2)) {}
 
     DWORD run(const Context &context)
     {
