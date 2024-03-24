@@ -10,23 +10,6 @@ private:
 public:
     bool echo = true;
 
-    bool handle(const std::string &line)
-    {
-        if (line == "@ON")
-        {
-            echo = true;
-            return true;
-        }
-
-        if (line == "@OFF")
-        {
-            echo = false;
-            return true;
-        }
-
-        return false;
-    }
-
     bool peek_echo()
     {
         if (peek() == "@ON")
@@ -80,25 +63,16 @@ public:
                     continue;
                 }
 
-                if (handle(line))
-                {
-                    return getline(force_stdin, force_stream);
-                }
-
                 return line;
             }
         }
         else
         {
+            bool next_echo = peek_echo();
             auto line = strip(queue.front());
             queue.pop_front();
 
-            if (handle(line))
-            {
-                return getline(force_stdin, force_stream);
-            }
-
-            if (echo)
+            if (next_echo)
             {
                 std::cout << line << std::endl;
             }
@@ -132,5 +106,19 @@ public:
     bool eof() const
     {
         return queue.empty();
+    }
+
+    void jump(const std::string &label)
+    {
+        while (!queue.empty())
+        {
+            auto next = strip(queue.front());
+            queue.pop_front();
+
+            if (next == label)
+            {
+                break;
+            }
+        }
     }
 };

@@ -13,6 +13,7 @@
 #include "commands/for.hpp"
 #include "commands/help.hpp"
 #include "commands/if.hpp"
+#include "commands/jump.hpp"
 #include "commands/kill.hpp"
 #include "commands/ls.hpp"
 #include "commands/mkdir.hpp"
@@ -31,6 +32,7 @@ void initialize(Client *client)
         ->add_command(std::make_shared<ForCommand>())
         ->add_command(std::make_shared<HelpCommand>())
         ->add_command(std::make_shared<IfCommand>())
+        ->add_command(std::make_shared<JumpCommand>())
         ->add_command(std::make_shared<KillCommand>())
         ->add_command(std::make_shared<LsCommand>())
         ->add_command(std::make_shared<MkdirCommand>())

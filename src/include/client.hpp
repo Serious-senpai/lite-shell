@@ -53,6 +53,72 @@ private:
         return get_command(context.tokens[0]);
     }
 
+    std::string resolve_environment(const std::string &message)
+    {
+        std::string result, variable;
+        bool is_variable = false;
+
+        auto append_variable = [this, &result, &variable, &is_variable]()
+        {
+            result += this->environment->get_value(variable);
+            variable.clear();
+            is_variable = false;
+        };
+
+        for (unsigned i = 0; i < message.size(); i++)
+        {
+            if (message[i] == '$')
+            {
+                if (i > 0 && message[i - 1] == '$') // Escape character $$ -> $
+                {
+                    if (!variable.empty())
+                    {
+                        throw std::runtime_error(format("Unexpected error when resolving environment variable %s", variable.c_str()));
+                    }
+
+                    result += '$';
+                    is_variable = false;
+                }
+                else
+                {
+                    if (!variable.empty())
+                    {
+                        append_variable();
+                    }
+
+                    is_variable = true;
+                }
+            }
+            else if ((('a' <= message[i] && message[i] <= 'z') || ('A' <= message[i] && message[i] <= 'Z') || message[i] == '_'))
+            {
+                if (is_variable)
+                {
+                    variable += message[i];
+                }
+                else
+                {
+                    result += message[i];
+                }
+            }
+            else
+            {
+                if (is_variable)
+                {
+                    append_variable();
+                }
+
+                result += message[i];
+            }
+        }
+
+        if (!variable.empty())
+        {
+            append_variable();
+        }
+
+        return result;
+    }
+
 public:
     InputStream stream;
 
@@ -158,72 +224,6 @@ public:
         }
     }
 
-    std::string resolve_environment(const std::string &message)
-    {
-        std::string result, variable;
-        bool is_variable = false;
-
-        auto append_variable = [this, &result, &variable, &is_variable]()
-        {
-            result += this->environment->get_value(variable);
-            variable.clear();
-            is_variable = false;
-        };
-
-        for (unsigned i = 0; i < message.size(); i++)
-        {
-            if (message[i] == '$')
-            {
-                if (i > 0 && message[i - 1] == '$') // Escape character $$ -> $
-                {
-                    if (!variable.empty())
-                    {
-                        throw std::runtime_error(format("Unexpected error when resolving environment variable %s", variable.c_str()));
-                    }
-
-                    result += '$';
-                    is_variable = false;
-                }
-                else
-                {
-                    if (!variable.empty())
-                    {
-                        append_variable();
-                    }
-
-                    is_variable = true;
-                }
-            }
-            else if ((('a' <= message[i] && message[i] <= 'z') || ('A' <= message[i] && message[i] <= 'Z') || message[i] == '_'))
-            {
-                if (is_variable)
-                {
-                    variable += message[i];
-                }
-                else
-                {
-                    result += message[i];
-                }
-            }
-            else
-            {
-                if (is_variable)
-                {
-                    append_variable();
-                }
-
-                result += message[i];
-            }
-        }
-
-        if (!variable.empty())
-        {
-            append_variable();
-        }
-
-        return result;
-    }
-
     /*
     @brief Process a command message.
 
@@ -236,48 +236,65 @@ public:
     Client *process_command(const std::string &message)
     {
         auto stripped_message = resolve_environment(strip(message));
-        try
+
+        // Special sequences
+        if (stripped_message == "@ON")
         {
-            auto context = Context::get_context(this, stripped_message, ArgumentsConstraint());
-
-            // Find an executable first
-            auto executable = resolve(context.tokens[0]);
-            if (executable.has_value()) // Is an executable or batch file
+            stream.echo = true;
+        }
+        else if (stripped_message == "@OFF")
+        {
+            stream.echo = false;
+        }
+        else if (stripped_message[0] == ':') // is a jump label
+        {
+            // pass
+        }
+        else
+        {
+            try
             {
-                if (endswith(*executable, ".exe"))
-                {
-                    auto final_context = context.replace_call(*executable);
+                auto context = Context::get_context(this, stripped_message, ArgumentsConstraint());
 
-                    auto subprocess = spawn_subprocess(final_context);
-                    if (final_context.is_background_request())
+                // Find an executable first
+                auto executable = resolve(context.tokens[0]);
+                if (executable.has_value()) // Is an executable or batch file
+                {
+                    if (endswith(*executable, ".exe"))
                     {
-                        environment->set_variable("errorlevel", "0");
+                        auto final_context = context.replace_call(*executable);
+
+                        auto subprocess = spawn_subprocess(final_context);
+                        if (final_context.is_background_request())
+                        {
+                            environment->set_variable("errorlevel", "0");
+                        }
+                        else
+                        {
+                            WaitForSingleObject(subprocess.info.hProcess, INFINITE);
+
+                            DWORD errorlevel;
+                            GetExitCodeProcess(subprocess.info.hProcess, &errorlevel);
+                            environment->set_variable("errorlevel", std::to_string(errorlevel));
+                        }
                     }
                     else
                     {
-                        WaitForSingleObject(subprocess.info.hProcess, INFINITE);
-
-                        DWORD errorlevel;
-                        GetExitCodeProcess(subprocess.info.hProcess, &errorlevel);
-                        environment->set_variable("errorlevel", std::to_string(errorlevel));
+                        process_batch_file(*executable);
                     }
                 }
-                else
+                else // Is a local command, throw if no match was found in get_command()
                 {
-                    process_batch_file(*executable);
+                    auto wrapper = get_command(context);
+                    auto constraint = wrapper.command->constraint;
+                    auto errorlevel = wrapper.run(constraint.require_context_parsing ? context.parse(constraint) : context);
+                    environment->set_variable("errorlevel", std::to_string(errorlevel));
                 }
             }
-            else // Is a local command, throw if no match was found in get_command()
+            catch (std::exception &e)
             {
-                auto wrapper = get_command(context);
-                auto constraint = wrapper.command->constraint;
-                auto errorlevel = wrapper.run(constraint.require_context_parsing ? context.parse(constraint) : context);
-                environment->set_variable("errorlevel", std::to_string(errorlevel));
+                on_error(e);
             }
-        }
-        catch (std::exception &e)
-        {
-            on_error(e);
         }
 
         return this;
@@ -447,6 +464,7 @@ public:
             lines.push_back(line);
         }
 
+        lines.push_back(":EOF");
         lines.push_back("@ON"); // turn echo back to ON at the end of file
 
         std::reverse(lines.begin(), lines.end());

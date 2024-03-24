@@ -1,0 +1,12 @@
+@OFF
+eval "Enter n = " -ps n
+eval "$n / 2" -ms limit
+for div 2 $limit
+    eval "$n % $div" -ms r
+    if $r == 0
+        echo $n is not a prime
+        jump :EOF
+    endif
+endfor
+
+echo $n is a prime

@@ -262,8 +262,11 @@ def test_script_3() -> None:
     stdout, stderr = execute_command("tests/shell-script-3")
     assert_match("Starting test", stdout)
 
-    for i in range(1000, 2001, 2):
-        assert_match(f"{i} is even", stdout)
+    for i in range(1000, 2001):
+        if i % 2 == 0:
+            assert_match(f"{i} is even", stdout)
+        else:
+            assert_match(f"{i} is odd", stdout)
 
     assert stderr.strip() == ""
 
