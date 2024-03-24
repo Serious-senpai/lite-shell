@@ -214,7 +214,7 @@ public:
         set_ignore_ctrl_c(true);
         while (true)
         {
-            if (stream.peek_echo())
+            if (stream.echo && stream.peek_echo())
             {
                 std::cout << format("\nliteshell~%s>", get_working_directory().c_str());
                 std::cout.flush();
@@ -238,11 +238,11 @@ public:
         auto stripped_message = resolve_environment(strip(message));
 
         // Special sequences
-        if (stripped_message == "@ON")
+        if (stripped_message == ECHO_ON)
         {
             stream.echo = true;
         }
-        else if (stripped_message == "@OFF")
+        else if (stripped_message == ECHO_OFF)
         {
             stream.echo = false;
         }
@@ -455,24 +455,24 @@ public:
 
     Client *process_batch_file(const std::string &path)
     {
-        std::ifstream fstream(path);
-        std::vector<std::string> lines;
+        // Warning: ifstream read in text mode may f*ck up in Windows: https://stackoverflow.com/a/8834004
+
+        std::ifstream fstream(path, std::ios_base::in | std::ios_base::binary);
+        std::string data;
         while (!fstream.eof())
         {
-            std::string line;
-            std::getline(fstream, line);
-            lines.push_back(line);
+            char buffer[BUFFER_SIZE] = {};
+            fstream.read(buffer, BUFFER_SIZE);
+            data += buffer;
         }
 
-        lines.push_back(":EOF");
-        lines.push_back("@ON"); // turn echo back to ON at the end of file
+        data.erase(std::remove(data.begin(), data.end(), '\r'), data.end());
+        data += "\n:EOF\n";
+        data += ECHO_ON;
 
-        std::reverse(lines.begin(), lines.end());
-        for (const auto &line : lines)
-        {
-            stream.write_front(line);
-        }
+        stream.write(data);
 
+        fstream.close();
         return this;
     }
 

@@ -2,10 +2,10 @@
 
 #include <cassert>
 #include <codecvt>
-#include <deque>
 #include <fstream>
 #include <functional>
 #include <iostream>
+#include <list>
 #include <locale>
 #include <map>
 #include <memory>

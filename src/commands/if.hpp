@@ -176,11 +176,7 @@ public:
         }
 
         std::vector<std::string> lines = result ? if_true : if_false;
-        std::reverse(lines.begin(), lines.end());
-        for (const auto &line : lines)
-        {
-            context.client->stream.write_front(line);
-        }
+        context.client->stream.write(lines.begin(), lines.end());
 
         return 0;
     }

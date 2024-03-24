@@ -2,22 +2,26 @@
 
 #include "standard.hpp"
 
+#define ECHO_OFF "@OFF"
+#define ECHO_ON "@ON"
+
 class InputStream
 {
 private:
-    std::deque<std::string> queue;
+    std::list<std::string> list;
+    std::list<std::string>::iterator iterator = list.begin();
 
 public:
     bool echo = true;
 
     bool peek_echo()
     {
-        if (peek() == "@ON")
+        if (peek() == ECHO_ON)
         {
             return true;
         }
 
-        if (peek() == "@OFF")
+        if (peek() == ECHO_OFF)
         {
             return false;
         }
@@ -27,12 +31,16 @@ public:
 
     std::optional<std::string> peek()
     {
-        if (queue.empty())
+        for (auto iter = iterator; iter != list.end(); iter++)
         {
-            return std::nullopt;
+            auto text = strip(*iter);
+            if (!text.empty())
+            {
+                return text;
+            }
         }
 
-        return queue.front();
+        return std::nullopt;
     }
 
     std::string getline(const bool force_stdin = false, const bool force_stream = false)
@@ -42,15 +50,13 @@ public:
             throw std::invalid_argument("Arguments conflict: force_stdin && force_stream");
         }
 
-        // std::cout << "(force_stream = " << force_stream << ", queue.size() = " << queue.size() << ") ";
-        if (force_stream && queue.empty())
+        if (force_stream && iterator == list.end())
         {
             throw std::runtime_error("Unexpected EOF while reading");
         }
 
-        if (force_stdin || queue.empty())
+        if (force_stdin || iterator == list.end())
         {
-            // std::cout << "(waiting for stdin, queue size = " << queue.size() << ") ";
             while (true)
             {
                 std::string line;
@@ -68,11 +74,9 @@ public:
         }
         else
         {
-            bool next_echo = peek_echo();
-            auto line = strip(queue.front());
-            queue.pop_front();
-
-            if (next_echo)
+            auto echo_state = echo && peek_echo();
+            auto line = strip(*iterator++);
+            if (echo_state)
             {
                 std::cout << line << std::endl;
             }
@@ -81,44 +85,44 @@ public:
         }
     }
 
-    void write_front(const std::string &data)
+    template <typename _ForwardIterator>
+    void write(const _ForwardIterator &__begin, const _ForwardIterator &__end)
     {
-        for (auto &line : split(data, '\n'))
-        {
-            if (!line.empty())
-            {
-                queue.push_front(line);
-            }
-        }
+        iterator = list.insert(iterator, __begin, __end);
     }
 
-    void write_back(const std::string &data)
+    void write(const std::string &data)
     {
+        std::vector<std::string> lines;
         for (auto &line : split(data, '\n'))
         {
+            line = strip(line);
             if (!line.empty())
             {
-                queue.push_back(line);
+                lines.push_back(line);
             }
         }
+
+        write(lines.begin(), lines.end());
     }
 
     bool eof() const
     {
-        return queue.empty();
+        return iterator == list.end();
     }
 
     void jump(const std::string &label)
     {
-        while (!queue.empty())
+        while (iterator != list.end())
         {
-            auto next = strip(queue.front());
-            queue.pop_front();
+            auto next = *iterator++;
 
             if (next == label)
             {
-                break;
+                return;
             }
         }
+
+        throw std::runtime_error(format("Label %s not found", label.c_str()));
     }
 };

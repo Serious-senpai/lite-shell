@@ -52,16 +52,10 @@ public:
             lines.push_back(input);
         }
 
-        std::reverse(lines.begin(), lines.end());
-
         for (auto value = end; value >= start; value--)
         {
-            for (const auto &line : lines)
-            {
-                context.client->stream.write_front(line);
-            }
-
-            context.client->stream.write_front(format("eval %lld -s %s", value, loop_var.c_str()));
+            context.client->stream.write(lines.begin(), lines.end());
+            context.client->stream.write(format("eval %lld -s %s", value, loop_var.c_str()));
         }
 
         return 0;
