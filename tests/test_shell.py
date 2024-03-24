@@ -205,6 +205,10 @@ def test_eval_18() -> None:
     assert stderr.strip() == ""
 
 
+def test_eval_19() -> None:
+    invalid_argument_test("eval 2 -s")
+
+
 def test_exit() -> None:
     execute_command("exit", expected_exit_code=0)
     for exit_code in random.choices(range(100), k=5):
