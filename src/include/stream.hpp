@@ -52,10 +52,22 @@ public:
         return queue.front();
     }
 
-    std::string getline(bool force_stdin = false)
+    std::string getline(const bool force_stdin = false, const bool force_stream = false)
     {
+        if (force_stdin && force_stream)
+        {
+            throw std::invalid_argument("Arguments conflict: force_stdin && force_stream");
+        }
+
+        // std::cout << "(force_stream = " << force_stream << ", queue.size() = " << queue.size() << ") ";
+        if (force_stream && queue.empty())
+        {
+            throw std::runtime_error("Unexpected EOF while reading");
+        }
+
         if (force_stdin || queue.empty())
         {
+            // std::cout << "(waiting for stdin, queue size = " << queue.size() << ") ";
             while (true)
             {
                 std::string line;
@@ -70,7 +82,7 @@ public:
 
                 if (handle(line))
                 {
-                    return getline();
+                    return getline(force_stdin, force_stream);
                 }
 
                 return line;
@@ -83,7 +95,7 @@ public:
 
             if (handle(line))
             {
-                return getline();
+                return getline(force_stdin, force_stream);
             }
 
             if (echo)
@@ -99,7 +111,10 @@ public:
     {
         for (auto &line : split(data, '\n'))
         {
-            queue.push_front(line);
+            if (!line.empty())
+            {
+                queue.push_front(line);
+            }
         }
     }
 
@@ -107,7 +122,10 @@ public:
     {
         for (auto &line : split(data, '\n'))
         {
-            queue.push_back(line);
+            if (!line.empty())
+            {
+                queue.push_back(line);
+            }
         }
     }
 

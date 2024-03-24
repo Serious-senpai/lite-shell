@@ -1,0 +1,4 @@
+@OFF
+for i 1 10
+    for j $i 10
+        echo $i $j

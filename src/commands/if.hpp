@@ -33,7 +33,9 @@ public:
     DWORD run(const Context &context)
     {
         auto first = context.args[1], op = context.args[2], second = context.args[3];
+        bool force_stream = !context.client->stream.eof();
 
+        unsigned counter = 1;
         std::vector<std::string> if_true;
         bool has_else = false;
         while (true)
@@ -44,20 +46,33 @@ public:
                 std::cout.flush();
             }
 
-            auto input = strip(context.client->stream.getline());
-            if (input == "else")
+            auto input = strip(context.client->stream.getline(false, force_stream));
+            if (startswith(input, "if "))
             {
-                has_else = true;
-                break;
+                counter++;
+            }
+            else if (input == "else")
+            {
+                counter--;
+                if (counter == 0)
+                {
+                    has_else = true;
+                    break;
+                }
             }
             else if (input == "endif")
             {
-                break;
+                counter--;
+                if (counter == 0)
+                {
+                    break;
+                }
             }
 
             if_true.push_back(input);
         }
 
+        counter = 1;
         std::vector<std::string> if_false;
         if (has_else)
         {
@@ -69,14 +84,26 @@ public:
                     std::cout.flush();
                 }
 
-                auto input = strip(context.client->stream.getline());
-                if (input == "else")
+                auto input = strip(context.client->stream.getline(false, force_stream));
+                if (startswith(input, "if "))
                 {
-                    throw std::invalid_argument("\"else\" is not allowed here");
+                    counter++;
+                }
+                else if (input == "else")
+                {
+                    counter--;
+                    if (counter == 0)
+                    {
+                        throw std::invalid_argument("\"else\" is not allowed here");
+                    }
                 }
                 else if (input == "endif")
                 {
-                    break;
+                    counter--;
+                    if (counter == 0)
+                    {
+                        break;
+                    }
                 }
 
                 if_false.push_back(input);

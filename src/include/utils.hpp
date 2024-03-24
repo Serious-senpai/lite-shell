@@ -150,6 +150,24 @@ std::vector<WIN32_FIND_DATAW> explore_directory(const std::string &__directory, 
     return results;
 }
 
+bool startswith(const std::string &string, const std::string &prefix)
+{
+    if (string.size() < prefix.size())
+    {
+        return false;
+    }
+
+    for (unsigned i = 0; i < prefix.size(); i++)
+    {
+        if (string[i] != prefix[i])
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 bool endswith(const std::string &string, const std::string &suffix)
 {
     if (string.size() < suffix.size())

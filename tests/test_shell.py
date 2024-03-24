@@ -6,7 +6,7 @@ import subprocess
 import time
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Literal, Tuple, overload
+from typing import Any, List, Literal, Tuple, overload
 
 
 root_dir = Path(__file__).parent.parent
@@ -265,4 +265,20 @@ def test_script_3() -> None:
     for i in range(1000, 2001, 2):
         assert_match(f"{i} is even", stdout)
 
+    assert stderr.strip() == ""
+
+
+def test_script_4() -> None:
+    runtime_error_test("tests/shell-script-4")
+
+
+def test_script_5() -> None:
+    stdout, stderr = execute_command("tests/shell-script-5")
+
+    lines: List[str] = []
+    for i in range(100, 201):
+        for j in range(i, 201):
+            lines.append(f"{i} {j}")
+
+    assert_match("\n".join(lines), stdout)
     assert stderr.strip() == ""

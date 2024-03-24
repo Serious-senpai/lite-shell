@@ -25,6 +25,8 @@ public:
         }
 
         std::vector<std::string> lines;
+        unsigned counter = 1;
+        bool force_stream = !context.client->stream.eof();
         while (true)
         {
             if (context.client->stream.echo)
@@ -33,10 +35,18 @@ public:
                 std::cout.flush();
             }
 
-            auto input = strip(context.client->stream.getline());
-            if (input == "endfor")
+            auto input = strip(context.client->stream.getline(false, force_stream));
+            if (startswith(input, "for "))
             {
-                break;
+                counter++;
+            }
+            else if (input == "endfor")
+            {
+                counter--;
+                if (counter == 0)
+                {
+                    break;
+                }
             }
 
             lines.push_back(input);

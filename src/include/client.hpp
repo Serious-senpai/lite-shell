@@ -25,8 +25,6 @@ class Client
 private:
     const std::vector<std::string> extensions = {".exe", BATCH_EXT};
 
-    DWORD errorlevel = 0;
-
     std::set<ProcessInfoWrapper> subprocesses;
 
     std::vector<CommandWrapper<BaseCommand>> wrappers;
@@ -68,6 +66,7 @@ public:
         }
 
         environment->set_variable("PATH", path.substr(0, size));
+        environment->set_variable("errorlevel", "0");
     }
 
     Environment *get_environment() const
@@ -252,12 +251,15 @@ public:
                     auto subprocess = spawn_subprocess(final_context);
                     if (final_context.is_background_request())
                     {
-                        errorlevel = 0;
+                        environment->set_variable("errorlevel", 0);
                     }
                     else
                     {
                         WaitForSingleObject(subprocess.info.hProcess, INFINITE);
+
+                        DWORD errorlevel;
                         GetExitCodeProcess(subprocess.info.hProcess, &errorlevel);
+                        environment->set_variable("errorlevel", std::to_string(errorlevel));
                     }
                 }
                 else
@@ -269,7 +271,8 @@ public:
             {
                 auto wrapper = get_command(context);
                 auto constraint = wrapper.command->constraint;
-                errorlevel = wrapper.run(constraint.require_context_parsing ? context.parse(constraint) : context);
+                auto errorlevel = wrapper.run(constraint.require_context_parsing ? context.parse(constraint) : context);
+                environment->set_variable("errorlevel", std::to_string(errorlevel));
             }
         }
         catch (std::exception &e)
@@ -287,7 +290,7 @@ public:
     */
     void on_error(std::exception &e)
     {
-        errorlevel = 1000;
+        DWORD errorlevel = 1000;
 
 #define ERROR_CODE(exception_type, code)               \
     {                                                  \
@@ -305,6 +308,8 @@ public:
         ERROR_CODE(SubprocessCreationError, LITE_SHELL_SUBPROCESS_CREATION_ERROR);
 
 #undef ERROR_CODE
+
+        environment->set_variable("errorlevel", std::to_string(errorlevel));
     }
 
     std::vector<std::string> get_resolve_order() const
@@ -460,6 +465,6 @@ public:
     */
     DWORD get_errorlevel() const
     {
-        return errorlevel;
+        return std::stoul(environment->get_value("errorlevel"));
     }
 };

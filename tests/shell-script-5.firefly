@@ -1,0 +1,6 @@
+@OFF
+for i 100 200
+    for j $i 200
+        echo $i $j
+    endfor
+endfor
