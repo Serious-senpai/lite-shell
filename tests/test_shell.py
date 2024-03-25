@@ -6,7 +6,7 @@ import subprocess
 import time
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, List, Literal, Tuple, overload
+from typing import Any, List, Literal, Optional, Tuple, overload
 
 
 root_dir = Path(__file__).parent.parent
@@ -55,10 +55,18 @@ def invalid_argument_test(command: str) -> None:
     execute_command(command, expected_exit_code=901)
 
 
-def assert_match(token: str, string: str) -> None:
+def match(token: str, string: str) -> Optional[re.Match[str]]:
     pattern = r"(?:[^\w]|^)" + re.escape(token) + r"(?:[^\w]|$)"
     print(f"Matching token:\n{token!r}\n" + "-" * 30 + f"\n{string!r}")
-    assert re.search(pattern, string) is not None
+    return re.search(pattern, string, re.MULTILINE)
+
+
+def assert_match(token: str, string: str) -> None:
+    assert match(token, string) is not None
+
+
+def assert_not_match(token: str, string: str) -> None:
+    assert match(token, string) is None
 
 
 def test_escape() -> None:
@@ -267,6 +275,8 @@ def test_script_prime() -> None:
         else:
             assert_match(f"{value} is not a prime", stdout)
 
+        assert_not_match("@OFF", stdout)
+        assert_not_match("@ON", stdout)
         assert stderr.strip() == ""
 
 
@@ -274,6 +284,8 @@ def test_script_1() -> None:
     stdout, stderr = execute_command("tests/shell-script-1")
     assert_match("Starting test", stdout)
     assert_match("6969", stdout)
+    assert_not_match("@OFF", stdout)
+    assert_not_match("@ON", stdout)
     assert stderr.strip() == ""
 
 
@@ -284,6 +296,8 @@ def test_script_2() -> None:
     for i in range(5, 11):
         assert_match(f"2 * {i} = {2 * i}", stdout)
 
+    assert_not_match("@OFF", stdout)
+    assert_not_match("@ON", stdout)
     assert stderr.strip() == ""
 
 
@@ -297,6 +311,8 @@ def test_script_3() -> None:
         else:
             assert_match(f"{i} is odd", stdout)
 
+    assert_not_match("@OFF", stdout)
+    assert_not_match("@ON", stdout)
     assert stderr.strip() == ""
 
 
@@ -313,6 +329,8 @@ def test_script_5() -> None:
             lines.append(f"{i} {j}")
 
     assert_match("\n".join(lines), stdout)
+    assert_not_match("@OFF", stdout)
+    assert_not_match("@ON", stdout)
     assert stderr.strip() == ""
 
 
@@ -320,4 +338,6 @@ def test_script_6() -> None:
     stdout, stderr = execute_command("tests/shell-script-6")
 
     assert_match("1234\n5\n6\n", stdout)
+    assert_not_match("@OFF", stdout)
+    assert_not_match("@ON", stdout)
     assert stderr.strip() == ""
