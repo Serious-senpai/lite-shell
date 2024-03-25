@@ -89,6 +89,8 @@ public:
                 case '-':
                     st.push(-l);
                     break;
+                default:
+                    throw std::runtime_error(format("Invalid expression - unknown unary operator %c", op));
                 }
             }
             else
@@ -135,7 +137,7 @@ public:
                     st.push(l % r);
                     break;
                 default:
-                    throw std::runtime_error(format("Invalid expression - unknown operator %c", op));
+                    throw std::runtime_error(format("Invalid expression - unknown binary operator %c", op));
                 }
             }
         };

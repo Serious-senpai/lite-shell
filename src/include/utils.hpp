@@ -282,3 +282,38 @@ bool is_math_symbol(char c)
 {
     return c == '+' || c == '-' || c == '*' || c == '/' || c == ' ' || c == '%' || ('0' <= c && c <= '9') || c == '(' || c == ')';
 }
+
+template <typename T>
+T sqrt(const T value)
+{
+    if (value < 0)
+    {
+        throw std::out_of_range(format("Attempted to calculate square root of %lf < 0", value));
+    }
+
+    if (value == 0)
+    {
+        return 0;
+    }
+
+    T low = 0, high = std::max((T)1, value), accuracy = 1;
+    if constexpr (std::is_floating_point_v<T>)
+    {
+        accuracy = 1.0e-6;
+    }
+
+    while (high - low > accuracy)
+    {
+        double mid = (low + high) / 2;
+        if (mid * mid < value)
+        {
+            low = mid;
+        }
+        else
+        {
+            high = mid;
+        }
+    }
+
+    return high;
+}

@@ -12,6 +12,10 @@ private:
     std::list<std::string>::iterator iterator = list.begin();
 
 public:
+    static const int FORCE_STDOUT = 0b100;
+    static const int FORCE_STDIN = 0b010;
+    static const int FORCE_STREAM = 0b001;
+
     bool echo = true;
 
     bool peek_echo()
@@ -43,22 +47,28 @@ public:
         return std::nullopt;
     }
 
-    std::string getline(const bool force_stdin = false, const bool force_stream = false)
+    std::string getline(const std::string &prompt, const int flags)
     {
-        if (force_stdin && force_stream)
+        if ((flags & FORCE_STDIN) & (flags & FORCE_STREAM))
         {
             throw std::invalid_argument("Arguments conflict: force_stdin && force_stream");
         }
 
-        if (force_stream && iterator == list.end())
+        if ((flags & FORCE_STREAM) && iterator == list.end())
         {
             throw std::runtime_error("Unexpected EOF while reading");
         }
 
-        if (force_stdin || iterator == list.end())
+        if ((flags & FORCE_STDIN) || iterator == list.end())
         {
             while (true)
             {
+                if ((flags & FORCE_STDOUT) || (echo && peek_echo()))
+                {
+                    std::cout << prompt;
+                    std::cout.flush();
+                }
+
                 std::string line;
                 std::getline(std::cin, line);
 
@@ -66,6 +76,7 @@ public:
                 if (std::cin.fail() || std::cin.eof() || line.empty())
                 {
                     std::cin.clear();
+                    std::cout << std::endl;
                     continue;
                 }
 
@@ -78,7 +89,7 @@ public:
             auto line = strip(*iterator++);
             if (echo_state)
             {
-                std::cout << line << std::endl;
+                std::cout << prompt << line << std::endl;
             }
 
             return line;

@@ -1,5 +1,5 @@
 @OFF
-eval "Enter n = " -ps n
+eval "Enter n = " -pms n
 
 if $n < 0
     jump :is_not_prime

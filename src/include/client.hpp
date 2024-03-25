@@ -214,13 +214,7 @@ public:
         set_ignore_ctrl_c(true);
         while (true)
         {
-            if (stream.echo && stream.peek_echo())
-            {
-                std::cout << format("\nliteshell~%s>", get_working_directory().c_str());
-                std::cout.flush();
-            }
-
-            process_command(stream.getline());
+            process_command(stream.getline(format("\nliteshell~%s>", get_working_directory().c_str()), 0));
         }
     }
 

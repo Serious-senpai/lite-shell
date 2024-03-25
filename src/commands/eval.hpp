@@ -28,10 +28,7 @@ public:
         auto input = context.args[1];
         if (context.present.count("-p"))
         {
-            std::cout << input;
-            std::cout.flush();
-
-            input = context.client->stream.getline(true);
+            input = context.client->stream.getline(input, InputStream::FORCE_STDOUT | InputStream::FORCE_STDIN);
         }
 
         auto result = context.present.count("-m") ? std::to_string(context.client->get_environment()->eval_ll(input)) : input;

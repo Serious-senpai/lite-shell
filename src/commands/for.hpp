@@ -29,13 +29,7 @@ public:
         bool force_stream = !context.client->stream.eof();
         while (true)
         {
-            if (context.client->stream.echo)
-            {
-                std::cout << "for>";
-                std::cout.flush();
-            }
-
-            auto input = strip(context.client->stream.getline(false, force_stream));
+            auto input = strip(context.client->stream.getline("for>", force_stream ? InputStream::FORCE_STREAM : 0));
             if (startswith(input, "for "))
             {
                 counter++;
