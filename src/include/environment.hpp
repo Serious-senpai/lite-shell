@@ -44,21 +44,6 @@ public:
         std::stack<long long> st;
         std::stack<char> op;
 
-        auto delim = [](char c)
-        {
-            return c == ' ';
-        };
-
-        auto is_op = [](char c)
-        {
-            return c == '+' || c == '-' || c == '*' || c == '/' || c == '%';
-        };
-
-        auto is_unary = [](char c)
-        {
-            return c == '+' || c == '-';
-        };
-
         auto priority = [](char op)
         {
             if (op < 0) // unary operator
@@ -67,6 +52,7 @@ public:
                 return 1;
             if (op == '*' || op == '/' || op == '%')
                 return 2;
+
             return -1;
         };
 
@@ -143,10 +129,13 @@ public:
         };
 
         bool may_be_unary = true;
+        std::string function;
         for (unsigned i = 0; i < expression.size(); i++)
         {
-            if (delim(expression[i]))
+            if (expression[i] == ' ')
+            {
                 continue;
+            }
 
             if (expression[i] == '(')
             {
@@ -169,11 +158,13 @@ public:
                 op.pop();
                 may_be_unary = false;
             }
-            else if (is_op(expression[i]))
+            else if (expression[i] == '+' || expression[i] == '-' || expression[i] == '*' || expression[i] == '/' || expression[i] == '%')
             {
                 char cur_op = expression[i];
-                if (may_be_unary && is_unary(cur_op))
+                if (may_be_unary && (cur_op == '+' || cur_op == '-'))
+                {
                     cur_op = -cur_op;
+                }
                 while (!op.empty() && ((cur_op >= 0 && priority(op.top()) >= priority(cur_op)) ||
                                        (cur_op < 0 && priority(op.top()) > priority(cur_op))))
                 {
@@ -186,9 +177,11 @@ public:
             else
             {
                 long long number = 0;
-                while (i < expression.size() && isalnum(expression[i]))
+                while (i < expression.size() && expression[i] >= '0' && expression[i] <= '9')
+                {
                     number = number * 10 + expression[i++] - '0';
-                --i;
+                }
+                i--;
 
                 st.push(number);
                 may_be_unary = false;
