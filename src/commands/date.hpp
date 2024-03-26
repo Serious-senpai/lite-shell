@@ -1,7 +1,6 @@
 #pragma once
 
-#include <base.hpp>
-#include <standard.hpp>
+#include <all.hpp>
 
 const char *__week_days[] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
 

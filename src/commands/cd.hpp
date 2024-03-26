@@ -1,9 +1,6 @@
 #pragma once
 
-#include <base.hpp>
-#include <converter.hpp>
-#include <error.hpp>
-#include <standard.hpp>
+#include <all.hpp>
 
 const char __cd_description[] = R"(Display the name of or change the current directory.
 
@@ -34,7 +31,7 @@ public:
             auto target = context.args[1];
             if (!SetCurrentDirectoryW(utf_convert(target).c_str()))
             {
-                throw std::runtime_error(format_last_error(format("Error when changing directory to %s", target.c_str())));
+                throw std::runtime_error(last_error(format("Error when changing directory to %s", target.c_str())));
             }
         }
 

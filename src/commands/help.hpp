@@ -1,8 +1,6 @@
 #pragma once
 
-#include <base.hpp>
-#include <client.hpp>
-#include <standard.hpp>
+#include <all.hpp>
 
 const char __help_description[] = R"(Provides help information for Windows commands.
 

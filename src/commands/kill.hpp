@@ -1,8 +1,6 @@
 #pragma once
 
-#include <base.hpp>
-#include <client.hpp>
-#include <standard.hpp>
+#include <all.hpp>
 
 class KillCommand : public BaseCommand
 {
@@ -24,7 +22,7 @@ public:
             {
                 if (!TerminateProcess(wrapper.info.hProcess, 1))
                 {
-                    throw std::runtime_error(format_last_error("TerminateProcess ERROR"));
+                    throw std::runtime_error(last_error("TerminateProcess ERROR"));
                 }
 
                 std::cout << "Terminated process " << pid << " with exit code 1" << std::endl;

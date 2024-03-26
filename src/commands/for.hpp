@@ -1,7 +1,6 @@
 #pragma once
 
-#include <base.hpp>
-#include <client.hpp>
+#include <all.hpp>
 
 class ForCommand : public BaseCommand
 {

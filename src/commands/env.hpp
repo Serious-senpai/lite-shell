@@ -1,8 +1,6 @@
 #pragma once
 
-#include <base.hpp>
-#include <client.hpp>
-#include <tables.hpp>
+#include <all.hpp>
 
 class EnvCommand : public BaseCommand
 {

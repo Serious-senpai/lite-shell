@@ -1,9 +1,6 @@
 #pragma once
 
-#include <base.hpp>
-#include <converter.hpp>
-#include <error.hpp>
-#include <standard.hpp>
+#include <all.hpp>
 
 const char __cat_description[] = "Displays the contents of a text file";
 
@@ -31,7 +28,7 @@ public:
 
         if (h_file == INVALID_HANDLE_VALUE)
         {
-            throw std::runtime_error(format_last_error("Error when opening file"));
+            throw std::runtime_error(last_error("Error when opening file"));
         }
 
         char buffer[BUFFER_SIZE] = {};
@@ -40,7 +37,7 @@ public:
         {
             if (!ReadFile(h_file, buffer, BUFFER_SIZE, &read, NULL))
             {
-                throw std::runtime_error(format_last_error("Error when reading file"));
+                throw std::runtime_error(last_error("Error when reading file"));
             }
 
             std::cout << std::string(buffer, buffer + read);

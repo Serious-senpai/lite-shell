@@ -2,6 +2,7 @@
 
 #include "error.hpp"
 #include "format.hpp"
+#include "split.hpp"
 #include "standard.hpp"
 #include "utils.hpp"
 
@@ -301,14 +302,20 @@ Context Context::get_context(Client *const client, const std::string &message, c
 
         if (constraint.arguments_checking)
         {
-            if (args.size() < constraint.args_bounds.first)
+            auto bounds = constraint.args_bounds;
+            if (args.size() == 0)
             {
-                throw std::invalid_argument(format("Too few positional arguments: %d < %d", args.size(), constraint.args_bounds.first));
+                throw std::runtime_error("This should never happen: args.size() == 0");
             }
 
-            if (args.size() > constraint.args_bounds.second)
+            if (args.size() < bounds.first)
             {
-                throw std::invalid_argument(format("Too many positional arguments: %d > %d", args.size(), constraint.args_bounds.second));
+                throw std::invalid_argument(format("Too few positional arguments: %d < %d", args.size() - 1, bounds.first - 1));
+            }
+
+            if (args.size() > bounds.second)
+            {
+                throw std::invalid_argument(format("Too many positional arguments: %d > %d", args.size() - 1, bounds.second - 1));
             }
 
             for (auto &aliases : constraint.get_alias_groups())

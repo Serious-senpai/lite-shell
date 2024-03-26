@@ -69,6 +69,11 @@ def assert_not_match(token: str, string: str) -> None:
     assert match(token, string) is None
 
 
+def test_no_command() -> None:
+    invalid_argument_test("tests")
+    invalid_argument_test("tests/")
+
+
 def test_escape() -> None:
     stdout, stderr = execute_command("echoln $$Hello World$$")
     assert_match("$Hello World$", stdout)

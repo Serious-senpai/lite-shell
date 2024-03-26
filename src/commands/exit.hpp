@@ -1,7 +1,6 @@
 #pragma once
 
-#include <base.hpp>
-#include <standard.hpp>
+#include <all.hpp>
 
 class ExitCommand : public BaseCommand
 {

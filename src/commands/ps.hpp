@@ -1,9 +1,6 @@
 #pragma once
 
-#include <base.hpp>
-#include <client.hpp>
-#include <standard.hpp>
-#include <tables.hpp>
+#include <all.hpp>
 
 class PsCommand : public BaseCommand
 {
@@ -40,7 +37,7 @@ public:
             }
             else
             {
-                status_display = format_last_error("GetExitCodeProcess ERROR");
+                status_display = last_error("GetExitCodeProcess ERROR");
             }
 
             displayer.add_row({std::to_string(subprocess.info.dwProcessId), subprocess.command, status_display});

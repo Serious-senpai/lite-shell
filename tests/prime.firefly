@@ -17,6 +17,10 @@ for div 2 "$n / 2"
     if "$n % $div" == 0 -m
         jump :is_not_prime
     endif
+
+    if "$div * $div" > $n -m
+        jump :is_prime
+    endif
 endfor
 
 :is_prime

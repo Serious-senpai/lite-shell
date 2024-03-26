@@ -1,10 +1,6 @@
 #pragma once
 
-#include <base.hpp>
-#include <standard.hpp>
-#include <tables.hpp>
-#include <units.hpp>
-#include <utils.hpp>
+#include <all.hpp>
 
 class LsCommand : public BaseCommand
 {

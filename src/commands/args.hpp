@@ -1,7 +1,6 @@
 #pragma once
 
-#include <base.hpp>
-#include <standard.hpp>
+#include <all.hpp>
 
 const char __args_description[] = R"(Display the arguments and keyword arguments passed to the command.
 

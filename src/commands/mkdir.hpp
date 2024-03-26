@@ -1,9 +1,6 @@
 #pragma once
 
-#include <base.hpp>
-#include <converter.hpp>
-#include <standard.hpp>
-#include <utils.hpp>
+#include <all.hpp>
 
 class MkdirCommand : public BaseCommand
 {
@@ -20,7 +17,7 @@ public:
     {
         if (!CreateDirectoryW(utf_convert(context.args[1]).c_str(), NULL))
         {
-            throw std::runtime_error(format_last_error("Unable to create directory"));
+            throw std::runtime_error(last_error("Unable to create directory"));
         }
 
         return 0;

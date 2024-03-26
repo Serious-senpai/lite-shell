@@ -1,7 +1,6 @@
 #pragma once
 
-#include <base.hpp>
-#include <client.hpp>
+#include <all.hpp>
 
 const char __if_description[] = R"(
 The command syntax is: if <value> <operator> <value>

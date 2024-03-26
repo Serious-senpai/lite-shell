@@ -7,6 +7,7 @@
 #include "format.hpp"
 #include "standard.hpp"
 #include "stream.hpp"
+#include "strip.hpp"
 #include "subprocess.hpp"
 #include "utils.hpp"
 #include "wrapper.hpp"
@@ -357,16 +358,17 @@ public:
     */
     std::optional<std::string> resolve(const std::string &token)
     {
-        auto find_executable = [this, &token](const std::string &directory) -> std::optional<std::string>
+        auto t = strip(token, {'\\', '/'});
+        auto find_executable = [this, &t](const std::string &directory) -> std::optional<std::string>
         {
-            for (const auto &file : explore_directory(directory, token + "*"))
+            for (const auto &file : explore_directory(directory, t + "*"))
             {
                 auto filename = utf_convert(std::wstring(file.cFileName));
                 for (auto &extension : extensions)
                 {
                     if (endswith(filename, extension))
                     {
-                        return join(directory, token + extension);
+                        return join(directory, t + extension);
                     }
                 }
             }
@@ -443,7 +445,7 @@ public:
         else
         {
             wrapper.close();
-            throw SubprocessCreationError(format_last_error(format("Unable to create subprocess: %s", final_context.message.c_str())));
+            throw SubprocessCreationError(last_error(format("Unable to create subprocess: %s", final_context.message.c_str())));
         }
     }
 
