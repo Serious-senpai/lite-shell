@@ -114,6 +114,74 @@ private:
         return result;
     }
 
+    /*
+    @brief Find an executable that `token` points to.
+    The function will first look in the current working directory, then in the directories specified in `resolve_order`.
+
+    @param token The token to resolve. This token may contain path separators.
+    @return The path to the executable if found, `std::nullopt` otherwise.
+    */
+    std::optional<std::string> resolve(const std::string &token)
+    {
+        auto t = strip(token, {'\\', '/'});
+        auto find_executable = [this, &t](const std::string &directory) -> std::optional<std::string>
+        {
+            for (const auto &file : explore_directory(directory, t + "*"))
+            {
+                auto filename = utf_convert(std::wstring(file.cFileName));
+                for (auto &extension : extensions)
+                {
+                    if (endswith(filename, extension))
+                    {
+                        return join(directory, t + extension);
+                    }
+                }
+            }
+
+            return std::nullopt;
+        };
+
+        auto result = find_executable(get_working_directory());
+        if (result.has_value())
+        {
+            return *result;
+        }
+
+        for (const auto &directory : get_resolve_order())
+        {
+            result = find_executable(directory);
+            if (result.has_value())
+            {
+                return *result;
+            }
+        }
+
+        return std::nullopt;
+    }
+
+    Client *process_batch_file(const std::string &path)
+    {
+        // Warning: ifstream read in text mode may f*ck up in Windows: https://stackoverflow.com/a/8834004
+
+        std::ifstream fstream(path, std::ios_base::in | std::ios_base::binary);
+        std::string data;
+        while (!fstream.eof())
+        {
+            char buffer[BUFFER_SIZE] = {};
+            fstream.read(buffer, BUFFER_SIZE);
+            data += buffer;
+        }
+
+        data.erase(std::remove(data.begin(), data.end(), '\r'), data.end());
+        data += "\n:EOF\n";
+        data += ECHO_ON;
+
+        stream.write(data);
+
+        fstream.close();
+        return this;
+    }
+
 public:
     InputStream stream;
 
@@ -344,51 +412,6 @@ public:
     }
 
     /*
-    @brief Find an executable that `token` points to.
-    The function will first look in the current working directory, then in the directories specified in `resolve_order`.
-
-    @param token The token to resolve. This token may contain path separators.
-    @return The path to the executable if found, `std::nullopt` otherwise.
-    */
-    std::optional<std::string> resolve(const std::string &token)
-    {
-        auto t = strip(token, {'\\', '/'});
-        auto find_executable = [this, &t](const std::string &directory) -> std::optional<std::string>
-        {
-            for (const auto &file : explore_directory(directory, t + "*"))
-            {
-                auto filename = utf_convert(std::wstring(file.cFileName));
-                for (auto &extension : extensions)
-                {
-                    if (endswith(filename, extension))
-                    {
-                        return join(directory, t + extension);
-                    }
-                }
-            }
-
-            return std::nullopt;
-        };
-
-        auto result = find_executable(get_working_directory());
-        if (result.has_value())
-        {
-            return *result;
-        }
-
-        for (const auto &directory : get_resolve_order())
-        {
-            result = find_executable(directory);
-            if (result.has_value())
-            {
-                return *result;
-            }
-        }
-
-        return std::nullopt;
-    }
-
-    /*
     @brief Spawn a subprocess and execute `command` in it.
 
     @param command The command to execute.
@@ -441,29 +464,6 @@ public:
             wrapper.close();
             throw SubprocessCreationError(last_error(format("Unable to create subprocess: %s", final_context.message.c_str())));
         }
-    }
-
-    Client *process_batch_file(const std::string &path)
-    {
-        // Warning: ifstream read in text mode may f*ck up in Windows: https://stackoverflow.com/a/8834004
-
-        std::ifstream fstream(path, std::ios_base::in | std::ios_base::binary);
-        std::string data;
-        while (!fstream.eof())
-        {
-            char buffer[BUFFER_SIZE] = {};
-            fstream.read(buffer, BUFFER_SIZE);
-            data += buffer;
-        }
-
-        data.erase(std::remove(data.begin(), data.end(), '\r'), data.end());
-        data += "\n:EOF\n";
-        data += ECHO_ON;
-
-        stream.write(data);
-
-        fstream.close();
-        return this;
     }
 
     /*

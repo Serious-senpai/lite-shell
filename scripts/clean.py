@@ -38,7 +38,7 @@ for file in explore(str(root), recursive=True):
             line = include.group()
             print(f"Removing {Fore.BLUE}{line}{Style.RESET_ALL} from {file}")
 
-            d = data.replace(line + "\n", "")
+            d = data.replace("\n" + line, "")
 
             with open(file, "w", encoding="utf-8") as f:
                 f.write(d)
