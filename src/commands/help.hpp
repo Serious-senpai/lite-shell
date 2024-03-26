@@ -35,27 +35,7 @@ public:
             auto wrapper = context.client->get_optional_command(name);
             if (wrapper.has_value())
             {
-                std::cout << "Name: " << wrapper->command->name << std::endl;
-                std::cout << "Syntax: " << wrapper->command->syntax() << std::endl;
-                std::cout << "Description: " << wrapper->command->description << std::endl;
-                std::cout << wrapper->command->long_description << std::endl;
-
-                auto aliases = wrapper->command->aliases;
-                std::cout << "Aliases: ";
-                if (!aliases.empty())
-                {
-                    for (unsigned i = 0; i < aliases.size() - 1; i++)
-                    {
-                        std::cout << aliases[i] << ", ";
-                    }
-                    std::cout << aliases.back();
-                }
-                else
-                {
-                    std::cout << "<none>";
-                }
-
-                std::cout << std::endl;
+                std::cout << wrapper->command->help() << std::endl;
             }
             else
             {

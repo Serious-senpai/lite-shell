@@ -50,71 +50,107 @@ public:
     */
     virtual DWORD run(const Context &context) = 0;
 
-    virtual std::string syntax() const final
+    virtual std::string help() const final
     {
-        std::string result = name + " ";
+        std::stringstream stream;
+        stream << description << std::endl;
+        stream << "Usage: " << std::endl;
+
         if (constraint.require_context_parsing && constraint.arguments_checking)
         {
-            if (constraint.args_bounds.first == constraint.args_bounds.second)
-            {
-                result += format(
-                    "<%d %s>",
-                    constraint.args_bounds.first - 1,
-                    ngettext(constraint.args_bounds.second == 2, "argument", "arguments").c_str());
-            }
-            else
-            {
-                result += format(
-                    "<%d-%d %s>",
-                    constraint.args_bounds.first - 1,
-                    constraint.args_bounds.second - 1,
-                    ngettext(constraint.args_bounds.second == 2, "argument", "arguments").c_str());
-            }
-
+            std::vector<std::set<std::string>> optional, required;
             for (auto &aliases : constraint.get_alias_groups())
             {
                 if (aliases.empty())
                 {
-                    throw std::runtime_error("Alias group is unexpectedly empty");
+                    throw std::runtime_error(format("Command %s has an unexpected empty alias group", name.c_str()));
                 }
 
-                auto bounds = constraint.get_constraint(*aliases.begin()).bounds;
-                auto brackets = bounds.first == 0 ? "[]" : "<>";
-                result += format(" %c", brackets[0]);
-
-                std::vector<std::string> aliases_vector(aliases.begin(), aliases.end());
-                for (unsigned i = 0; i < aliases_vector.size() - 1; i++)
+                auto name = *aliases.begin();
+                auto c = constraint.get_constraint(name);
+                if (c.required)
                 {
-                    result += aliases_vector[i] + "|";
-                }
-                result += aliases_vector.back();
-
-                if (bounds.first > 0)
-                {
-                    bounds.first--;
-                }
-
-                if (bounds.second == 1)
-                {
-                    // no-op
-                }
-                else if (bounds.first == bounds.second)
-                {
-                    result += format(" %d %s", bounds.first, ngettext(bounds.second == 2, "value", "values").c_str());
+                    required.push_back(aliases);
                 }
                 else
                 {
-                    result += format(" %d-%d %s", bounds.first, bounds.second - 1, ngettext(bounds.second == 2, "value", "values").c_str());
+                    optional.push_back(aliases);
+                }
+            }
+
+            if (optional.size() > 64) // unsigned long long has 64 bits
+            {
+                throw std::runtime_error(format("Command %s has %d optional arguments, only a maximum of 64 is supported", name.c_str(), optional.size()));
+            }
+
+            std::string args_display;
+            auto bounds = constraint.args_bounds;
+            bounds.first--;
+            bounds.second--;
+            if (bounds.first == bounds.second)
+            {
+                args_display = format("[%d %s]", bounds.second, ngettext(bounds.second == 1, "argument", "arguments").c_str());
+            }
+            else
+            {
+                args_display = format("[%d-%d %s]", bounds.first, bounds.second, ngettext(bounds.second == 1, "argument", "arguments").c_str());
+            }
+
+            auto display = [this](const std::set<std::string> aliases)
+            {
+                std::stringstream display;
+                display << join(aliases.begin(), aliases.end(), "|");
+
+                auto bounds = constraint.get_constraint(*aliases.begin()).bounds;
+                if (bounds.second > 0)
+                {
+                    if (bounds.first == bounds.second)
+                    {
+                        display << " [" << bounds.second << " " << ngettext(bounds.second == 1, "argument", "arguments") << "]";
+                    }
+                    else
+                    {
+                        display << " [" << bounds.first << "-" << bounds.second << " " << ngettext(bounds.second == 1, "argument", "arguments") << "]";
+                    }
                 }
 
-                result += brackets[1];
+                return display.str();
+            };
+
+            for (unsigned long long bitmask = 0ull; bitmask < (1ull << optional.size()); bitmask++)
+            {
+                stream << "  " << name << " " << args_display;
+                for (auto &aliases : required)
+                {
+                    stream << " " << display(aliases);
+                }
+
+                for (unsigned long long i = 0; i < optional.size(); i++)
+                {
+                    if (bitmask & (1ull << i))
+                    {
+                        stream << " " << display(optional[i]);
+                    }
+                }
+                stream << std::endl;
             }
         }
         else
         {
-            result += "<...>";
+            stream << "  " << name << " [...]" << std::endl;
         }
 
-        return result;
+        stream << long_description << std::endl;
+        stream << "Aliases: " << join(aliases.begin(), aliases.end(), ", ") << std::endl;
+        stream << "Parameters:" << std::endl;
+
+        for (auto &aliases : constraint.get_alias_groups())
+        {
+            auto c = constraint.get_constraint(*aliases.begin());
+            stream << " " << join(aliases.begin(), aliases.end(), "|") << " " << ngettext(c.required, "(required)", "(optional)") << std::endl;
+            stream << "  " << c.help << std::endl;
+        }
+
+        return stream.str();
     }
 };
