@@ -1,15 +1,9 @@
 #pragma once
 
 #include "base.hpp"
-#include "context.hpp"
 #include "environment.hpp"
-#include "error.hpp"
-#include "format.hpp"
-#include "standard.hpp"
 #include "stream.hpp"
-#include "strip.hpp"
 #include "subprocess.hpp"
-#include "utils.hpp"
 #include "wrapper.hpp"
 
 #define BATCH_EXT ".firefly"

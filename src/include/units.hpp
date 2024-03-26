@@ -1,7 +1,5 @@
 #pragma once
 
-#include "format.hpp"
-#include "standard.hpp"
 
 /*
 Formatter for printing memory sizes, e.g. 1024 bytes -> `1.00KB`

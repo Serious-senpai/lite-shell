@@ -1,4 +1,4 @@
-#include <standard.hpp>
+#include <all.hpp>
 
 int main(int argc, const char **argv)
 {

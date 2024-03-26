@@ -1,7 +1,6 @@
 #pragma once
 
 #include "format.hpp"
-#include "standard.hpp"
 
 /* A helper class to display ASCII table on the console */
 class Table

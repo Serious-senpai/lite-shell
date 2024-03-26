@@ -1,7 +1,6 @@
 #pragma once
 
 #include "format.hpp"
-#include "standard.hpp"
 
 class ArgumentConstraint
 {

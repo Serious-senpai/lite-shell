@@ -1,8 +1,5 @@
 #pragma once
 
-#include "base.hpp"
-#include "context.hpp"
-#include "standard.hpp"
 
 /*
 Wrapper for a command inheriting from BaseCommand.

@@ -1,11 +1,9 @@
 #pragma once
 
-#include <cassert>
 #include <codecvt>
 #include <fstream>
 #include <functional>
 #include <iostream>
-#include <iterator>
 #include <list>
 #include <locale>
 #include <map>
@@ -14,9 +12,6 @@
 #include <set>
 #include <sstream>
 #include <stack>
-#include <stdexcept>
-#include <string>
-#include <vector>
 #include <windows.h>
 
 namespace std

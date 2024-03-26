@@ -1,4 +1,6 @@
 @echo off
+setlocal enabledelayedexpansion
+
 g++ --version
 
 for %%f in ("%~dp0..") do set root=%%~ff
@@ -15,6 +17,6 @@ for %%f in (%root%\src\external\*) do (
     if /i %%~xf equ .cpp (
         echo Building %%f to %root%\build\%%~nf.exe
         g++ %params% %%f -o %root%\build\%%~nf.exe
-        if %errorlevel% neq 0 exit /b %errorlevel%
+        if !errorlevel! neq 0 exit /b !errorlevel!
     )
 )
