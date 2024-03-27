@@ -22,7 +22,7 @@ def explore(directory: str, *, recursive: bool) -> Iterable[str]:
 
 init(convert=True)
 root = Path(__file__).parent.parent
-pattern = re.compile(r"^#include [\"<][\w\.]+[\">]$", flags=re.MULTILINE)
+pattern = re.compile(r"^#include [\"<][\w\.\/]+[\">]$", flags=re.MULTILINE)
 removable = 0
 for file in explore(str(root), recursive=True):
     if file.endswith(".cpp") or file.endswith(".hpp"):

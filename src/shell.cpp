@@ -1,4 +1,3 @@
-
 #include "initialize.hpp"
 
 // Windows uses UTF-16, but we process UTF-8 only
