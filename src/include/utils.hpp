@@ -165,3 +165,13 @@ T sqrt(const T value)
 
     return high;
 }
+
+std::vector<long long> range(const long long start, const long long end)
+{
+    std::vector<long long> result;
+    for (long long i = start; i < end; i++)
+    {
+        result.push_back(i);
+    }
+    return result;
+}

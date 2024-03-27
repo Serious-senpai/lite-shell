@@ -1,6 +1,6 @@
 @OFF
 echoln Starting test
-for i 5 10
+for i 5 10 -t range
     eval "2 * $i" -ms d
     echoln 2 * $i = $d
 endfor

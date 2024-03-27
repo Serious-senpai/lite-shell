@@ -5,9 +5,9 @@
 CommandConstraint __constraint_EvalCommand()
 {
     CommandConstraint constraint(2, 2);
-    constraint.add_argument(false, "treat the input as a mathematical expression instead of a string and evaluate it", 0, 0, "-m");
-    constraint.add_argument(false, "print the positional argument to stdout, read stdin and treat it as the input", 0, 0, "-p");
-    constraint.add_argument(false, "save the input to an environment variable instead of printing to stdout", 1, 1, "-s");
+    constraint.add_argument("-m", false, "treat the input as a mathematical expression instead of a string and evaluate it", 0, 0);
+    constraint.add_argument("-p", false, "print the positional argument to stdout, read stdin and treat it as the input", 0, 0);
+    constraint.add_argument("-s", false, "save the input to an environment variable instead of printing to stdout", 1, 1);
     return constraint;
 }
 

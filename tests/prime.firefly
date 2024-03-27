@@ -13,7 +13,7 @@ if $n == 1
     jump :is_not_prime
 endif
 
-for div 2 "$n / 2"
+for div 2 "$n / 2 + 1" -t range
     if "$n % $div" == 0 -m
         jump :is_not_prime
     endif

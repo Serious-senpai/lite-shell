@@ -1,4 +1,4 @@
 @OFF
-for i 1 10
-    for j $i 10
+for i 1 10 -t range
+    for j $i 10 -t range
         echoln $i $j

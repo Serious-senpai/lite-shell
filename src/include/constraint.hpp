@@ -54,6 +54,33 @@ private:
         }
     }
 
+    template <typename... Args>
+    CommandConstraint *add_argument(
+        const bool required,
+        const std::string &help,
+        const unsigned lower_bound,
+        const unsigned upper_bound,
+        const std::string &name,
+        const Args &...aliases)
+    {
+        check_context_parsing();
+
+        std::set<std::string> alias_group = {name, aliases...};
+        constraints.emplace_back(help, lower_bound, upper_bound, alias_group, required);
+
+        for (auto &alias : alias_group)
+        {
+            if (has_argument(alias))
+            {
+                throw std::invalid_argument(format("Argument %s already exists", alias.c_str()));
+            }
+
+            names[alias] = constraints.size() - 1;
+        }
+
+        return this;
+    }
+
 public:
     /*
     @brief Whether this command require the context to be parsed. If this value if `false`, a context passed to the command callback
@@ -110,31 +137,37 @@ public:
         }
     }
 
-    template <typename... Args>
     CommandConstraint *add_argument(
+        const std::string &name,
         const bool required,
         const std::string &help,
         const unsigned lower_bound,
-        const unsigned upper_bound,
-        const std::string &name,
-        const Args &...aliases)
+        const unsigned upper_bound)
     {
-        check_context_parsing();
+        return add_argument(required, help, lower_bound, upper_bound, name);
+    }
 
-        std::set<std::string> alias_group = {name, aliases...};
-        constraints.emplace_back(help, lower_bound, upper_bound, alias_group, required);
+    CommandConstraint *add_argument(
+        const std::string &name,
+        const std::string &alias_1,
+        const bool required,
+        const std::string &help,
+        const unsigned lower_bound,
+        const unsigned upper_bound)
+    {
+        return add_argument(required, help, lower_bound, upper_bound, name, alias_1);
+    }
 
-        for (auto &alias : alias_group)
-        {
-            if (has_argument(alias))
-            {
-                throw std::invalid_argument(format("Argument %s already exists", alias.c_str()));
-            }
-
-            names[alias] = constraints.size() - 1;
-        }
-
-        return this;
+    CommandConstraint *add_argument(
+        const std::string &name,
+        const std::string &alias_1,
+        const std::string &alias_2,
+        const bool required,
+        const std::string &help,
+        const unsigned lower_bound,
+        const unsigned upper_bound)
+    {
+        return add_argument(required, help, lower_bound, upper_bound, name, alias_1, alias_2);
     }
 
     /*

@@ -14,7 +14,7 @@ To end each condition section, use "else"/"endif"
 CommandConstraint __constraint_IfCommand()
 {
     CommandConstraint constraint(4, 4);
-    constraint.add_argument(false, "perform mathematical comparison instead of string comparison", 0, 0, "-m");
+    constraint.add_argument("-m", false, "perform mathematical comparison instead of string comparison", 0, 0);
     return constraint;
 }
 
