@@ -3,8 +3,6 @@
 #include "error.hpp"
 #include "split.hpp"
 
-class Client; // Forward declaration
-
 /*
 Represents the context in which a command is being invoked under.
 
@@ -41,7 +39,7 @@ public:
     const std::set<std::string> present;
 
     /* A pointer to the client that contains the command being executed. */
-    Client *const client;
+    class Client *const client;
 
     /* The arguments constraint of this context object */
     const CommandConstraint constraint;
