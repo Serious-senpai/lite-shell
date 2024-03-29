@@ -1,10 +1,13 @@
 #pragma once
 
 #include "standard.hpp"
+#include "strip.hpp"
 
 class Environment
 {
 private:
+    const boost::regex var_resolver = boost::regex(R"((?<!\$)\$(?:\{(\w+)\}|(\w+)))");
+    const boost::regex escape_resolver = boost::regex(R"(\$\$)");
     std::map<std::string, std::string> variables;
 
 public:
@@ -27,6 +30,41 @@ public:
     std::map<std::string, std::string> get_values() const
     {
         return variables;
+    }
+
+    std::string resolve(const std::string &message) const
+    {
+        auto result = message;
+        while (true)
+        {
+            std::set<std::string> variables;
+            for (auto begin = result.begin(); begin != result.end(); begin++)
+            {
+                boost::smatch match;
+                bool resolved = boost::regex_search(result, match, var_resolver);
+                if (resolved)
+                {
+                    auto group_1 = strip(match.str(1)), group_2 = strip(match.str(2));
+                    variables.insert(group_1.empty() ? group_2 : group_1);
+                }
+            }
+
+            if (variables.empty())
+            {
+                break;
+            }
+            else
+            {
+                for (auto &variable : variables)
+                {
+                    auto pattern = boost::regex(format("(?<!\\$)\\$(?:\\{%s\\}|%s)", variable.c_str(), variable.c_str()));
+                    result = boost::regex_replace(result, pattern, get_value(variable));
+                }
+            }
+        }
+
+        result = boost::regex_replace(result, escape_resolver, "$");
+        return result;
     }
 
     long long eval_ll(const std::string &expression) const

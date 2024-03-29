@@ -1,0 +1,4 @@
+[submodule "extern"]
+	path = extern
+	url = https://github.com/boostorg/regex
+	branch = master

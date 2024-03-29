@@ -48,72 +48,6 @@ private:
         return get_command(context.tokens[0]);
     }
 
-    std::string resolve_environment(const std::string &message)
-    {
-        std::string result, variable;
-        bool is_variable = false;
-
-        auto append_variable = [this, &result, &variable, &is_variable]()
-        {
-            result += this->environment->get_value(variable);
-            variable.clear();
-            is_variable = false;
-        };
-
-        for (unsigned i = 0; i < message.size(); i++)
-        {
-            if (message[i] == '$')
-            {
-                if (i > 0 && message[i - 1] == '$') // Escape character $$ -> $
-                {
-                    if (!variable.empty())
-                    {
-                        throw std::runtime_error(format("Unexpected error when resolving environment variable %s", variable.c_str()));
-                    }
-
-                    result += '$';
-                    is_variable = false;
-                }
-                else
-                {
-                    if (!variable.empty())
-                    {
-                        append_variable();
-                    }
-
-                    is_variable = true;
-                }
-            }
-            else if ((('a' <= message[i] && message[i] <= 'z') || ('A' <= message[i] && message[i] <= 'Z') || message[i] == '_'))
-            {
-                if (is_variable)
-                {
-                    variable += message[i];
-                }
-                else
-                {
-                    result += message[i];
-                }
-            }
-            else
-            {
-                if (is_variable)
-                {
-                    append_variable();
-                }
-
-                result += message[i];
-            }
-        }
-
-        if (!variable.empty())
-        {
-            append_variable();
-        }
-
-        return result;
-    }
-
     /*
     @brief Find an executable that `token` points to.
     The function will first look in the current working directory, then in the directories specified in `resolve_order`.
@@ -292,24 +226,27 @@ public:
     */
     Client *process_command(const std::string &message)
     {
-        auto stripped_message = resolve_environment(strip(message));
-
-        // Special sequences
-        if (stripped_message == ECHO_ON)
+        try
         {
-            stream.echo = true;
-        }
-        else if (stripped_message == ECHO_OFF)
-        {
-            stream.echo = false;
-        }
-        else if (stripped_message[0] == ':') // is a jump label
-        {
-            // pass
-        }
-        else
-        {
-            try
+            auto stripped_message = environment->resolve(strip(message));
+            // Special sequences
+            if (stripped_message == ECHO_ON)
+            {
+                stream.echo = true;
+            }
+            else if (stripped_message == ECHO_OFF)
+            {
+                stream.echo = false;
+            }
+            else if (stripped_message.empty())
+            {
+                // pass
+            }
+            else if (stripped_message[0] == ':') // is a jump label
+            {
+                // pass
+            }
+            else
             {
                 auto context = Context::get_context(this, stripped_message, CommandConstraint());
 
@@ -348,10 +285,10 @@ public:
                     environment->set_variable("errorlevel", std::to_string(errorlevel));
                 }
             }
-            catch (std::exception &e)
-            {
-                on_error(e);
-            }
+        }
+        catch (std::exception &e)
+        {
+            on_error(e);
         }
 
         return this;
@@ -376,10 +313,11 @@ public:
         }                                              \
     }
 
-        ERROR_CODE(std::runtime_error, LITE_SHELL_RUNTIME_ERROR);
-        ERROR_CODE(std::invalid_argument, LITE_SHELL_INVALID_ARGUMENT);
-        ERROR_CODE(std::bad_alloc, LITE_SHELL_BAD_ALLOC);
-        ERROR_CODE(SubprocessCreationError, LITE_SHELL_SUBPROCESS_CREATION_ERROR);
+        ERROR_CODE(std::runtime_error, 900);
+        ERROR_CODE(std::invalid_argument, 901);
+        ERROR_CODE(std::bad_alloc, 902);
+        ERROR_CODE(SubprocessCreationError, 903);
+        ERROR_CODE(EnvironmentResolveError, 904);
 
 #undef ERROR_CODE
 

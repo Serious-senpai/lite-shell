@@ -14,6 +14,8 @@
 #include <stack>
 #include <windows.h>
 
+#include <boost/regex.hpp>
+
 namespace std
 {
     template <typename T>
