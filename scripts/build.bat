@@ -7,7 +7,7 @@ for %%f in ("%~dp0..") do set root=%%~ff
 echo Got root of repository: %root%
 
 if not exist %root%\build mkdir %root%\build
-set params=-O3 -Wall -I %root%\extern\include -I %root%\src\include -std=c++17
+set params=-O3 -Wall -I %root%\extern\regex\include -I %root%\src\include -std=c++17
 
 echo Building %root%\src\shell.cpp to %root%\build\shell.exe
 g++ %params% %root%\src\shell.cpp -o %root%\build\shell.exe
