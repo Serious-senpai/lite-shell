@@ -28,7 +28,7 @@ for file in explore(str(root / "src")):
             line = include.group()
             print(f"Removing {Fore.BLUE}{line}{Style.RESET_ALL} from {file}")
 
-            d = data.replace("\n" + line, "")
+            d = re.sub(r"^" + re.escape(line), "", data, flags=re.MULTILINE)
 
             with open(file, "w", encoding="utf-8") as f:
                 f.write(d)
