@@ -9,22 +9,17 @@ from typing import Iterable
 from colorama import Fore, Style, init
 
 
-def explore(directory: str, *, recursive: bool) -> Iterable[str]:
-    if recursive:
-        for root, _, files in os.walk(directory):
-            for file in files:
-                yield os.path.join(root, file)
-
-    else:
-        for file in os.listdir(directory):
-            yield os.path.join(directory, file)
+def explore(directory: str) -> Iterable[str]:
+    for root, _, files in os.walk(directory):
+        for file in files:
+            yield os.path.join(root, file)
 
 
 init(convert=True)
 root = Path(__file__).parent.parent
 pattern = re.compile(r"^#include [\"<][\w\.\/]+[\">]$", flags=re.MULTILINE)
 removable = 0
-for file in explore(str(root), recursive=True):
+for file in explore(str(root / "src")):
     if file.endswith(".cpp") or file.endswith(".hpp"):
         with open(file, "r", encoding="utf-8") as f:
             data = f.read()
