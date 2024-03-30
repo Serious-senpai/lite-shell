@@ -1,7 +1,5 @@
 #pragma once
 
-#include <all.hpp>
-
 const std::set<std::string> __for_types = {"range", "split"};
 
 CommandConstraint __constraint_ForCommand()

@@ -1,7 +1,5 @@
 #pragma once
 
-#include <all.hpp>
-
 CommandConstraint __constraint_EvalCommand()
 {
     CommandConstraint constraint(2, 2);

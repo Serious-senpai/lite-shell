@@ -1,7 +1,5 @@
 #pragma once
 
-#include "standard.hpp"
-
 template <typename... Args>
 std::string strip(const std::string &original, const Args &...remove)
 {

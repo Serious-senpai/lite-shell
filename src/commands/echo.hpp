@@ -1,7 +1,5 @@
 #pragma once
 
-#include <all.hpp>
-
 class EchoCommand : public BaseCommand
 {
 public:

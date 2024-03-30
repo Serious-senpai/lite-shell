@@ -1,7 +1,5 @@
 #pragma once
 
-#include <all.hpp>
-
 const char __cd_description[] = R"(Display the name of or change the current directory.
 
 Call this command with no argument to get the working directory (similar to Unix shell's "pwd").

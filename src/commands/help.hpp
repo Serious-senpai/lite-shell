@@ -1,7 +1,5 @@
 #pragma once
 
-#include <all.hpp>
-
 const char __help_description[] = R"(Provides help information for Windows commands.
 
 To get help for a specific command, specify its name as the first argument (e.g. "help help")

@@ -1,7 +1,5 @@
 #pragma once
 
-#include "strip.hpp"
-
 #define ECHO_OFF "@OFF"
 #define ECHO_ON "@ON"
 

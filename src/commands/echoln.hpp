@@ -1,7 +1,5 @@
 #pragma once
 
-#include <all.hpp>
-
 class EcholnCommand : public BaseCommand
 {
 public:

@@ -1,7 +1,5 @@
 #pragma once
 
-#include <all.hpp>
-
 const char __cat_description[] = "Displays the contents of a text file";
 
 class CatCommand : public BaseCommand

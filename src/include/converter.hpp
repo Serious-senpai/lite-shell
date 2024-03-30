@@ -1,8 +1,6 @@
 // Source: https://stackoverflow.com/a/18374698
 #pragma once
 
-#include "standard.hpp"
-
 /**
  * Convert `std::string` to `std::wstring`
  *

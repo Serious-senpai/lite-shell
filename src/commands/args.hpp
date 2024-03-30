@@ -1,7 +1,5 @@
 #pragma once
 
-#include <all.hpp>
-
 const char __args_description[] = R"(Display the arguments and keyword arguments passed to the command.
 
 This command was designed for testing the command line parser only.

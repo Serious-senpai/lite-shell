@@ -1,7 +1,5 @@
 #pragma once
 
-#include <all.hpp>
-
 const char *__week_days[] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
 
 class DateCommand : public BaseCommand

@@ -1,7 +1,5 @@
 #pragma once
 
-#include <all.hpp>
-
 const char __if_description[] = R"(
 The command syntax is: if <value> <operator> <value>
 where <operator> must be one of the values: "==", "!=", "<", ">", "<=", ">=".

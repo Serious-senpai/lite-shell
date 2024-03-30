@@ -1,7 +1,5 @@
 #pragma once
 
-#include "standard.hpp"
-
 /* Join multiple strings seperated by a delimiter */
 template <typename _ForwardIterator>
 std::string join(

@@ -1,7 +1,5 @@
 #pragma once
 
-#include "standard.hpp"
-
 /* A wrapper of PROCESS_INFORMATION containing information of a subprocess */
 class ProcessInfoWrapper
 {
