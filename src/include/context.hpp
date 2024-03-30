@@ -131,32 +131,6 @@ public:
     }
 
     /*
-    Get the command string, excluding the first token.
-
-    @return The command without the first token
-    */
-    std::string get_arguments_string() const
-    {
-        std::string result;
-        bool ok = false;
-        for (auto &c : message)
-        {
-            if (!ok && c == ' ')
-            {
-                ok = true;
-                continue;
-            }
-
-            if (ok)
-            {
-                result += c;
-            }
-        }
-
-        return result;
-    }
-
-    /*
     Determine whether this context is requesting to run in a background process.
 
     @return `true` if the context is requesting to run in the background, `false` otherwise

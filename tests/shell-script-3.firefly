@@ -1,9 +1,9 @@
 @OFF
-echoln Starting test
+echoln "Starting test"
 for i 1000 2000 -t range
     if "$i % 2" == 0 -m
-        echoln $i is even
+        echoln "$i is even"
     else
-        echoln $i is odd
+        echoln "$i is odd"
     endif
 endfor

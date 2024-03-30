@@ -57,7 +57,7 @@ private:
     */
     std::optional<std::string> resolve(const std::string &token)
     {
-        auto t = strip(token, {'\\', '/'});
+        auto t = strip(token, '\\', '/');
         auto find_executable = [this, &t](const std::string &directory) -> std::optional<std::string>
         {
             for (const auto &file : explore_directory(directory, t + "*"))

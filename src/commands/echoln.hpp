@@ -11,11 +11,11 @@ public:
               "Print to stdout and add a newline at the end",
               "",
               {},
-              CommandConstraint()) {}
+              CommandConstraint(2, 2)) {}
 
     DWORD run(const Context &context)
     {
-        std::cout << context.get_arguments_string() << std::endl;
+        std::cout << context.args[1] << std::endl;
         return 0;
     }
 };

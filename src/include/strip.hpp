@@ -2,10 +2,11 @@
 
 #include "standard.hpp"
 
-std::string strip(const std::string &original, const std::initializer_list<char> &remove)
+template <typename... Args>
+std::string strip(const std::string &original, const Args &...remove)
 {
     std::vector<char> result;
-    std::set<char> to_remove(remove.begin(), remove.end());
+    std::set<char> to_remove = {remove...};
     bool ok = false;
     for (auto c : original)
     {
@@ -30,5 +31,5 @@ std::string strip(const std::string &original, const std::initializer_list<char>
 
 std::string strip(const std::string &original)
 {
-    return strip(original, {' ', '\n', '\r'});
+    return strip(original, ' ', '\n', '\r');
 }

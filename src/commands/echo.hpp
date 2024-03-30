@@ -11,11 +11,11 @@ public:
               "Print to stdout but do not add a newline like \"echoln\"",
               "",
               {},
-              CommandConstraint()) {}
+              CommandConstraint(2, 2)) {}
 
     DWORD run(const Context &context)
     {
-        std::cout << context.get_arguments_string();
+        std::cout << context.args[1];
         std::cout.flush();
         return 0;
     }

@@ -56,7 +56,7 @@ public:
     void insert_commands(
         const Context &context,
         const std::string &loop_var,
-        std::vector<std::string> &loop_values,
+        const std::vector<std::string> &loop_values,
         const std::vector<std::string> &lines)
     {
         if (!loop_values.empty())
@@ -67,8 +67,9 @@ public:
             }
             else
             {
-                std::reverse(loop_values.begin(), loop_values.end());
-                for (const auto &value : loop_values)
+                std::vector<std::string> _loop_values(loop_values);
+                std::reverse(_loop_values.begin(), _loop_values.end());
+                for (const auto &value : _loop_values)
                 {
                     context.client->stream.write(lines.begin(), lines.end());
                     context.client->stream.write(format("eval %s -s %s", value.c_str(), loop_var.c_str()));
@@ -91,9 +92,19 @@ public:
             }
 
             std::vector<std::string> loop_values;
-            for (long long value = start; value < end; value++)
+            if (start < end)
             {
-                loop_values.push_back(std::to_string(value));
+                for (long long value = start; value < end; value++)
+                {
+                    loop_values.push_back(std::to_string(value));
+                }
+            }
+            else if (start > end)
+            {
+                for (long long value = start; value > end; value--)
+                {
+                    loop_values.push_back(std::to_string(value));
+                }
             }
 
             insert_commands(context, loop_var, loop_values, get_lines(context));

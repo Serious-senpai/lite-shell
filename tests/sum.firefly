@@ -6,4 +6,4 @@ for e "$arr" -t split
     eval "$sum + $e" -ms sum
 endfor
 
-echoln Sum = $sum
+echoln "Sum = $sum"

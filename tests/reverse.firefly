@@ -1,0 +1,13 @@
+@OFF
+eval "Enter array seperated by spaces: " -ps arr
+eval 0 -s i
+
+for e "$arr" -t split
+    eval $e -s arr_$i
+    eval "$i + 1" -ms i
+endfor
+
+eval $i -s size
+for i "$size - 1" -1 -t range
+    echo "${arr_$i} "
+endfor

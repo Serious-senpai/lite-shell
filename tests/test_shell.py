@@ -75,7 +75,7 @@ def test_no_command() -> None:
 
 
 def test_escape() -> None:
-    stdout, stderr = execute_command("echoln $$Hello World$$")
+    stdout, stderr = execute_command("echoln \"$$Hello World$$\"")
     assert_match("$Hello World$", stdout)
     assert stderr.strip() == ""
 
@@ -129,8 +129,10 @@ def test_date_2() -> None:
 
 def test_echo() -> None:
     # Do not include white spaces at both ends
-    test_string = "hello world    1 2 --3 4 -abc3 --4 \"in quotes\""
-    stdout, stderr = execute_command(f"echoln {test_string}")
+    test_string = r"hello world    1 2 --3 4 -abc3 --4 \"in quotes\""
+    stdout, stderr = execute_command(f"echoln \"{test_string}\"")
+
+    test_string = test_string.replace(r"\"", "\"")
     assert_match(test_string, stdout)
     assert stderr.strip() == ""
 
@@ -191,7 +193,7 @@ def test_eval_14() -> None:
 
 
 def test_eval_15() -> None:
-    command = "eval Hello -s f\neval World! -s s\necholn $f $s"
+    command = "eval Hello -s f\neval World! -s s\necholn \"$f $s\""
     stdout, stderr = execute_command(command)
     assert_match("Hello World!", stdout)
     assert stderr.strip() == ""
@@ -205,14 +207,14 @@ def test_eval_16() -> None:
 
 
 def test_eval_17() -> None:
-    command = "eval \"input>\" -ps input\nrandom bullshit go\necholn $input"
+    command = "eval \"input>\" -ps input\nrandom bullshit go\necholn \"$input\""
     stdout, stderr = execute_command(command)
     assert_match("random bullshit go", stdout)
     assert stderr.strip() == ""
 
 
 def test_eval_18() -> None:
-    command = "eval \"input>\" -mps input\n11669 - 4700\necholn $input"
+    command = "eval \"input>\" -mps input\n11669 - 4700\necholn \"$input\""
     stdout, stderr = execute_command(command)
     assert_match("6969", stdout)
     assert stderr.strip() == ""
@@ -280,6 +282,16 @@ def test_script_prime() -> None:
         else:
             assert_match(f"{value} is not a prime", stdout)
 
+        assert_not_match("@OFF", stdout)
+        assert_not_match("@ON", stdout)
+        assert stderr.strip() == ""
+
+
+def test_script_reverse() -> None:
+    for _ in range(20):
+        arr = random.choices(range(-50, 100), k=40)
+        stdout, stderr = execute_command(f"tests/reverse\n{' '.join(map(str, arr))}")
+        assert_match(" ".join(map(str, arr[::-1])), stdout)
         assert_not_match("@OFF", stdout)
         assert_not_match("@ON", stdout)
         assert stderr.strip() == ""

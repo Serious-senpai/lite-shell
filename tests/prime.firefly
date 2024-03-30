@@ -24,9 +24,9 @@ for div 2 "$n / 2 + 1" -t range
 endfor
 
 :is_prime
-echoln $n is a prime
+echoln "$n is a prime"
 jump :EOF
 
 :is_not_prime
-echoln $n is not a prime
+echoln "$n is not a prime"
 jump :EOF
