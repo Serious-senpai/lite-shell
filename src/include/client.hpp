@@ -9,12 +9,12 @@
 #define BATCH_EXT ".firefly"
 #define BUFFER_SIZE 4096
 
-/*
-Represents a command shell client. The application should hold only one instance of this class.
-
-This class is responsible for managing commands, subprocesses and errorlevel. It also provides a method
-to run the shell indefinitely.
-*/
+/**
+ * Represents a command shell client. The application should hold only one instance of this class.
+ *
+ * This class is responsible for managing commands, subprocesses and errorlevel. It also provides a method
+ * to run the shell indefinitely.
+ */
 class Client
 {
 private:
@@ -25,7 +25,8 @@ private:
     std::vector<CommandWrapper<BaseCommand>> wrappers;
     std::map<std::string, unsigned> commands;
 
-    Environment *environment = nullptr;
+    Environment *const environment;
+    InputStream *const stream;
 
     CommandWrapper<BaseCommand> get_command(const std::string &name)
     {
@@ -48,13 +49,13 @@ private:
         return get_command(context.tokens[0]);
     }
 
-    /*
-    @brief Find an executable that `token` points to.
-    The function will first look in the current working directory, then in the directories specified in `resolve_order`.
-
-    @param token The token to resolve. This token may contain path separators.
-    @return The path to the executable if found, `std::nullopt` otherwise.
-    */
+    /**
+     * @brief Find an executable that `token` points to.
+     * The function will first look in the current working directory, then in the directories specified in `resolve_order`.
+     *
+     * @param token The token to resolve. This token may contain path separators.
+     * @return The path to the executable if found, `std::nullopt` otherwise.
+     */
     std::optional<std::string> resolve(const std::string &token)
     {
         auto t = strip(token, '\\', '/');
@@ -110,16 +111,14 @@ private:
         data += "\n:EOF\n";
         data += ECHO_ON;
 
-        stream.write(data);
+        stream->write(data);
 
         fstream.close();
         return this;
     }
 
 public:
-    InputStream stream;
-
-    Client() : environment(new Environment())
+    Client() : environment(new Environment()), stream(new InputStream())
     {
         auto path = get_executable_path();
         auto size = path.size();
@@ -128,37 +127,53 @@ public:
             size--;
         }
 
-        environment->set_variable("PATH", path.substr(0, size));
-        environment->set_variable("errorlevel", "0");
+        environment->set_value("PATH", path.substr(0, size));
+        environment->set_value("errorlevel", "0");
     }
 
+    /**
+     * @brief Get a pointer to the shell environment containing the variables
+     *
+     * @return A pointer to the shell environment
+     */
     Environment *get_environment() const
     {
         return environment;
     }
 
+    /**
+     * @brief Get a pointer to the input stream
+     *
+     * @return A pointer to the input stream
+     */
+    InputStream *get_stream() const
+    {
+        return stream;
+    }
+
     ~Client()
     {
         delete environment;
+        delete stream;
     }
 
-    /*
-    Get all commands of the current command shell
-
-    @return A vector containing all commands
-    */
+    /**
+     * Get all commands of the current command shell
+     *
+     * @return A vector containing all commands
+     */
     std::set<CommandWrapper<BaseCommand>> walk_commands() const
     {
         return std::set<CommandWrapper<BaseCommand>>(wrappers.begin(), wrappers.end());
     }
 
-    /*
-    Get a command from the internal list of commands.
-    This could also be used as a way to get aliases.
-
-    @param name The name of the command to get.
-    @return The command that was requested. If not found, returns an empty optional.
-    */
+    /**
+     * Get a command from the internal list of commands.
+     * This could also be used as a way to get aliases.
+     *
+     * @param name The name of the command to get.
+     * @return The command that was requested. If not found, returns an empty optional.
+     */
     const std::optional<CommandWrapper<BaseCommand>> get_optional_command(const std::string &name) const
     {
         auto iter = commands.find(name);
@@ -169,22 +184,22 @@ public:
         return wrappers[iter->second];
     }
 
-    /*
-    Get all subprocesses of the current shell.
-
-    @return A set containing all subprocesses (both running and terminated processes).
-    */
+    /**
+     * Get all subprocesses of the current shell.
+     *
+     * @return A set containing all subprocesses (both running and terminated processes).
+     */
     const std::set<ProcessInfoWrapper> get_subprocesses() const
     {
         return subprocesses;
     }
 
-    /*
-    Adds a command into the internal list of commands.
-
-    @param ptr A shared pointer to the command to add.
-    @return A pointer to the current client.
-    */
+    /**
+     * Adds a command into the internal list of commands.
+     *
+     * @param ptr A shared pointer `std::shared_ptr<BaseCommand>` to the command to add.
+     * @return A pointer to the current client.
+     */
     Client *add_command(const std::shared_ptr<BaseCommand> &ptr)
     {
         if (commands.find(ptr->name) != commands.end())
@@ -206,24 +221,29 @@ public:
         return this;
     }
 
+    /**
+     * @brief Run the shell indefinitely.
+     */
     void run_forever()
     {
         set_ignore_ctrl_c(true);
         while (true)
         {
-            process_command(stream.getline(format("\nliteshell~%s>", get_working_directory().c_str()), 0));
+            process_command(stream->getline(format("\nliteshell~%s>", get_working_directory().c_str()), 0));
         }
     }
 
-    /*
-    @brief Process a command message.
-
-    The process logic is as follows: If `message` points to an executable, it will be executed in a subprocess.
-    Otherwise, the shell will attempt to find a command registered with `add_command()` and invoke it instead.
-
-    @param message The command message to process.
-    @return A pointer to the current client.
-    */
+    /**
+     * @brief Process a command message.
+     *
+     * The process logic is as follows: If `message` points to an executable, it will be executed in a subprocess.
+     * If `message` points to a batch script, it will be executed in the current shell (the script commands will
+     * be inserted to the input stream).
+     * Otherwise, the shell will attempt to find a command registered with `add_command()` and invoke it instead.
+     *
+     * @param message The command message to process.
+     * @return A pointer to the current client.
+     */
     Client *process_command(const std::string &message)
     {
         try
@@ -232,11 +252,11 @@ public:
             // Special sequences
             if (stripped_message == ECHO_ON)
             {
-                stream.echo = true;
+                stream->echo = true;
             }
             else if (stripped_message == ECHO_OFF)
             {
-                stream.echo = false;
+                stream->echo = false;
             }
             else if (stripped_message.empty())
             {
@@ -261,7 +281,7 @@ public:
                         auto subprocess = spawn_subprocess(final_context);
                         if (final_context.is_background_request())
                         {
-                            environment->set_variable("errorlevel", "0");
+                            environment->set_value("errorlevel", "0");
                         }
                         else
                         {
@@ -269,7 +289,7 @@ public:
 
                             DWORD errorlevel;
                             GetExitCodeProcess(subprocess.info.hProcess, &errorlevel);
-                            environment->set_variable("errorlevel", std::to_string(errorlevel));
+                            environment->set_value("errorlevel", std::to_string(errorlevel));
                         }
                     }
                     else
@@ -282,7 +302,7 @@ public:
                     auto wrapper = get_command(context);
                     auto constraint = wrapper.command->constraint;
                     auto errorlevel = wrapper.run(constraint.require_context_parsing ? context.parse(constraint) : context);
-                    environment->set_variable("errorlevel", std::to_string(errorlevel));
+                    environment->set_value("errorlevel", std::to_string(errorlevel));
                 }
             }
         }
@@ -294,11 +314,11 @@ public:
         return this;
     }
 
-    /*
-    @brief An error handler that process exceptions thrown during command execution.
-
-    @param e The exception object that was thrown.
-    */
+    /**
+     * @brief An error handler that process exceptions thrown during command execution.
+     *
+     * @param e The exception object that was thrown.
+     */
     void on_error(std::exception &e)
     {
         DWORD errorlevel = 1000;
@@ -321,40 +341,25 @@ public:
 
 #undef ERROR_CODE
 
-        environment->set_variable("errorlevel", std::to_string(errorlevel));
+        environment->set_value("errorlevel", std::to_string(errorlevel));
     }
 
+    /**
+     * @brief Split the PATH environment variable into a vector of paths.
+     *
+     * @return A vector of paths
+     */
     std::vector<std::string> get_resolve_order() const
     {
-        std::vector<std::string> result;
-        std::string current;
-        for (auto c : environment->get_value("PATH"))
-        {
-            if (c == ';')
-            {
-                result.emplace_back(current);
-                current.clear();
-            }
-            else
-            {
-                current += c;
-            }
-        }
-
-        if (!current.empty())
-        {
-            result.push_back(current);
-        }
-
-        return result;
+        return split(environment->get_value("PATH"), ';');
     }
 
-    /*
-    @brief Spawn a subprocess and execute `command` in it.
-
-    @param command The command to execute.
-    @return A wrapper object containing information about the subprocess.
-    */
+    /**
+     * @brief Spawn a subprocess and execute `command` in it.
+     *
+     * @param context A context holding the command to execute.
+     * @return A wrapper object containing information about the subprocess.
+     */
     ProcessInfoWrapper spawn_subprocess(const Context &context)
     {
         STARTUPINFOW *startup_info = (STARTUPINFOW *)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(STARTUPINFOW));
@@ -404,11 +409,11 @@ public:
         }
     }
 
-    /*
-    @brief Get the current errorlevel of the shell
-
-    @return The current errorlevel
-    */
+    /**
+     * @brief Get the current errorlevel of the shell
+     *
+     * @return The current errorlevel
+     */
     DWORD get_errorlevel() const
     {
         return std::stoul(environment->get_value("errorlevel"));

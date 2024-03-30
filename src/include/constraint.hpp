@@ -82,35 +82,35 @@ private:
     }
 
 public:
-    /*
-    @brief Whether this command require the context to be parsed. If this value if `false`, a context passed to the command callback
-    will have `.args` and `.kwargs` set to empty containers.
-    */
+    /**
+     * @brief Whether this command require the context to be parsed. If this value if `false`, a context passed to the command callback
+     * will have `.args` and `.kwargs` set to empty containers.
+     */
     const bool require_context_parsing;
 
-    /*
-    @brief Whether to perform arguments checking (check positional and named arguments) on command input. If `require_context_parsing`
-    is `false`, this attribute has no effect.
-    */
+    /**
+     * @brief Whether to perform arguments checking (check positional and named arguments) on command input. If `require_context_parsing`
+     * is `false`, this attribute has no effect.
+     */
     const bool arguments_checking;
 
-    /*
-    The lower and upper bound of the number of positional arguments. If `require_context_parsing` or `arguments_checking` is
-    `false`, this attribute has no effect.
-    */
+    /**
+     * @brief lower and upper bound of the number of positional arguments. If `require_context_parsing` or `arguments_checking` is
+     * `false`, this attribute has no effect.
+     */
     const std::pair<unsigned, unsigned> args_bounds;
 
-    /*
-    @brief Construct an `CommandConstraint` object with `require_context_parsing` set to `false`.
-    */
+    /**
+     * @brief Construct an `CommandConstraint` object with `require_context_parsing` set to `false`.
+     */
     CommandConstraint() : CommandConstraint(false, false, std::make_pair(0, 0)) {}
 
-    /*
-    @brief Construct an `CommandConstraint` object with `require_context_parsing` set to `true` and `arguments_checking` set to
-    `false`.
-
-    @param arguments_checking Must be `false`
-    */
+    /**
+     * @brief Construct an `CommandConstraint` object with `require_context_parsing` set to `true` and `arguments_checking` set to
+     * `false`.
+     *
+     * @param arguments_checking Must be `false`
+     */
     CommandConstraint(const bool arguments_checking) : CommandConstraint(true, false, std::make_pair(0, 0))
     {
         if (arguments_checking)
@@ -119,12 +119,12 @@ public:
         }
     }
 
-    /*
-    @brief Construct an `CommandConstraint` object with `require_context_parsing` and `arguments_checking` set to `true`.
-
-    @param args_lower The lower bound of the number of positional arguments
-    @param args_upper The upper bound of the number of positional arguments
-    */
+    /**
+     * @brief Construct an `CommandConstraint` object with `require_context_parsing` and `arguments_checking` set to `true`.
+     *
+     * @param args_lower The lower bound of the number of positional arguments
+     *  @param args_upper The upper bound of the number of positional arguments
+     */
     CommandConstraint(const unsigned args_lower, const unsigned args_upper)
         : CommandConstraint(true, true, std::make_pair(args_lower, args_upper)) {}
 
@@ -137,6 +137,17 @@ public:
         }
     }
 
+    /**
+     * @brief Add a named argument with no alias to this constraint
+     *
+     * @param name The argument name (e.g. "-v")
+     * @param required Whether the argument is required
+     * @param help The help message for the argument
+     * @param lower_bound The lower bound of the number of arguments
+     * @param upper_bound The upper bound of the number of arguments
+     *
+     * @return A pointer to this constraint
+     */
     CommandConstraint *add_argument(
         const std::string &name,
         const bool required,
@@ -147,6 +158,18 @@ public:
         return add_argument(required, help, lower_bound, upper_bound, name);
     }
 
+    /**
+     * @brief Add a named argument with 1 alias to this constraint
+     *
+     * @param name The name of the argument (e.g. "-v")
+     * @param alias_1 The first alias of the argument
+     * @param required Whether the argument is required
+     * @param help The help message for the argument
+     * @param lower_bound The lower bound of the number of arguments
+     * @param upper_bound The upper bound of the number of arguments
+     *
+     * @return A pointer to this constraint
+     */
     CommandConstraint *add_argument(
         const std::string &name,
         const std::string &alias_1,
@@ -158,6 +181,19 @@ public:
         return add_argument(required, help, lower_bound, upper_bound, name, alias_1);
     }
 
+    /**
+     * @brief Add a named argument with 2 aliases to this constraint
+     *
+     * @param name The name of the argument (e.g. "-v")
+     * @param alias_1 The first alias of the argument
+     * @param alias_2 The second alias of the argument
+     * @param required Whether the argument is required
+     * @param help The help message for the argument
+     * @param lower_bound The lower bound of the number of arguments
+     * @param upper_bound The upper bound of the number of arguments
+     *
+     * @return A pointer to this constraint
+     */
     CommandConstraint *add_argument(
         const std::string &name,
         const std::string &alias_1,
@@ -170,17 +206,23 @@ public:
         return add_argument(required, help, lower_bound, upper_bound, name, alias_1, alias_2);
     }
 
-    /*
-    @brief Whether the current constraint allows a specific named argument
-
-    @param name The argument name (e.g. "-v")
-    @return `true` if the argument is allowed, `false` otherwise
-    */
+    /**
+     * @brief Whether the current constraint allows a specific named argument
+     *
+     * @param name The argument name (e.g. "-v")
+     * @return `true` if the argument is allowed, `false` otherwise
+     */
     bool has_argument(const std::string &name) const
     {
         return names.count(name);
     }
 
+    /**
+     * @brief Get the constraint for a specific named argument
+     *
+     * @param name The argument name (e.g. "-v")
+     * @return The constraint for the argument
+     */
     ArgumentConstraint get_constraint(const std::string &name) const
     {
         auto iter = names.find(name);
@@ -192,6 +234,11 @@ public:
         return constraints[iter->second];
     }
 
+    /**
+     * @brief Get the alias groups for this constraint
+     *
+     * @return A set of sets of aliases
+     */
     std::set<std::set<std::string>> get_alias_groups() const
     {
         std::set<std::set<std::string>> alias_groups;

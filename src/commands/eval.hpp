@@ -37,7 +37,7 @@ public:
         }
         else
         {
-            context.client->get_environment()->set_variable(context.kwargs.at("-s")[0], result);
+            context.client->get_environment()->set_value(context.kwargs.at("-s")[0], result);
         }
 
         return 0;

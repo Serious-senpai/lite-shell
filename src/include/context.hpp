@@ -3,7 +3,7 @@
 #include "error.hpp"
 #include "split.hpp"
 
-/*
+/**
 Represents the context in which a command is being invoked under.
 
 This class contains a lot of meta data to help you understand more about the invocation context. This
@@ -24,18 +24,18 @@ public:
     /* The positional arguments passed to the command: e.g. `args a b -c d` will give `[args, a, b]`. */
     const std::vector<std::string> args;
 
-    /*
-    The values of named arguments passed to the command.
-    Suppose there is a command `args` with a 2 alias groups (`-a`, `-b`) and (`-c`, `-d`), calling `args -a 1 -b 2 -c 3 4 5`
-    will give a mapping of `{-a: [1, 2], -b: [1, 2], -c: [3, 4, 5], -d: [3, 4, 5]}`
-    */
+    /**
+     * The values of named arguments passed to the command.
+     * Suppose there is a command `args` with a 2 alias groups (`-a`, `-b`) and (`-c`, `-d`), calling `args -a 1 -b 2 -c 3 4 5`
+     * will give a mapping of `{-a: [1, 2], -b: [1, 2], -c: [3, 4, 5], -d: [3, 4, 5]}`
+     */
     const std::map<std::string, std::vector<std::string>> kwargs;
 
-    /*
-    The named arguments presenting in the command.
-    This can be used to detect which alias of a named argument was called: e.g. if `-a` and `-b` are 2 aliases, calling
-    `args 1 2 -a` will only give `{-a}`
-    */
+    /**
+     * The named arguments presenting in the command.
+     * This can be used to detect which alias of a named argument was called: e.g. if `-a` and `-b` are 2 aliases, calling
+     * `args 1 2 -a` will only give `{-a}`
+     */
     const std::set<std::string> present;
 
     /* A pointer to the client that contains the command being executed. */
@@ -60,32 +60,23 @@ public:
           client(client),
           constraint(constraint) {}
 
-    /*
-    Return a shallow copy of the current context
-
-    @return A new context with the same information as the current one
-    */
-    Context copy() const
-    {
-        return Context(message, tokens, args, kwargs, present, client, constraint);
-    }
-
-    /*
-    Parse this context with new constraint.
-
-    @param constraint The new constraint to parse the context with
-    @return A new context with the new constraint applied
-    */
+    /**
+     * Parse this context with new constraint.
+     *
+     * @param constraint The new constraint to parse the context with
+     * @return A new context with the new constraint applied
+     */
     Context parse(const CommandConstraint &constraint) const
     {
         return get_context(client, message, constraint);
     }
 
-    /*
-    Replace the first argument of the original command message
-    @param token the token to replace with
-    @return A new Context with the first argument replaced with the given token
-    */
+    /**
+     * Replace the first argument of the original command message
+     *
+     * @param token the token to replace with
+     * @return A new Context with the first argument replaced with the given token
+     */
     Context replace_call(const std::string &token) const
     {
         if (tokens.empty())
@@ -108,11 +99,11 @@ public:
         return Context(new_message, new_tokens, new_args, kwargs, present, client, constraint);
     }
 
-    /*
-    Remove the background suffix token from the command message
-
-    @return A new context with the background suffix token removed
-    */
+    /**
+     * Remove the background suffix token from the command message
+     *
+     * @return A new context with the background suffix token removed
+     */
     Context strip_background_request() const
     {
         if (is_background_request())
@@ -127,27 +118,27 @@ public:
             return get_context(client, new_message, constraint);
         }
 
-        return copy();
+        return *this;
     }
 
-    /*
-    Determine whether this context is requesting to run in a background process.
-
-    @return `true` if the context is requesting to run in the background, `false` otherwise
-    */
+    /**
+     * Determine whether this context is requesting to run in a background process.
+     *
+     * @return `true` if the context is requesting to run in the background, `false` otherwise
+     */
     bool is_background_request() const
     {
         return !tokens.empty() && tokens.back() == std::string(1, BACKGROUND_SUFFIX); // copy constructor
     }
 
-    /*
-    Construct a Context from a message
-
-    @param client A pointer to the Client object
-    @param message The message to construct the context from
-    @param constraint The constraint to parse the context with
-    @return A new context object
-    */
+    /**
+     * Construct a Context from a message
+     *
+     * @param client A pointer to the Client object
+     * @param message The message to construct the context from
+     * @param constraint The constraint to parse the context with
+     * @return A new context object
+     */
     static Context get_context(Client *const client, const std::string &message, const CommandConstraint &constraint);
 };
 

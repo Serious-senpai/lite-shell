@@ -1,12 +1,11 @@
 #pragma once
 
-
-/*
-Formatter for printing memory sizes, e.g. 1024 bytes -> `1.00KB`
-
-@param bytes The number of bytes to format
-@return The formatted string, e.g. `1.00KB`
-*/
+/**
+ * Formatter for printing memory sizes, e.g. 1024 bytes -> `1.00KB`
+ *
+ * @param bytes The number of bytes to format
+ * @return The formatted string, e.g. `1.00KB`
+ */
 std::string memory_size(long double bytes)
 {
     std::string result = format("%.2LfB", bytes);

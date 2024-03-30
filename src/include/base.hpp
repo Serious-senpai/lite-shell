@@ -26,7 +26,7 @@ public:
     /* The arguments constraint for this command */
     const CommandConstraint constraint;
 
-    /* Construct a new command and initialize attributes */
+    /* Construct a new command and initialize its attributes */
     BaseCommand(
         const std::string &name,
         const std::string &description,
@@ -41,7 +41,7 @@ public:
 
     virtual ~BaseCommand() {}
 
-    /*
+    /**
     Invoke this command and return a new errorlevel for the current shell. Subclasses must implement this method.
 
     @param context The context in which the command is being invoked under.
@@ -49,6 +49,12 @@ public:
     */
     virtual DWORD run(const Context &context) = 0;
 
+    /**
+    Returns a string containing the help information for this command.
+    The help information includes the command description, usage, aliases, and parameters.
+    
+    @return A string containing the help information.
+    */
     virtual std::string help() const final
     {
         std::stringstream stream;

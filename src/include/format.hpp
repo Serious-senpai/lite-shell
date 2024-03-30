@@ -2,14 +2,15 @@
 
 #include "standard.hpp"
 
-/*
-Format a string with C specifiers.
-Source: https://stackoverflow.com/a/26221725
-@tparam ...Args The format arguments
-@param format The format string
-@param args The arguments to format
-@return The formatted string
-*/
+/**
+ * Format a string with C specifiers.
+ * Source: https://stackoverflow.com/a/26221725
+ *
+ * @tparam ...Args The format arguments
+ * @param format The format string
+ * @param args The arguments to format
+ * @return The formatted string
+ */
 template <typename... Args>
 std::string format(const std::string &format, Args... args)
 {

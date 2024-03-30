@@ -10,12 +10,26 @@ private:
     std::map<std::string, std::string> variables;
 
 public:
-    Environment *set_variable(const std::string &name, const std::string &value)
+    /**
+     * Set a value for an environment variable
+     *
+     * @param name The name of the variable
+     * @param value The value of the variable
+     *
+     * @return A pointer to the current environment
+     */
+    Environment *set_value(const std::string &name, const std::string &value)
     {
         variables[name] = value;
         return this;
     }
 
+    /**
+     * Get the value of an environment variable
+     *
+     * @param name The name of the variable
+     * @return The value of the variable
+     */
     std::string get_value(const std::string &name) const
     {
         auto iter = variables.find(name);
@@ -26,11 +40,22 @@ public:
         return iter->second;
     }
 
+    /**
+     * Get a mapping from environment variables to their values
+     *
+     * @return A mapping from environment variables to their values
+     */
     std::map<std::string, std::string> get_values() const
     {
         return variables;
     }
 
+    /**
+     * Resolve all environment variables in a message
+     *
+     * @param message The message to resolve
+     * @return The resolved message
+     */
     std::string resolve(const std::string &message) const
     {
         auto result = message;
@@ -66,6 +91,12 @@ public:
         return result;
     }
 
+    /**
+     * Evaluate a mathematical expression
+     *
+     * @param expression The expression to evaluate
+     * @return The result of the evaluation
+     */
     long long eval_ll(const std::string &expression) const
     {
         for (auto &c : expression)

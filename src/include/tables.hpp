@@ -21,11 +21,11 @@ public:
         rows.push_back(headers);
     }
 
-    /*
-    Add a new row to the table.
-
-    @param row The row to add. The number of items in the row must be equal to the number of table columns.
-    */
+    /**
+     * Add a new row to the table.
+     *
+     * @param row The row to add. The number of items in the row must be equal to the number of table columns.
+     */
     void add_row(const std::initializer_list<std::string> &row)
     {
         if (row.size() != columns)

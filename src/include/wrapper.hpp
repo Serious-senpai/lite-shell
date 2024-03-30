@@ -1,12 +1,11 @@
 #pragma once
 
-
-/*
-Wrapper for a command inheriting from BaseCommand.
-See https://stackoverflow.com/a/66010713 for more details
-
-@tparam T The command class, must be a subclass of BaseCommand
-*/
+/**
+ * Wrapper for a command inheriting from BaseCommand.
+ * See https://stackoverflow.com/a/66010713 for more details
+ *
+ * @tparam T The command class, must be a subclass of BaseCommand
+ */
 template <typename T>
 class CommandWrapper
 {
@@ -20,6 +19,13 @@ public:
         static_assert(std::is_base_of<BaseCommand, T>::value, "CommandWrapper can only be used for BaseCommand subclasses");
     }
 
+    /**
+     * Invoke the underlying command and return a new errorlevel for the current shell.
+     * This method simply invokes `command->run(context)`.
+     *
+     * @param context The context in which the command is being invoked under.
+     * @return The new errorlevel for the shell.
+     */
     DWORD run(const Context &context)
     {
         return command->run(context);
