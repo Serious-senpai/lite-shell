@@ -23,16 +23,16 @@ public:
 
         std::cout << "Exploring " << directory << std::endl;
 
-        Table displayer({"Name", "Type", "Size"});
+        Table displayer("Name", "Type", "Size");
 
         for (const auto &data : explore_directory(directory))
         {
             long double size = ((long double)data.nFileSizeHigh * ((long double)MAXDWORD + 1.0L)) + (long double)data.nFileSizeLow;
             bool is_directory = data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY;
             displayer.add_row(
-                {utf_convert(std::wstring(data.cFileName)),
-                 is_directory ? "DIR" : "FILE",
-                 is_directory ? "-" : memory_size(size)});
+                utf_convert(std::wstring(data.cFileName)),
+                is_directory ? "DIR" : "FILE",
+                is_directory ? "-" : memory_size(size));
         }
 
         std::cout << displayer.display() << std::endl;

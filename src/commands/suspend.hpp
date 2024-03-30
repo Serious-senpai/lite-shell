@@ -2,13 +2,13 @@
 
 #include <all.hpp>
 
-class KillCommand : public BaseCommand
+class SuspendCommand : public BaseCommand
 {
 public:
-    KillCommand()
+    SuspendCommand()
         : BaseCommand(
-              "kill",
-              "Kill a subprocess with the given PID",
+              "suspend",
+              "Increase the suspend count of a subprocess with the given PID",
               "",
               {},
               CommandConstraint(2, 2)) {}
@@ -21,8 +21,8 @@ public:
         {
             if (wrapper->pid() == pid)
             {
-                wrapper->kill();
-                std::cout << "Terminated process " << pid << " with exit code 1" << std::endl;
+                wrapper->suspend();
+                std::cout << "Suspended process ID " << wrapper->pid() << ", thread ID " << wrapper->tid() << std::endl;
                 return 0;
             }
         }

@@ -8,6 +8,21 @@ class Table
 private:
     std::vector<std::vector<std::string>> rows;
 
+    Table(const std::initializer_list<std::string> &headers) : columns(headers.size())
+    {
+        rows.push_back(headers);
+    }
+
+    void add_row(const std::initializer_list<std::string> &row)
+    {
+        if (row.size() != columns)
+        {
+            throw std::invalid_argument(format("Attempted to add a row of %d item(s) to a table with %d column(s)", row.size(), columns));
+        }
+
+        rows.push_back(row);
+    }
+
 public:
     /* The number of columns, this number is unchanged */
     const unsigned columns;
@@ -15,25 +30,67 @@ public:
     /* Whether each row should align left */
     bool align_left = true;
 
-    /* Construct a new table with the specified headers */
-    Table(const std::initializer_list<std::string> &headers) : columns(headers.size())
+    Table(const std::string &column) : Table({column}) {}
+    Table(
+        const std::string &column_1,
+        const std::string &column_2)
+        : Table({column_1, column_2}) {}
+    Table(
+        const std::string &column_1,
+        const std::string &column_2,
+        const std::string &column_3)
+        : Table({column_1, column_2, column_3}) {}
+    Table(
+        const std::string &column_1,
+        const std::string &column_2,
+        const std::string &column_3,
+        const std::string &column_4)
+        : Table({column_1, column_2, column_3, column_4}) {}
+    Table(
+        const std::string &column_1,
+        const std::string &column_2,
+        const std::string &column_3,
+        const std::string &column_4,
+        const std::string &column_5)
+        : Table({column_1, column_2, column_3, column_4, column_5}) {}
+
+    void add_row(const std::string &column)
     {
-        rows.push_back(headers);
+        add_row({column});
     }
 
-    /**
-     * Add a new row to the table.
-     *
-     * @param row The row to add. The number of items in the row must be equal to the number of table columns.
-     */
-    void add_row(const std::initializer_list<std::string> &row)
+    void add_row(
+        const std::string &column_1,
+        const std::string &column_2)
     {
-        if (row.size() != columns)
-        {
-            throw std::invalid_argument(format("Attempted to add a row of %d item(s) to a table with only %d column(s)", row.size(), columns));
-        }
+        add_row({column_1, column_2});
+    }
 
-        rows.push_back(row);
+    void add_row(
+        const std::string &column_1,
+        const std::string &column_2,
+        const std::string &column_3)
+    {
+        add_row({column_1, column_2, column_3});
+    }
+
+    void add_row(
+        const std::string &column_1,
+        const std::string &column_2,
+        const std::string &column_3,
+        const std::string &column_4)
+    {
+        add_row({column_1, column_2, column_3, column_4});
+    }
+
+    void add_row(
+        const std::string &column_1,
+        const std::string &column_2,
+        const std::string &column_3,
+        const std::string &column_4,
+        const std::string &column_5)
+    {
+        add_row({column_1, column_2, column_3, column_4, column_5});
     }
 
     /* An ASCII string displaying the table */

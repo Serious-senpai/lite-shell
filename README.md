@@ -19,7 +19,7 @@ First, navigate to [src/commands](/src/commands) and create a new file `add.hpp`
 ```cpp
 #pragma once
 
-#include <base.hpp>
+#include <all.hpp>
 
 class AddCommand : public BaseCommand
 {
@@ -33,7 +33,7 @@ public:
 };
 ```
 - The preprocessor directive `#pragma once` ensures that this header file will be included only once within the application code, you can read more about it [here](https://en.wikipedia.org/wiki/Pragma_once).
-- The directive `#include <base.hpp>` ensures that the declaration of class `BaseCommand` is available when compiling. All commands must be a subclass of `BaseCommand`, hence we define the class as `class AddCommand : public BaseCommand`.
+- The directive `#include <all.hpp>` ensures that the declaration of class `BaseCommand` is available when compiling. All commands must be a subclass of `BaseCommand`, hence we define the class as `class AddCommand : public BaseCommand`.
 - All commands must have a default constructor that accepts no argument, so we define a constructor `AddCommand() : BaseCommand("add", "Add 2 numbers", "", {}, CommandConstraint(3, 3)) {}`. When calling `AddCommand()`, it will propagate to the constructor of `BaseCommand`, which initializes the following attributes:
   - Command name: `add`
   - Command help: `Add 2 numbers` - this will show up when using `help` or `help add`

@@ -24,12 +24,7 @@ for file in explore(str(root / "src")):
         with open(file, "r", encoding="utf-8") as f:
             data = f.read()
 
-        includes = tuple(pattern.finditer(data))
-        if len(includes) == 1:
-            # Skip files with only one include
-            continue
-
-        for include in includes:
+        for include in pattern.finditer(data):
             line = include.group()
             print(f"Removing {Fore.BLUE}{line}{Style.RESET_ALL} from {file}")
 

@@ -15,32 +15,28 @@ public:
 
     DWORD run(const Context &context)
     {
-        Table displayer({"PID", "Command line", "Exit code"});
-        for (auto &subprocess : context.client->get_subprocesses())
+        Table displayer("PID", "Command line", "Exit code", "Suspended");
+        auto iterators = context.client->get_subprocesses();
+        for (auto wrapper = iterators.first; wrapper != iterators.second; wrapper++)
         {
             std::string status_display;
-            DWORD status = 0;
-            if (GetExitCodeProcess(subprocess.info.hProcess, &status))
+            auto status = wrapper->exit_code();
+            switch (status)
             {
-                switch (status)
-                {
-                case STILL_ACTIVE:
-                    status_display = "STILL_ACTIVE";
-                    break;
-                case STATUS_CONTROL_C_EXIT:
-                    status_display = "CONTROL_C_EXIT";
-                    break;
-                default:
-                    status_display = std::to_string(status);
-                    break;
-                }
-            }
-            else
-            {
-                status_display = last_error("GetExitCodeProcess ERROR");
+            case STILL_ACTIVE:
+                status_display = "STILL_ACTIVE";
+                break;
+            case STATUS_CONTROL_C_EXIT:
+                status_display = "CONTROL_C_EXIT";
+                break;
+            default:
+                status_display = std::to_string(status);
+                break;
             }
 
-            displayer.add_row({std::to_string(subprocess.info.dwProcessId), subprocess.command, status_display});
+            std::string suspend_display = wrapper->is_suspended() ? "Yes" : "No";
+
+            displayer.add_row(std::to_string(wrapper->pid()), wrapper->command, status_display, suspend_display);
         }
 
         std::cout << displayer.display() << std::endl;

@@ -19,6 +19,8 @@
 #include "commands/ls.hpp"
 #include "commands/mkdir.hpp"
 #include "commands/ps.hpp"
+#include "commands/resume.hpp"
+#include "commands/suspend.hpp"
 
 void initialize(Client *client)
 {
@@ -38,5 +40,7 @@ void initialize(Client *client)
         ->add_command(std::make_shared<KillCommand>())
         ->add_command(std::make_shared<LsCommand>())
         ->add_command(std::make_shared<MkdirCommand>())
-        ->add_command(std::make_shared<PsCommand>());
+        ->add_command(std::make_shared<PsCommand>())
+        ->add_command(std::make_shared<ResumeCommand>())
+        ->add_command(std::make_shared<SuspendCommand>());
 }

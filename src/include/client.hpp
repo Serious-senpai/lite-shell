@@ -20,7 +20,7 @@ class Client
 private:
     const std::vector<std::string> extensions = {".exe", BATCH_EXT};
 
-    std::set<ProcessInfoWrapper> subprocesses;
+    std::vector<ProcessInfoWrapper> subprocesses;
 
     std::vector<CommandWrapper<BaseCommand>> wrappers;
     std::map<std::string, unsigned> commands;
@@ -28,7 +28,7 @@ private:
     Environment *const environment;
     InputStream *const stream;
 
-    CommandWrapper<BaseCommand> get_command(const std::string &name)
+    CommandWrapper<BaseCommand> get_command(const std::string &name) const
     {
         auto iter = commands.find(name);
         if (iter == commands.end())
@@ -39,7 +39,7 @@ private:
         return wrappers[iter->second];
     }
 
-    CommandWrapper<BaseCommand> get_command(const Context &context)
+    CommandWrapper<BaseCommand> get_command(const Context &context) const
     {
         if (context.tokens.size() == 0)
         {
@@ -56,7 +56,7 @@ private:
      * @param token The token to resolve. This token may contain path separators.
      * @return The path to the executable if found, `std::nullopt` otherwise.
      */
-    std::optional<std::string> resolve(const std::string &token)
+    std::optional<std::string> resolve(const std::string &token) const
     {
         auto t = strip(token, '\\', '/');
         auto find_executable = [this, &t](const std::string &directory) -> std::optional<std::string>
@@ -94,7 +94,7 @@ private:
         return std::nullopt;
     }
 
-    Client *process_batch_file(const std::string &path)
+    void process_batch_file(const std::string &path) const
     {
         // Warning: ifstream read in text mode may f*ck up in Windows: https://stackoverflow.com/a/8834004
 
@@ -114,7 +114,6 @@ private:
         stream->write(data);
 
         fstream.close();
-        return this;
     }
 
 public:
@@ -174,7 +173,7 @@ public:
      * @param name The name of the command to get.
      * @return The command that was requested. If not found, returns an empty optional.
      */
-    const std::optional<CommandWrapper<BaseCommand>> get_optional_command(const std::string &name) const
+    std::optional<CommandWrapper<BaseCommand>> get_optional_command(const std::string &name) const
     {
         auto iter = commands.find(name);
         if (iter == commands.end())
@@ -187,11 +186,11 @@ public:
     /**
      * Get all subprocesses of the current shell.
      *
-     * @return A set containing all subprocesses (both running and terminated processes).
+     * @return A pair of iterators to the beginning and end of the subprocesses set.
      */
-    const std::set<ProcessInfoWrapper> get_subprocesses() const
+    std::pair<std::vector<ProcessInfoWrapper>::iterator, std::vector<ProcessInfoWrapper>::iterator> get_subprocesses()
     {
-        return subprocesses;
+        return std::make_pair(subprocesses.begin(), subprocesses.end());
     }
 
     /**
@@ -242,9 +241,8 @@ public:
      * Otherwise, the shell will attempt to find a command registered with `add_command()` and invoke it instead.
      *
      * @param message The command message to process.
-     * @return A pointer to the current client.
      */
-    Client *process_command(const std::string &message)
+    void process_command(const std::string &message)
     {
         try
         {
@@ -285,11 +283,8 @@ public:
                         }
                         else
                         {
-                            WaitForSingleObject(subprocess.info.hProcess, INFINITE);
-
-                            DWORD errorlevel;
-                            GetExitCodeProcess(subprocess.info.hProcess, &errorlevel);
-                            environment->set_value("errorlevel", std::to_string(errorlevel));
+                            subprocess.wait(INFINITE);
+                            environment->set_value("errorlevel", std::to_string(subprocess.exit_code()));
                         }
                     }
                     else
@@ -310,8 +305,6 @@ public:
         {
             on_error(e);
         }
-
-        return this;
     }
 
     /**
@@ -319,7 +312,7 @@ public:
      *
      * @param e The exception object that was thrown.
      */
-    void on_error(std::exception &e)
+    void on_error(std::exception &e) const
     {
         DWORD errorlevel = 1000;
 
@@ -382,10 +375,10 @@ public:
         );
         HeapFree(GetProcessHeap(), 0, startup_info);
 
-        ProcessInfoWrapper wrapper(final_context.message, process_info);
+        ProcessInfoWrapper wrapper(process_info, final_context.message);
         if (success)
         {
-            subprocesses.insert(wrapper);
+            subprocesses.push_back(wrapper);
 
             // Do not close the handles since we want to keep track of all subprocesses in our current shell (unless explicitly closed)
 
