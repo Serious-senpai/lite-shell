@@ -1,6 +1,5 @@
 #pragma once
 
-#include "standard.hpp"
 #include "strip.hpp"
 
 class Environment

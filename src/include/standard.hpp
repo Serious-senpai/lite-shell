@@ -2,14 +2,8 @@
 
 #include <codecvt>
 #include <fstream>
-#include <functional>
 #include <iostream>
-#include <list>
-#include <locale>
-#include <map>
-#include <memory>
 #include <optional>
-#include <set>
 #include <sstream>
 #include <stack>
 #include <windows.h>
