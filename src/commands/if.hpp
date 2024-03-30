@@ -32,14 +32,14 @@ public:
     DWORD run(const Context &context)
     {
         auto first = context.args[1], op = context.args[2], second = context.args[3];
-        bool force_stream = !context.client->stream.eof();
+        bool force_stream = !context.client->get_stream()->eof();
 
         unsigned counter = 1;
         std::vector<std::string> if_true;
         bool has_else = false;
         while (true)
         {
-            auto input = strip(context.client->stream.getline("if_true>", force_stream ? InputStream::FORCE_STREAM : 0));
+            auto input = strip(context.client->get_stream()->getline("if_true>", force_stream ? InputStream::FORCE_STREAM : 0));
             if (startswith(input, "if "))
             {
                 counter++;
@@ -71,7 +71,7 @@ public:
         {
             while (true)
             {
-                auto input = strip(context.client->stream.getline("if_false>", force_stream ? InputStream::FORCE_STREAM : 0));
+                auto input = strip(context.client->get_stream()->getline("if_false>", force_stream ? InputStream::FORCE_STREAM : 0));
                 if (startswith(input, "if "))
                 {
                     counter++;
@@ -164,7 +164,7 @@ public:
         }
 
         std::vector<std::string> lines = result ? if_true : if_false;
-        context.client->stream.write(lines.begin(), lines.end());
+        context.client->get_stream()->write(lines.begin(), lines.end());
 
         return 0;
     }

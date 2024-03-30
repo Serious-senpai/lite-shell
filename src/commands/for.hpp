@@ -30,10 +30,10 @@ public:
     {
         std::vector<std::string> lines;
         unsigned counter = 1;
-        bool force_stream = !context.client->stream.eof();
+        bool force_stream = !context.client->get_stream()->eof();
         while (true)
         {
-            auto input = strip(context.client->stream.getline("for>", force_stream ? InputStream::FORCE_STREAM : 0));
+            auto input = strip(context.client->get_stream()->getline("for>", force_stream ? InputStream::FORCE_STREAM : 0));
             if (startswith(input, "for "))
             {
                 counter++;
@@ -63,7 +63,7 @@ public:
         {
             if (lines.empty()) // No-op loops, reduce to a single assignment
             {
-                context.client->stream.write(format("eval %s -s %s", loop_values.back().c_str(), loop_var.c_str()));
+                context.client->get_stream()->write(format("eval %s -s %s", loop_values.back().c_str(), loop_var.c_str()));
             }
             else
             {
@@ -71,8 +71,8 @@ public:
                 std::reverse(_loop_values.begin(), _loop_values.end());
                 for (const auto &value : _loop_values)
                 {
-                    context.client->stream.write(lines.begin(), lines.end());
-                    context.client->stream.write(format("eval %s -s %s", value.c_str(), loop_var.c_str()));
+                    context.client->get_stream()->write(lines.begin(), lines.end());
+                    context.client->get_stream()->write(format("eval %s -s %s", value.c_str(), loop_var.c_str()));
                 }
             }
         }

@@ -21,7 +21,7 @@ public:
             label = ':' + label;
         }
 
-        context.client->stream.jump(label);
+        context.client->get_stream()->jump(label);
 
         return 0;
     }
