@@ -15,13 +15,10 @@ public:
 
     DWORD run(const Context &context)
     {
-        Table displayer("Name", "Value");
         for (auto &[name, value] : context.client->get_environment()->get_values())
         {
-            displayer.add_row(name, value);
+            std::cout << name << "=" << value << "\n";
         }
-
-        std::cout << displayer.display() << std::endl;
 
         return 0;
     }

@@ -61,16 +61,23 @@ private:
         auto t = strip(token, '\\', '/');
         auto find_executable = [this, &t](const std::string &directory) -> std::optional<std::string>
         {
-            for (const auto &file : explore_directory(directory, t + "*"))
+            try
             {
-                auto filename = utf_convert(std::wstring(file.cFileName));
-                for (auto &extension : extensions)
+                for (const auto &file : explore_directory(directory, t + "*"))
                 {
-                    if (endswith(filename, extension))
+                    auto filename = utf_convert(std::wstring(file.cFileName));
+                    for (auto &extension : extensions)
                     {
-                        return join(directory, t + extension);
+                        if (endswith(filename, extension))
+                        {
+                            return join(directory, t + extension);
+                        }
                     }
                 }
+            }
+            catch (const std::exception &e)
+            {
+                // pass
             }
 
             return std::nullopt;
@@ -126,7 +133,15 @@ public:
             size--;
         }
 
-        environment->set_value("PATH", path.substr(0, size));
+        wchar_t buffer[32767];
+        if (GetEnvironmentVariableW(L"PATH", buffer, 32767) == 0)
+        {
+            throw std::runtime_error(last_error("Unable to get PATH"));
+        }
+
+        std::string env_path = utf_convert(buffer);
+
+        environment->set_value("PATH", path.substr(0, size) + ";" + env_path);
         environment->set_value("errorlevel", "0");
     }
 
@@ -246,7 +261,7 @@ public:
     {
         try
         {
-            auto stripped_message = environment->resolve(strip(message));
+            auto stripped_message = strip(environment->resolve(strip(message)));
             // Special sequences
             if (stripped_message == ECHO_ON)
             {
