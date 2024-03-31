@@ -70,8 +70,8 @@ def assert_not_match(token: str, string: str) -> None:
 
 
 def test_no_command() -> None:
-    invalid_argument_test("tests")
-    invalid_argument_test("tests/")
+    execute_command("random-bullshit-go", expected_exit_code=905)
+    execute_command("random-bullshit-go/", expected_exit_code=905)
 
 
 def test_escape() -> None:

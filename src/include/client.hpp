@@ -33,7 +33,7 @@ private:
         auto iter = commands.find(name);
         if (iter == commands.end())
         {
-            throw std::invalid_argument(format("Unrecognized command: %s", name.c_str()));
+            throw CommandNotFound(name);
         }
 
         return wrappers[iter->second];
@@ -250,10 +250,9 @@ public:
     /**
      * @brief Process a command message.
      *
-     * The process logic is as follows: If `message` points to an executable, it will be executed in a subprocess.
-     * If `message` points to a batch script, it will be executed in the current shell (the script commands will
-     * be inserted to the input stream).
-     * Otherwise, the shell will attempt to find a command registered with `add_command()` and invoke it instead.
+     * @note The resolution order is as follows:
+     * @note - Built-in command
+     * @note - Executable/batch file
      *
      * @param message The command message to process.
      */
@@ -282,37 +281,43 @@ public:
             else
             {
                 auto context = Context::get_context(this, stripped_message, CommandConstraint());
-
-                // Find an executable first
-                auto executable = resolve(context.tokens[0]);
-                if (executable.has_value()) // Is an executable or batch file
-                {
-                    if (endswith(*executable, ".exe"))
-                    {
-                        auto final_context = context.replace_call(*executable);
-
-                        auto subprocess = spawn_subprocess(final_context);
-                        if (final_context.is_background_request())
-                        {
-                            environment->set_value("errorlevel", "0");
-                        }
-                        else
-                        {
-                            subprocess.wait(INFINITE);
-                            environment->set_value("errorlevel", std::to_string(subprocess.exit_code()));
-                        }
-                    }
-                    else
-                    {
-                        process_batch_file(*executable);
-                    }
-                }
-                else // Is a local command, throw if no match was found in get_command()
+                try
                 {
                     auto wrapper = get_command(context);
                     auto constraint = wrapper.command->constraint;
                     auto errorlevel = wrapper.run(constraint.require_context_parsing ? context.parse(constraint) : context);
                     environment->set_value("errorlevel", std::to_string(errorlevel));
+                }
+                catch (CommandNotFound &e)
+                {
+                    auto executable = resolve(context.tokens[0]);
+                    if (executable.has_value()) // Is an executable or batch file
+                    {
+                        if (endswith(*executable, ".exe"))
+                        {
+                            auto final_context = context.replace_call(*executable);
+
+                            auto subprocess = spawn_subprocess(final_context);
+                            if (final_context.is_background_request())
+                            {
+                                environment->set_value("errorlevel", "0");
+                            }
+                            else
+                            {
+                                subprocess.wait(INFINITE);
+                                environment->set_value("errorlevel", std::to_string(subprocess.exit_code()));
+                            }
+                        }
+                        else
+                        {
+                            process_batch_file(*executable);
+                        }
+                    }
+                    else
+                    {
+                        std::cout << "Didn't get anything" << std::endl;
+                        throw;
+                    }
                 }
             }
         }
@@ -346,6 +351,7 @@ public:
         ERROR_CODE(std::bad_alloc, 902);
         ERROR_CODE(SubprocessCreationError, 903);
         ERROR_CODE(EnvironmentResolveError, 904);
+        ERROR_CODE(CommandNotFound, 905);
 
 #undef ERROR_CODE
 
