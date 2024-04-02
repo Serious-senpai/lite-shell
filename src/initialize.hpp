@@ -5,6 +5,7 @@
 #include "commands/args.hpp"
 #include "commands/cat.hpp"
 #include "commands/cd.hpp"
+#include "commands/clear.hpp"
 #include "commands/date.hpp"
 #include "commands/echo.hpp"
 #include "commands/echoln.hpp"
@@ -27,6 +28,7 @@ void initialize(Client *client)
     client->add_command(std::make_shared<ArgsCommand>())
         ->add_command(std::make_shared<CatCommand>())
         ->add_command(std::make_shared<CdCommand>())
+        ->add_command(std::make_shared<ClearCommand>())
         ->add_command(std::make_shared<DateCommand>())
         ->add_command(std::make_shared<EchoCommand>())
         ->add_command(std::make_shared<EcholnCommand>())
