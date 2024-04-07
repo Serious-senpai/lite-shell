@@ -418,7 +418,8 @@ public:
         }
         else
         {
-            wrapper.close();
+            CloseHandle(process_info.hProcess);
+            CloseHandle(process_info.hThread);
             throw SubprocessCreationError(last_error(format("Unable to create subprocess: %s", final_context.message.c_str())));
         }
     }

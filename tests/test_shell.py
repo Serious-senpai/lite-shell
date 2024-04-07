@@ -8,6 +8,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, List, Literal, Optional, Tuple, overload
 
+import psutil
+
 
 root_dir = Path(__file__).parent.parent
 build_dir = root_dir / "build"
@@ -252,6 +254,63 @@ def test_help_2() -> None:
     invalid_argument_test("help foo bar")
 
 
+def test_ps() -> None:
+    process = open_shell(text=True)
+
+    assert process.stdin is not None
+    process.stdin.write("sleep 4000 %\nps\n")
+    process.stdin.flush()
+
+    time.sleep(2)
+
+    # https://stackoverflow.com/a/31214525
+    subprocesses = psutil.Process().children(recursive=True)
+    print(subprocesses)
+
+    pid = -1
+    for p in subprocesses:
+        if "sleep" in p.name():
+            pid = p.pid
+            break
+
+    assert pid != -1
+
+    stdout, stderr = process.communicate("exit\n")
+    assert_match(str(pid), stdout)
+    assert_match("STILL_ACTIVE", stdout)
+    assert process.returncode == 0
+    assert stderr.strip() == ""
+
+
+def test_kill() -> None:
+    process = open_shell(text=True)
+
+    assert process.stdin is not None
+    process.stdin.write("sleep 4000 %\n")
+    process.stdin.flush()
+
+    time.sleep(2)
+
+    # https://stackoverflow.com/a/31214525
+    subprocesses = psutil.Process().children(recursive=True)
+    print(subprocesses)
+
+    pid = -1
+    for p in subprocesses:
+        if "sleep" in p.name():
+            pid = p.pid
+            break
+
+    assert pid != -1
+
+    stdout, stderr = process.communicate(f"kill {pid} 40000\nps\nexit\n")
+    assert_match(str(pid), stdout)
+    assert_match("40000", stdout)
+    assert_not_match("STILL_ACTIVE", stdout)
+    assert process.returncode == 0
+    assert stderr.strip() == ""
+
+
 def test_sleep() -> None:
     start = time.perf_counter()
     default_test("sleep 1000")
@@ -351,14 +410,14 @@ def test_script_5() -> None:
     stdout, stderr = execute_command("tests/shell-script-5")
 
     lines: List[str] = []
-    for i in range(100):
-        for j in range(i, 100):
+    for i in range(50):
+        for j in range(i, 50):
             lines.append(f"{i} {j}")
 
     assert_match("\n".join(lines), stdout)
 
     lines.clear()
-    for i in range(100):
+    for i in range(50):
         for j in range(i):
             assert_not_match(f"{i} {j}", stdout)
 

@@ -4,19 +4,10 @@
 class ProcessInfoWrapper
 {
 private:
-    bool closed = false;
     bool suspended = false;
 
-    /* The underlying PROCESS_INFORMATION struct */
+    /* The underlying PROCESS_INFORMATION struct. The inner handles should never been closed. */
     const PROCESS_INFORMATION info;
-
-    void check_valid() const
-    {
-        if (closed)
-        {
-            throw std::runtime_error("The process handle has already been closed");
-        }
-    }
 
 public:
     /* The subprocess command line */
@@ -24,12 +15,6 @@ public:
 
     ProcessInfoWrapper(const PROCESS_INFORMATION &info, const std::string &command)
         : info(info), command(command) {}
-
-    /* Whether the handles of the underlying PROCESS_INFORMATION are closed */
-    bool is_closed() const
-    {
-        return closed;
-    }
 
     /* Whether the subprocess is suspended */
     bool is_suspended() const
@@ -39,7 +24,6 @@ public:
 
     void suspend()
     {
-        check_valid();
         if (!suspended)
         {
             if (SuspendThread(info.hThread) == (DWORD)-1)
@@ -57,7 +41,6 @@ public:
 
     void resume()
     {
-        check_valid();
         if (suspended)
         {
             if (ResumeThread(info.hThread) == (DWORD)-1)
@@ -75,19 +58,15 @@ public:
 
     void wait(DWORD milliseconds)
     {
-        check_valid();
         WaitForSingleObject(info.hProcess, milliseconds);
     }
 
-    void kill()
+    void kill(UINT exit_code)
     {
-        check_valid();
-        if (!TerminateProcess(info.hProcess, 1))
+        if (!TerminateProcess(info.hProcess, exit_code))
         {
             throw std::runtime_error(last_error("TerminateProcess ERROR"));
         }
-
-        close();
     }
 
     DWORD exit_code() const
@@ -105,16 +84,5 @@ public:
     DWORD tid() const
     {
         return info.dwThreadId;
-    }
-
-    /* Close the underlying handles of the subprocess (including a handle of its thread and itself) */
-    void close()
-    {
-        if (!closed)
-        {
-            CloseHandle(info.hProcess);
-            CloseHandle(info.hThread);
-            closed = true;
-        }
     }
 };
