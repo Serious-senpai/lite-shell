@@ -15,7 +15,7 @@ This section will guide you through adding a command to the application quickly.
 
 Note that commands within the application always run in the main process. If you want to isolate the execution in a subprocess, create a standalone executable (with `int main(int argc, const char *argv[])`) in [src/external](/src/external) instead.
 
-First, navigate to [src/commands](/src/commands) and create a new file `add.hpp` (you can name this to whatever you want, but it should ends with `*.hpp`) then paste the following code:
+First, navigate to [src/commands](/src/commands) and create a new file `add.hpp` (you can name this to whatever you want, but it should end with `*.hpp`) then paste the following code:
 ```cpp
 #pragma once
 
@@ -39,7 +39,9 @@ public:
   - Arguments constraint: `CommandConstraint(3, 3)` means that the command accepts *from* 3 *to* 3 positional arguments (i.e. exactly **3** positional arguments): Note that the command name is treated as a positional argument too (e.g. `add 4 5` has 3 arguments: `add`, `4` and `5`).
 - The method `DWORD run(const Context &context)` is the command callback, it is called whenever this command is invoked and should return a `DWORD` value (i.e. an integer). If the command succeeds, a value of `0` is usually returned.
 
-Second, navigate to [src/initialize.hpp](/src/initialize.hpp) and add a directive `#include "commands/add.hpp"`. In the function `void initialize(Client *client)`, add a call `client->add_command(std::make_shared<AddCommand>())`.
+At this point, your IDE may complain a lot about compilation errors. Just ignore it and continue the next step.
+
+Second, navigate to [src/initialize.hpp](/src/initialize.hpp) and add `#include "commands/add.hpp"`. In the function `void initialize(Client *client)`, add a call `client->add_command(std::make_shared<AddCommand>())`.
 
 Notice that we haven't implemented the calculation for sum of integers yet, but now you can build the shell by running [scripts/build.bat](/scripts/build.bat) to see the changes - try typing the `help` and `help add` commands in the shell to see that we have added the command successfully.
 
