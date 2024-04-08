@@ -237,14 +237,14 @@ public:
     /**
      * @brief Get the alias groups for this constraint
      *
-     * @return A set of sets of aliases
+     * @return A vector of sets of aliases
      */
-    std::set<std::set<std::string>> get_alias_groups() const
+    std::vector<std::set<std::string>> get_alias_groups() const
     {
-        std::set<std::set<std::string>> alias_groups;
+        std::vector<std::set<std::string>> alias_groups;
         for (auto &constraint : constraints)
         {
-            alias_groups.insert(constraint.aliases);
+            alias_groups.push_back(constraint.aliases);
         }
 
         return alias_groups;

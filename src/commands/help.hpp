@@ -31,7 +31,7 @@ public:
             auto wrapper = context.client->get_optional_command(name);
             if (wrapper.has_value())
             {
-                std::cout << wrapper->command->help() << std::endl;
+                std::cout << wrapper->command->help();
             }
             else
             {

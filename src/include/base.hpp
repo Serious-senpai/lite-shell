@@ -52,7 +52,7 @@ public:
     /**
     Returns a string containing the help information for this command.
     The help information includes the command description, usage, aliases, and parameters.
-    
+
     @return A string containing the help information.
     */
     virtual std::string help() const final
@@ -61,10 +61,11 @@ public:
         stream << description << std::endl;
         stream << "Usage: " << std::endl;
 
+        const auto groups = constraint.get_alias_groups();
         if (constraint.require_context_parsing && constraint.arguments_checking)
         {
             std::vector<std::set<std::string>> optional, required;
-            for (auto &aliases : constraint.get_alias_groups())
+            for (auto &aliases : groups)
             {
                 if (aliases.empty())
                 {
@@ -146,14 +147,20 @@ public:
         }
 
         stream << long_description << std::endl;
-        stream << "Aliases: " << join(aliases.begin(), aliases.end(), ", ") << std::endl;
-        stream << "Parameters:" << std::endl;
-
-        for (auto &aliases : constraint.get_alias_groups())
+        if (!aliases.empty())
         {
-            auto c = constraint.get_constraint(*aliases.begin());
-            stream << " " << join(aliases.begin(), aliases.end(), "|") << " " << ngettext(c.required, "(required)", "(optional)") << std::endl;
-            stream << "  " << c.help << std::endl;
+            stream << "Aliases: " << join(aliases.begin(), aliases.end(), ", ") << std::endl;
+        }
+
+        if (!groups.empty())
+        {
+            stream << "Parameters:" << std::endl;
+            for (auto &aliases : groups)
+            {
+                auto c = constraint.get_constraint(*aliases.begin());
+                stream << " " << join(aliases.begin(), aliases.end(), "|") << " " << ngettext(c.required, "(required)", "(optional)") << std::endl;
+                stream << "  " << c.help << std::endl;
+            }
         }
 
         return stream.str();

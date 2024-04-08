@@ -258,10 +258,10 @@ def test_ps() -> None:
     process = open_shell(text=True)
 
     assert process.stdin is not None
-    process.stdin.write("sleep 4000 %\nps\n")
+    process.stdin.write("sleep 1000 %\nps\n")
     process.stdin.flush()
 
-    time.sleep(2)
+    time.sleep(0.5)
 
     # https://stackoverflow.com/a/31214525
     subprocesses = psutil.Process().children(recursive=True)
@@ -286,10 +286,10 @@ def test_kill() -> None:
     process = open_shell(text=True)
 
     assert process.stdin is not None
-    process.stdin.write("sleep 4000 %\n")
+    process.stdin.write("sleep 1000 %\n")
     process.stdin.flush()
 
-    time.sleep(2)
+    time.sleep(0.5)
 
     # https://stackoverflow.com/a/31214525
     subprocesses = psutil.Process().children(recursive=True)
