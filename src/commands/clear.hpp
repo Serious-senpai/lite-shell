@@ -1,17 +1,19 @@
 #pragma once
 
-class ClearCommand : public BaseCommand
+#include <all.hpp>
+
+class ClearCommand : public liteshell::BaseCommand
 {
 public:
     ClearCommand()
-        : BaseCommand(
+        : liteshell::BaseCommand(
               "clear",
               "Clear the console screen",
               "",
               {"cls"},
-              CommandConstraint(1, 1)) {}
+              liteshell::CommandConstraint(1, 1)) {}
 
-    DWORD run(const Context &context)
+    DWORD run(const liteshell::Context &context)
     {
         // Example 2 in https://learn.microsoft.com/en-us/windows/console/clearing-the-screen
 
@@ -24,7 +26,7 @@ public:
         // Get the number of character cells in the current buffer.
         if (!GetConsoleScreenBufferInfo(hConsole, &csbi))
         {
-            throw std::runtime_error(last_error("GetConsoleScreenBufferInfo ERROR"));
+            throw std::runtime_error(utils::last_error("GetConsoleScreenBufferInfo ERROR"));
         }
 
         // Scroll the rectangle of the entire buffer.

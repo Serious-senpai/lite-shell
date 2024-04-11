@@ -1,17 +1,19 @@
 #pragma once
 
-class ExitCommand : public BaseCommand
+#include <all.hpp>
+
+class ExitCommand : public liteshell::BaseCommand
 {
 public:
     ExitCommand()
-        : BaseCommand(
+        : liteshell::BaseCommand(
               "exit",
               "Exit the shell with the specified exit code",
               "If no exit code is specified, the shell will exit with the current errorlevel.",
               {},
-              CommandConstraint(1, 2)) {}
+              liteshell::CommandConstraint(1, 2)) {}
 
-    DWORD run(const Context &context)
+    DWORD run(const liteshell::Context &context)
     {
         if (context.args.size() == 1)
         {
@@ -22,5 +24,7 @@ public:
             auto code = std::stoi(context.args[1]);
             exit(code);
         }
+
+        return 0;
     }
 };

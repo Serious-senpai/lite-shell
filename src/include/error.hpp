@@ -1,49 +1,48 @@
 #pragma once
 
-class LiteShellException : public std::exception
+namespace liteshell
 {
-private:
-    const std::string message;
-
-public:
-    LiteShellException(const std::string &message) : message(message) {}
-
-    const char *what() const noexcept
+    class LiteShellException : public std::exception
     {
-        return message.c_str();
-    }
-};
+    public:
+        const std::string message;
 
-class SubprocessException : public LiteShellException
-{
-public:
-    SubprocessException(const std::string &message) : LiteShellException(message) {}
-};
+        LiteShellException(const std::string &message) : message(message) {}
 
-class SubprocessCreationError : public SubprocessException
-{
-public:
-    SubprocessCreationError(const std::string &message) : SubprocessException(message) {}
-};
+        const char *what() const noexcept
+        {
+            return message.c_str();
+        }
+    };
 
-class EnvironmentException : public LiteShellException
-{
-public:
-    EnvironmentException(const std::string &message) : LiteShellException(message) {}
-};
+    class SubprocessException : public LiteShellException
+    {
+    public:
+        SubprocessException(const std::string &message) : LiteShellException(message) {}
+    };
 
-class EnvironmentResolveError : public EnvironmentException
-{
-public:
-    EnvironmentResolveError(const std::string &message) : EnvironmentException(message) {}
-};
+    class SubprocessCreationError : public SubprocessException
+    {
+    public:
+        SubprocessCreationError(const std::string &message) : SubprocessException(message) {}
+    };
 
-class CommandNotFound : public LiteShellException
-{
-public:
-    const std::string name;
+    class EnvironmentException : public LiteShellException
+    {
+    public:
+        EnvironmentException(const std::string &message) : LiteShellException(message) {}
+    };
 
-    CommandNotFound(const std::string &name)
-        : LiteShellException(format("Command \"%s\" not found", name.c_str())),
-          name(name) {}
-};
+    class EnvironmentResolveError : public EnvironmentException
+    {
+    public:
+        EnvironmentResolveError(const std::string &message) : EnvironmentException(message) {}
+    };
+
+    class CommandNotFound : public LiteShellException
+    {
+    public:
+        CommandNotFound(const std::string &name, const std::string &suggestion)
+            : LiteShellException(utils::format("Command \"%s\" not found. Did you mean \"%s\"?", name.c_str(), suggestion.c_str())) {}
+    };
+}

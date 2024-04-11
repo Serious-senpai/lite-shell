@@ -2,18 +2,18 @@
 
 #include <all.hpp>
 
-class EnvCommand : public BaseCommand
+class EnvCommand : public liteshell::BaseCommand
 {
 public:
     EnvCommand()
-        : BaseCommand(
+        : liteshell::BaseCommand(
               "env",
               "Display all environment variables",
               "",
               {},
-              CommandConstraint(1, 1)) {}
+              liteshell::CommandConstraint(1, 1)) {}
 
-    DWORD run(const Context &context)
+    DWORD run(const liteshell::Context &context)
     {
         for (auto &[name, value] : context.client->get_environment()->get_values())
         {

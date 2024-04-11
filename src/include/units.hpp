@@ -1,37 +1,40 @@
 #pragma once
 
-/**
- * Formatter for printing memory sizes, e.g. 1024 bytes -> `1.00KB`
- *
- * @param bytes The number of bytes to format
- * @return The formatted string, e.g. `1.00KB`
- */
-std::string memory_size(long double bytes)
+namespace utils
 {
-    std::string result = format("%.2LfB", bytes);
-    if (bytes > 1024)
+    /**
+     * Formatter for printing memory sizes, e.g. 1024 bytes -> `1.00KB`
+     *
+     * @param bytes The number of bytes to format
+     * @return The formatted string, e.g. `1.00KB`
+     */
+    std::string memory_size(long double bytes)
     {
-        bytes /= 1024;
-        result = format("%.2LfKB", bytes);
-
+        std::string result = format("%.2LfB", bytes);
         if (bytes > 1024)
         {
             bytes /= 1024;
-            result = format("%.2LfMB", bytes);
+            result = format("%.2LfKB", bytes);
 
             if (bytes > 1024)
             {
                 bytes /= 1024;
-                result = format("%.2LfGB", bytes);
+                result = format("%.2LfMB", bytes);
 
                 if (bytes > 1024)
                 {
                     bytes /= 1024;
-                    result = format("%.2LfTB", bytes);
+                    result = format("%.2LfGB", bytes);
+
+                    if (bytes > 1024)
+                    {
+                        bytes /= 1024;
+                        result = format("%.2LfTB", bytes);
+                    }
                 }
             }
         }
-    }
 
-    return result;
+        return result;
+    }
 }

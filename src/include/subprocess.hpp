@@ -1,88 +1,91 @@
 #pragma once
 
-/* A wrapper of PROCESS_INFORMATION containing information of a subprocess */
-class ProcessInfoWrapper
+namespace liteshell
 {
-private:
-    bool suspended = false;
-
-    /* The underlying PROCESS_INFORMATION struct. The inner handles should never been closed. */
-    const PROCESS_INFORMATION info;
-
-public:
-    /* The subprocess command line */
-    const std::string command;
-
-    ProcessInfoWrapper(const PROCESS_INFORMATION &info, const std::string &command)
-        : info(info), command(command) {}
-
-    /* Whether the subprocess is suspended */
-    bool is_suspended() const
+    /* A wrapper of PROCESS_INFORMATION containing information of a subprocess */
+    class ProcessInfoWrapper
     {
-        return suspended;
-    }
+    private:
+        bool suspended = false;
 
-    void suspend()
-    {
-        if (!suspended)
+        /* The underlying PROCESS_INFORMATION struct. The inner handles should never been closed. */
+        const PROCESS_INFORMATION info;
+
+    public:
+        /* The subprocess command line */
+        const std::string command;
+
+        ProcessInfoWrapper(const PROCESS_INFORMATION &info, const std::string &command)
+            : info(info), command(command) {}
+
+        /* Whether the subprocess is suspended */
+        bool is_suspended() const
         {
-            if (SuspendThread(info.hThread) == (DWORD)-1)
+            return suspended;
+        }
+
+        void suspend()
+        {
+            if (!suspended)
             {
-                throw std::runtime_error(last_error("SuspendThread ERROR"));
+                if (SuspendThread(info.hThread) == (DWORD)-1)
+                {
+                    throw std::runtime_error(utils::last_error("SuspendThread ERROR"));
+                }
+
+                suspended = true;
             }
-
-            suspended = true;
-        }
-        else
-        {
-            throw std::runtime_error("The process has already been suspended");
-        }
-    }
-
-    void resume()
-    {
-        if (suspended)
-        {
-            if (ResumeThread(info.hThread) == (DWORD)-1)
+            else
             {
-                throw std::runtime_error(last_error("ResumeThread ERROR"));
+                throw std::runtime_error("The process has already been suspended");
             }
-
-            suspended = false;
         }
-        else
+
+        void resume()
         {
-            throw std::runtime_error("The process hasn't been suspended yet");
+            if (suspended)
+            {
+                if (ResumeThread(info.hThread) == (DWORD)-1)
+                {
+                    throw std::runtime_error(utils::last_error("ResumeThread ERROR"));
+                }
+
+                suspended = false;
+            }
+            else
+            {
+                throw std::runtime_error("The process hasn't been suspended yet");
+            }
         }
-    }
 
-    void wait(DWORD milliseconds)
-    {
-        WaitForSingleObject(info.hProcess, milliseconds);
-    }
-
-    void kill(UINT exit_code)
-    {
-        if (!TerminateProcess(info.hProcess, exit_code))
+        void wait(DWORD milliseconds)
         {
-            throw std::runtime_error(last_error("TerminateProcess ERROR"));
+            WaitForSingleObject(info.hProcess, milliseconds);
         }
-    }
 
-    DWORD exit_code() const
-    {
-        DWORD exit_code;
-        GetExitCodeProcess(info.hProcess, &exit_code);
-        return exit_code;
-    }
+        void kill(UINT exit_code)
+        {
+            if (!TerminateProcess(info.hProcess, exit_code))
+            {
+                throw std::runtime_error(utils::last_error("TerminateProcess ERROR"));
+            }
+        }
 
-    DWORD pid() const
-    {
-        return info.dwProcessId;
-    }
+        DWORD exit_code() const
+        {
+            DWORD exit_code;
+            GetExitCodeProcess(info.hProcess, &exit_code);
+            return exit_code;
+        }
 
-    DWORD tid() const
-    {
-        return info.dwThreadId;
-    }
-};
+        DWORD pid() const
+        {
+            return info.dwProcessId;
+        }
+
+        DWORD tid() const
+        {
+            return info.dwThreadId;
+        }
+    };
+}

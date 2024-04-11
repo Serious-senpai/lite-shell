@@ -1,19 +1,21 @@
 #pragma once
 
-class PsCommand : public BaseCommand
+#include <all.hpp>
+
+class PsCommand : public liteshell::BaseCommand
 {
 public:
     PsCommand()
-        : BaseCommand(
+        : liteshell::BaseCommand(
               "ps",
               "Get all subprocesses of the current shell, regardless of their states",
               "",
               {},
-              CommandConstraint(1, 1)) {}
+              liteshell::CommandConstraint(1, 1)) {}
 
-    DWORD run(const Context &context)
+    DWORD run(const liteshell::Context &context)
     {
-        Table displayer("PID", "Command line", "Exit code", "Suspended");
+        utils::Table displayer("PID", "Command line", "Exit code", "Suspended");
         auto iterators = context.client->get_subprocesses();
         for (auto wrapper = iterators.first; wrapper != iterators.second; wrapper++)
         {

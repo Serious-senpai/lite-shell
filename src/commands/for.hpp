@@ -1,38 +1,40 @@
 #pragma once
 
+#include <all.hpp>
+
 const std::set<std::string> __for_types = {"range", "split"};
 
-CommandConstraint __constraint_ForCommand()
+liteshell::CommandConstraint __constraint_ForCommand()
 {
-    CommandConstraint constraint(3, 4);
+    liteshell::CommandConstraint constraint(3, 4);
     constraint.add_argument(
         "-t", "--type",
         true,
-        "The type of loop, must be one of " + join(__for_types.begin(), __for_types.end(), "/"),
+        "The type of loop, must be one of " + utils::join(__for_types.begin(), __for_types.end(), "/"),
         1, 1);
     return constraint;
 }
 
-class ForCommand : public BaseCommand
+class ForCommand : public liteshell::BaseCommand
 {
 public:
     ForCommand()
-        : BaseCommand(
+        : liteshell::BaseCommand(
               "for",
               "Iterate the loop variable over a specified integer range.",
               "To end the loop section, type \"endfor\"",
               {},
               __constraint_ForCommand()) {}
 
-    std::vector<std::string> get_lines(const Context &context)
+    std::vector<std::string> get_lines(const liteshell::Context &context)
     {
         std::vector<std::string> lines;
         unsigned counter = 1;
         bool force_stream = !context.client->get_stream()->eof();
         while (true)
         {
-            auto input = strip(context.client->get_stream()->getline("for>", force_stream ? InputStream::FORCE_STREAM : 0));
-            if (startswith(input, "for "))
+            auto input = utils::strip(context.client->get_stream()->getline("for>", force_stream ? liteshell::InputStream::FORCE_STREAM : 0));
+            if (utils::startswith(input, "for "))
             {
                 counter++;
             }
@@ -52,7 +54,7 @@ public:
     }
 
     void insert_commands(
-        const Context &context,
+        const liteshell::Context &context,
         const std::string &loop_var,
         const std::vector<std::string> &loop_values,
         const std::vector<std::string> &lines)
@@ -61,7 +63,7 @@ public:
         {
             if (lines.empty()) // No-op loops, reduce to a single assignment
             {
-                context.client->get_stream()->write(format("eval %s -s %s", loop_values.back().c_str(), loop_var.c_str()));
+                context.client->get_stream()->write(utils::format("eval \"%s\" -s %s", loop_values.back().c_str(), loop_var.c_str()));
             }
             else
             {
@@ -70,13 +72,13 @@ public:
                 for (const auto &value : _loop_values)
                 {
                     context.client->get_stream()->write(lines.begin(), lines.end());
-                    context.client->get_stream()->write(format("eval %s -s %s", value.c_str(), loop_var.c_str()));
+                    context.client->get_stream()->write(utils::format("eval \"%s\" -s %s", value.c_str(), loop_var.c_str()));
                 }
             }
         }
     }
 
-    DWORD run(const Context &context)
+    DWORD run(const liteshell::Context &context)
     {
         auto type = context.kwargs.at("-t")[0];
         if (type == "range")
@@ -110,7 +112,7 @@ public:
         else if (type == "split")
         {
             auto loop_var = context.args[1];
-            auto values = split(context.args[2], ' ');
+            auto values = utils::split(context.args[2], ' ');
             insert_commands(context, loop_var, values, get_lines(context));
         }
 

@@ -1,28 +1,42 @@
 #pragma once
 
+#include <all.hpp>
+
 const char __help_description[] = R"(Provides help information for Windows commands.
 
 To get help for a specific command, specify its name as the first argument (e.g. "help help")
 )";
 
-class HelpCommand : public BaseCommand
+class HelpCommand : public liteshell::BaseCommand
 {
 public:
     HelpCommand()
-        : BaseCommand(
+        : liteshell::BaseCommand(
               "help",
               "Get all commands or get help for a specific command",
               __help_description,
               {},
-              CommandConstraint(1, 2)) {}
+              liteshell::CommandConstraint(1, 2)) {}
 
-    DWORD run(const Context &context)
+    DWORD run(const liteshell::Context &context)
     {
         if (context.args.size() == 1) // Get all commands
         {
-            for (auto &wrapper : context.client->walk_commands())
+            auto commands = context.client->walk_commands();
+            std::size_t max_width = 0;
+            for (auto &wrapper : commands)
             {
-                std::cout << wrapper.command->name << " - " << wrapper.command->description << std::endl;
+                max_width = std::max(max_width, 3 + wrapper.command->name.size());
+            }
+
+            for (auto &wrapper : commands)
+            {
+                std::cout << wrapper.command->name;
+                for (std::size_t i = wrapper.command->name.size(); i < max_width; i++)
+                {
+                    std::cout << " ";
+                }
+                std::cout << wrapper.command->description << std::endl;
             }
         }
         else // Get help for a specific command
@@ -35,21 +49,8 @@ public:
             }
             else
             {
-                std::vector<std::string> commands;
-                for (auto &wrapper : context.client->walk_commands())
-                {
-                    commands.push_back(wrapper.command->name);
-                    for (auto &alias : wrapper.command->aliases)
-                    {
-                        commands.push_back(alias);
-                    }
-                }
-
-                throw std::invalid_argument(
-                    format(
-                        "Command \"%s\" not found. Did you mean \"%s\"?",
-                        name.c_str(),
-                        fuzzy_search(commands.begin(), commands.end(), name)->c_str()));
+                auto error = liteshell::CommandNotFound(name, context.client->fuzzy_command_search(name).c_str());
+                throw std::invalid_argument(error.message);
             }
         }
 

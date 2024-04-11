@@ -1,17 +1,19 @@
 #pragma once
 
-class EchoCommand : public BaseCommand
+#include <all.hpp>
+
+class EchoCommand : public liteshell::BaseCommand
 {
 public:
     EchoCommand()
-        : BaseCommand(
+        : liteshell::BaseCommand(
               "echo",
               "Print to stdout but do not add a newline like \"echoln\"",
               "",
               {},
-              CommandConstraint(2, 2)) {}
+              liteshell::CommandConstraint(2, 2)) {}
 
-    DWORD run(const Context &context)
+    DWORD run(const liteshell::Context &context)
     {
         std::cout << context.args[1];
         std::cout.flush();

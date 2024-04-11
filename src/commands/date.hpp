@@ -1,19 +1,21 @@
 #pragma once
 
+#include <all.hpp>
+
 const char *__week_days[] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
 
-class DateCommand : public BaseCommand
+class DateCommand : public liteshell::BaseCommand
 {
 public:
     DateCommand()
-        : BaseCommand(
+        : liteshell::BaseCommand(
               "date",
               "Retrieves the current system date and time",
               "",
               {},
-              CommandConstraint(1, 1)) {}
+              liteshell::CommandConstraint(1, 1)) {}
 
-    DWORD run(const Context &context)
+    DWORD run(const liteshell::Context &context)
     {
         SYSTEMTIME time;
 

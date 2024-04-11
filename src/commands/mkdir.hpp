@@ -1,21 +1,23 @@
 #pragma once
 
-class MkdirCommand : public BaseCommand
+#include <all.hpp>
+
+class MkdirCommand : public liteshell::BaseCommand
 {
 public:
     MkdirCommand()
-        : BaseCommand(
+        : liteshell::BaseCommand(
               "mkdir",
               "Make a new directory",
               "",
               {"md"},
-              CommandConstraint(2, 2)) {}
+              liteshell::CommandConstraint(2, 2)) {}
 
-    DWORD run(const Context &context)
+    DWORD run(const liteshell::Context &context)
     {
-        if (!CreateDirectoryW(utf_convert(context.args[1]).c_str(), NULL))
+        if (!CreateDirectoryW(utils::utf_convert(context.args[1]).c_str(), NULL))
         {
-            throw std::runtime_error(last_error("Unable to create directory"));
+            throw std::runtime_error(utils::last_error("Unable to create directory"));
         }
 
         return 0;

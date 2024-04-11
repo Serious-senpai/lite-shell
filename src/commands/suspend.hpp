@@ -1,17 +1,19 @@
 #pragma once
 
-class SuspendCommand : public BaseCommand
+#include <all.hpp>
+
+class SuspendCommand : public liteshell::BaseCommand
 {
 public:
     SuspendCommand()
-        : BaseCommand(
+        : liteshell::BaseCommand(
               "suspend",
               "Increase the suspend count of a subprocess with the given PID",
               "",
               {},
-              CommandConstraint(2, 2)) {}
+              liteshell::CommandConstraint(2, 2)) {}
 
-    DWORD run(const Context &context)
+    DWORD run(const liteshell::Context &context)
     {
         DWORD pid = std::stoul(context.args[1]);
         auto iterators = context.client->get_subprocesses();

@@ -1,33 +1,36 @@
 #pragma once
 
-template <typename... Args>
-std::string strip(const std::string &original, const Args &...remove)
+namespace utils
 {
-    std::vector<char> result;
-    std::set<char> to_remove = {remove...};
-    bool ok = false;
-    for (auto c : original)
+    template <typename... Args>
+    std::string strip(const std::string &original, const Args &...remove)
     {
-        if (ok)
+        std::vector<char> result;
+        std::set<char> to_remove = {remove...};
+        bool ok = false;
+        for (auto c : original)
         {
-            result.push_back(c);
+            if (ok)
+            {
+                result.push_back(c);
+            }
+            else if (to_remove.count(c) == 0)
+            {
+                result.push_back(c);
+                ok = true;
+            }
         }
-        else if (to_remove.count(c) == 0)
+
+        while (!result.empty() && to_remove.count(result.back()) == 1)
         {
-            result.push_back(c);
-            ok = true;
+            result.pop_back();
         }
+
+        return std::string(result.begin(), result.end());
     }
 
-    while (!result.empty() && to_remove.count(result.back()) == 1)
+    std::string strip(const std::string &original)
     {
-        result.pop_back();
+        return strip(original, ' ', '\n', '\r');
     }
-
-    return std::string(result.begin(), result.end());
-}
-
-std::string strip(const std::string &original)
-{
-    return strip(original, ' ', '\n', '\r');
 }

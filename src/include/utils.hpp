@@ -3,6 +3,7 @@
 #include "converter.hpp"
 #include "join.hpp"
 
+namespace utils{
 std::string last_error(const std::string &message)
 {
     return format("%s: %d", message.c_str(), GetLastError());
@@ -174,4 +175,4 @@ std::vector<long long> range(const long long start, const long long end)
         result.push_back(i);
     }
     return result;
-}
+}}

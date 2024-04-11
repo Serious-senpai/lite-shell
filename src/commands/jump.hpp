@@ -1,17 +1,19 @@
 #pragma once
 
-class JumpCommand : public BaseCommand
+#include <all.hpp>
+
+class JumpCommand : public liteshell::BaseCommand
 {
 public:
     JumpCommand()
-        : BaseCommand(
+        : liteshell::BaseCommand(
               "jump",
               "Skip the input stream to the specified label",
               "",
               {},
-              CommandConstraint(2, 2)) {}
+              liteshell::CommandConstraint(2, 2)) {}
 
-    DWORD run(const Context &context)
+    DWORD run(const liteshell::Context &context)
     {
         auto label = context.args[1];
         if (label[0] != ':')

@@ -13,7 +13,7 @@ Type "<executable> <arguments> %" to run an executable in a subprocess.)";
 
 int main(int argc, const char *argv[])
 {
-    Client client;
+    liteshell::Client client;
     initialize(&client);
 
     std::cout << title << std::endl;

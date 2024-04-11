@@ -2,159 +2,162 @@
 
 #include "format.hpp"
 
-/* A helper class to display ASCII table on the console */
-class Table
+namespace utils
 {
-private:
-    std::vector<std::vector<std::string>> rows;
-
-    Table(const std::initializer_list<std::string> &headers) : columns(headers.size())
+    /* A helper class to display ASCII table on the console */
+    class Table
     {
-        rows.push_back(headers);
-    }
+    private:
+        std::vector<std::vector<std::string>> rows;
 
-    void add_row(const std::initializer_list<std::string> &row)
-    {
-        if (row.size() != columns)
+        Table(const std::initializer_list<std::string> &headers) : columns(headers.size())
         {
-            throw std::invalid_argument(format("Attempted to add a row of %d item(s) to a table with %d column(s)", row.size(), columns));
+            rows.push_back(headers);
         }
 
-        rows.push_back(row);
-    }
-
-public:
-    /* The number of columns, this number is unchanged */
-    const unsigned columns;
-
-    /* Whether each row should align left */
-    bool align_left = true;
-
-    Table(const std::string &column) : Table({column}) {}
-    Table(
-        const std::string &column_1,
-        const std::string &column_2)
-        : Table({column_1, column_2}) {}
-    Table(
-        const std::string &column_1,
-        const std::string &column_2,
-        const std::string &column_3)
-        : Table({column_1, column_2, column_3}) {}
-    Table(
-        const std::string &column_1,
-        const std::string &column_2,
-        const std::string &column_3,
-        const std::string &column_4)
-        : Table({column_1, column_2, column_3, column_4}) {}
-    Table(
-        const std::string &column_1,
-        const std::string &column_2,
-        const std::string &column_3,
-        const std::string &column_4,
-        const std::string &column_5)
-        : Table({column_1, column_2, column_3, column_4, column_5}) {}
-
-    void add_row(const std::string &column)
-    {
-        add_row({column});
-    }
-
-    void add_row(
-        const std::string &column_1,
-        const std::string &column_2)
-    {
-        add_row({column_1, column_2});
-    }
-
-    void add_row(
-        const std::string &column_1,
-        const std::string &column_2,
-        const std::string &column_3)
-    {
-        add_row({column_1, column_2, column_3});
-    }
-
-    void add_row(
-        const std::string &column_1,
-        const std::string &column_2,
-        const std::string &column_3,
-        const std::string &column_4)
-    {
-        add_row({column_1, column_2, column_3, column_4});
-    }
-
-    void add_row(
-        const std::string &column_1,
-        const std::string &column_2,
-        const std::string &column_3,
-        const std::string &column_4,
-        const std::string &column_5)
-    {
-        add_row({column_1, column_2, column_3, column_4, column_5});
-    }
-
-    /* An ASCII string displaying the table */
-    std::string display()
-    {
-        std::vector<unsigned> column_widths(columns);
-        for (auto &row : rows)
+        void add_row(const std::initializer_list<std::string> &row)
         {
-            for (unsigned column = 0; column < columns; column++)
+            if (row.size() != columns)
             {
-                column_widths[column] = std::max(column_widths[column], 2u + (unsigned)row[column].size());
+                throw std::invalid_argument(format("Attempted to add a row of %d item(s) to a table with %d column(s)", row.size(), columns));
             }
+
+            rows.push_back(row);
         }
 
-        std::vector<std::string> lines;
-        for (unsigned row = 0; row < rows.size(); row++)
+    public:
+        /* The number of columns, this number is unchanged */
+        const unsigned columns;
+
+        /* Whether each row should align left */
+        bool align_left = true;
+
+        Table(const std::string &column) : Table({column}) {}
+        Table(
+            const std::string &column_1,
+            const std::string &column_2)
+            : Table({column_1, column_2}) {}
+        Table(
+            const std::string &column_1,
+            const std::string &column_2,
+            const std::string &column_3)
+            : Table({column_1, column_2, column_3}) {}
+        Table(
+            const std::string &column_1,
+            const std::string &column_2,
+            const std::string &column_3,
+            const std::string &column_4)
+            : Table({column_1, column_2, column_3, column_4}) {}
+        Table(
+            const std::string &column_1,
+            const std::string &column_2,
+            const std::string &column_3,
+            const std::string &column_4,
+            const std::string &column_5)
+            : Table({column_1, column_2, column_3, column_4, column_5}) {}
+
+        void add_row(const std::string &column)
         {
-            std::string line;
-            for (unsigned column = 0; column < columns; column++)
+            add_row({column});
+        }
+
+        void add_row(
+            const std::string &column_1,
+            const std::string &column_2)
+        {
+            add_row({column_1, column_2});
+        }
+
+        void add_row(
+            const std::string &column_1,
+            const std::string &column_2,
+            const std::string &column_3)
+        {
+            add_row({column_1, column_2, column_3});
+        }
+
+        void add_row(
+            const std::string &column_1,
+            const std::string &column_2,
+            const std::string &column_3,
+            const std::string &column_4)
+        {
+            add_row({column_1, column_2, column_3, column_4});
+        }
+
+        void add_row(
+            const std::string &column_1,
+            const std::string &column_2,
+            const std::string &column_3,
+            const std::string &column_4,
+            const std::string &column_5)
+        {
+            add_row({column_1, column_2, column_3, column_4, column_5});
+        }
+
+        /* An ASCII string displaying the table */
+        std::string display()
+        {
+            std::vector<unsigned> column_widths(columns);
+            for (auto &row : rows)
             {
-                if (align_left)
+                for (unsigned column = 0; column < columns; column++)
                 {
-                    line += ' ';
-                    line += rows[row][column];
+                    column_widths[column] = std::max(column_widths[column], 2u + (unsigned)row[column].size());
                 }
-
-                for (unsigned i = 0; i < column_widths[column] - rows[row][column].size() - 1; i++)
-                {
-                    line += ' ';
-                }
-
-                if (!align_left)
-                {
-                    line += rows[row][column];
-                    line += ' ';
-                }
-
-                line += '|';
             }
 
-            lines.push_back(line);
-
-            if (row == 0)
+            std::vector<std::string> lines;
+            for (unsigned row = 0; row < rows.size(); row++)
             {
                 std::string line;
                 for (unsigned column = 0; column < columns; column++)
                 {
-                    for (unsigned i = 0; i < column_widths[column]; i++)
+                    if (align_left)
                     {
-                        line += '-';
+                        line += ' ';
+                        line += rows[row][column];
                     }
-                    line += '+';
+
+                    for (unsigned i = 0; i < column_widths[column] - rows[row][column].size() - 1; i++)
+                    {
+                        line += ' ';
+                    }
+
+                    if (!align_left)
+                    {
+                        line += rows[row][column];
+                        line += ' ';
+                    }
+
+                    line += '|';
                 }
+
                 lines.push_back(line);
+
+                if (row == 0)
+                {
+                    std::string line;
+                    for (unsigned column = 0; column < columns; column++)
+                    {
+                        for (unsigned i = 0; i < column_widths[column]; i++)
+                        {
+                            line += '-';
+                        }
+                        line += '+';
+                    }
+                    lines.push_back(line);
+                }
             }
-        }
 
-        std::string result;
-        for (auto &line : lines)
-        {
-            result += line;
-            result += '\n';
-        }
+            std::string result;
+            for (auto &line : lines)
+            {
+                result += line;
+                result += '\n';
+            }
 
-        return result;
-    }
-};
+            return result;
+        }
+    };
+}

@@ -11,6 +11,10 @@ The tests are written in Python and executed with [pytest](https://docs.pytest.o
 To execute the tests, simply invoke `pytest .` (or `pytest -v .` for more verbose output).
 
 ## Quickstart
+
+> [!WARNING]  
+> This section is outdated.
+
 This section will guide you through adding a command to the application quickly. We will create a command `add` which calculates the sum of 2 numbers: `add 4 5` should print a value of `9`.
 
 Note that commands within the application always run in the main process. If you want to isolate the execution in a subprocess, create a standalone executable (with `int main(int argc, const char *argv[])`) in [src/external](/src/external) instead.

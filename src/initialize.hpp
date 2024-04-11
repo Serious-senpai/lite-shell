@@ -1,6 +1,6 @@
 #pragma once
 
-#include <client.hpp>
+#include <all.hpp>
 
 #include "commands/args.hpp"
 #include "commands/cat.hpp"
@@ -23,7 +23,7 @@
 #include "commands/resume.hpp"
 #include "commands/suspend.hpp"
 
-void initialize(Client *client)
+void initialize(liteshell::Client *client)
 {
     client->add_command(std::make_shared<ArgsCommand>())
         ->add_command(std::make_shared<CatCommand>())

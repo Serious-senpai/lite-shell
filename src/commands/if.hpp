@@ -1,5 +1,7 @@
 #pragma once
 
+#include <all.hpp>
+
 const char __if_description[] = R"(
 The command syntax is: if <value> <operator> <value>
 where <operator> must be one of the values: "==", "!=", "<", ">", "<=", ">=".
@@ -9,25 +11,25 @@ If the flag -m is set, perform mathematical evaluation before making comparisons
 To end each condition section, use "else"/"endif"
 )";
 
-CommandConstraint __constraint_IfCommand()
+liteshell::CommandConstraint __constraint_IfCommand()
 {
-    CommandConstraint constraint(4, 4);
+    liteshell::CommandConstraint constraint(4, 4);
     constraint.add_argument("-m", false, "perform mathematical comparison instead of string comparison", 0, 0);
     return constraint;
 }
 
-class IfCommand : public BaseCommand
+class IfCommand : public liteshell::BaseCommand
 {
 public:
     IfCommand()
-        : BaseCommand(
+        : liteshell::BaseCommand(
               "if",
               "Compare strings or math expressions",
               __if_description,
               {},
               __constraint_IfCommand()) {}
 
-    DWORD run(const Context &context)
+    DWORD run(const liteshell::Context &context)
     {
         auto first = context.args[1], op = context.args[2], second = context.args[3];
         bool force_stream = !context.client->get_stream()->eof();
@@ -37,8 +39,8 @@ public:
         bool has_else = false;
         while (true)
         {
-            auto input = strip(context.client->get_stream()->getline("if_true>", force_stream ? InputStream::FORCE_STREAM : 0));
-            if (startswith(input, "if "))
+            auto input = utils::strip(context.client->get_stream()->getline("if_true>", force_stream ? liteshell::InputStream::FORCE_STREAM : 0));
+            if (utils::startswith(input, "if "))
             {
                 counter++;
             }
@@ -69,8 +71,8 @@ public:
         {
             while (true)
             {
-                auto input = strip(context.client->get_stream()->getline("if_false>", force_stream ? InputStream::FORCE_STREAM : 0));
-                if (startswith(input, "if "))
+                auto input = utils::strip(context.client->get_stream()->getline("if_false>", force_stream ? liteshell::InputStream::FORCE_STREAM : 0));
+                if (utils::startswith(input, "if "))
                 {
                     counter++;
                 }

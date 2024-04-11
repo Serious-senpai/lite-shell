@@ -1,17 +1,19 @@
 #pragma once
 
-class KillCommand : public BaseCommand
+#include <all.hpp>
+
+class KillCommand : public liteshell::BaseCommand
 {
 public:
     KillCommand()
-        : BaseCommand(
+        : liteshell::BaseCommand(
               "kill",
               "Kill a subprocess with the given PID",
               "",
               {},
-              CommandConstraint(2, 3)) {}
+              liteshell::CommandConstraint(2, 3)) {}
 
-    DWORD run(const Context &context)
+    DWORD run(const liteshell::Context &context)
     {
         DWORD pid = std::stoul(context.args[1]);
         UINT exit_code = 1;
