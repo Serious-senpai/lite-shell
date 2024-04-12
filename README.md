@@ -12,6 +12,33 @@ To execute the tests, simply invoke `pytest .` (or `pytest -v .` for more verbos
 
 ## Quickstart
 
+> [!CAUTION]  
+> Do not use the C/C++ [system](https://cplusplus.com/reference/cstdlib/system/) function since it makes this whole project becomes pointless. Otherwise, the following code is sufficient for 90% of the functionalities:
+> ```cpp
+> #include <cstdlib>
+> #include <iostream>
+>
+> int main()
+> {
+>     while (true)
+>     {
+>         std::string input;
+>         std::cout << "\nliteshell>";
+>         std::cin >> input;
+>         if (input == "exit")
+>         {
+>             break;
+>         }
+>         else
+>         {
+>             system(input.c_str());
+>         }
+>     }
+> 
+>     return 0;
+> }
+> ```
+
 > [!WARNING]  
 > This section is outdated.
 
