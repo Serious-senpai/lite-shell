@@ -2,11 +2,6 @@
 
 #include <all.hpp>
 
-const char __args_description[] = R"(Display the arguments and keyword arguments passed to the command.
-
-This command was designed for testing the command line parser only.
-)";
-
 class ArgsCommand : public liteshell::BaseCommand
 {
 private:
@@ -15,9 +10,12 @@ public:
         : BaseCommand(
               "args",
               "Describe the arguments that were passed in",
-              __args_description,
+              "Display the arguments and keyword arguments passed to the command.\n"
+              "This command was designed for testing the command line parser.",
               {},
-              liteshell::CommandConstraint(false)) {}
+              liteshell::CommandConstraint(false))
+    {
+    }
 
     DWORD run(const liteshell::Context &context)
     {

@@ -2,8 +2,6 @@
 
 #include <all.hpp>
 
-const char __cat_description[] = "Displays the contents of a text file";
-
 class CatCommand : public liteshell::BaseCommand
 {
 public:
@@ -11,9 +9,11 @@ public:
         : liteshell::BaseCommand(
               "cat",
               "Read a file",
-              __cat_description,
+              "Displays the content of a text file.",
               {"type"},
-              liteshell::CommandConstraint(2, 2)) {}
+              liteshell::CommandConstraint(2, 2))
+    {
+    }
 
     DWORD run(const liteshell::Context &context)
     {

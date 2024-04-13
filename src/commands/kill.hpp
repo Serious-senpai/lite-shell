@@ -8,7 +8,7 @@ public:
     KillCommand()
         : liteshell::BaseCommand(
               "kill",
-              "Kill a subprocess with the given PID",
+              "Kill a subprocess with the given PID and exit code (default: 1)",
               "",
               {},
               liteshell::CommandConstraint(2, 3)) {}

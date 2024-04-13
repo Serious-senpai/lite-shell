@@ -9,9 +9,12 @@ public:
         : liteshell::BaseCommand(
               "jump",
               "Skip the input stream to the specified label",
-              "",
+              "Examples: \"jump end\", \"jump :end\".\n"
+              "When reading from batch scripts, a label :EOF will automatically be added to the end.",
               {},
-              liteshell::CommandConstraint(2, 2)) {}
+              liteshell::CommandConstraint(2, 2))
+    {
+    }
 
     DWORD run(const liteshell::Context &context)
     {

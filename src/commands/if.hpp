@@ -3,12 +3,6 @@
 #include <all.hpp>
 
 const char __if_description[] = R"(
-The command syntax is: if <value> <operator> <value>
-where <operator> must be one of the values: "==", "!=", "<", ">", "<=", ">=".
-
-The strings are compared using the lexicography order.
-If the flag -m is set, perform mathematical evaluation before making comparisons instead.
-To end each condition section, use "else"/"endif"
 )";
 
 liteshell::CommandConstraint __constraint_IfCommand()
@@ -25,9 +19,15 @@ public:
         : liteshell::BaseCommand(
               "if",
               "Compare strings or math expressions",
-              __if_description,
+              "The command syntax is: if <value> <operator> <value>\n"
+              "where <operator> must be one of the values: \"==\", \"!=\", \"<\", \">\", \"<=\", \">=\".\n\n"
+              "The strings are compared using the lexicography order.\n"
+              "If the flag -m is set, perform mathematical evaluation before making comparisons.\n"
+              "To end each condition section, use \"else\"/\"endif\".",
               {},
-              __constraint_IfCommand()) {}
+              __constraint_IfCommand())
+    {
+    }
 
     DWORD run(const liteshell::Context &context)
     {

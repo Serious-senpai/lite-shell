@@ -2,11 +2,6 @@
 
 #include <all.hpp>
 
-const char __help_description[] = R"(Provides help information for Windows commands.
-
-To get help for a specific command, specify its name as the first argument (e.g. "help help")
-)";
-
 class HelpCommand : public liteshell::BaseCommand
 {
 public:
@@ -14,9 +9,12 @@ public:
         : liteshell::BaseCommand(
               "help",
               "Get all commands or get help for a specific command",
-              __help_description,
+              "Provides help information about shell commands.\n"
+              "To get help for a specific command, specify its name as the first argument (e.g. \"help help\").",
               {},
-              liteshell::CommandConstraint(1, 2)) {}
+              liteshell::CommandConstraint(1, 2))
+    {
+    }
 
     DWORD run(const liteshell::Context &context)
     {

@@ -3,176 +3,193 @@
 #include "converter.hpp"
 #include "join.hpp"
 
-namespace utils{
-std::string last_error(const std::string &message)
+namespace utils
 {
-    return format("%s: %d", message.c_str(), GetLastError());
-}
-
-std::string get_working_directory()
-{
-    wchar_t buffer[MAX_PATH];
-    auto size = GetCurrentDirectoryW(MAX_PATH, buffer);
-    if (size == 0)
+    std::string last_error(const std::string &message)
     {
-        throw std::runtime_error(last_error("GetCurrentDirectoryW ERROR"));
+        return format("%s: %d", message.c_str(), GetLastError());
     }
 
-    return utf_convert(std::wstring(buffer, buffer + size));
-}
-
-std::string get_executable_path()
-{
-    wchar_t buffer[MAX_PATH];
-    auto size = GetModuleFileNameW(NULL, buffer, MAX_PATH);
-    if (size == 0)
+    std::string get_working_directory()
     {
-        throw std::runtime_error(last_error("Error calling GetModuleFileNameW"));
-    }
-
-    return utf_convert(std::wstring(buffer, buffer + size));
-}
-
-BOOL WINAPI ctrl_handler(DWORD ctrl_type)
-{
-    return ctrl_type == CTRL_C_EVENT;
-}
-
-void set_ignore_ctrl_c(bool ignore)
-{
-    if (!SetConsoleCtrlHandler(ctrl_handler, ignore))
-    {
-        std::cerr << last_error("Warning: SetConsoleCtrlHandler ERROR") << std::endl;
-    }
-}
-
-std::vector<WIN32_FIND_DATAW> explore_directory(const std::string &__directory, const std::string &__pattern = "\\*")
-{
-    auto directory = join(__directory, __pattern);
-    std::vector<WIN32_FIND_DATAW> results(1);
-
-    HANDLE h_file = FindFirstFileW(utf_convert(directory).c_str(), &results[0]);
-    if (h_file == INVALID_HANDLE_VALUE)
-    {
-        if (GetLastError() == ERROR_FILE_NOT_FOUND) // No file with the specified pattern was found
+        wchar_t buffer[MAX_PATH];
+        auto size = GetCurrentDirectoryW(MAX_PATH, buffer);
+        if (size == 0)
         {
-            return {};
+            throw std::runtime_error(last_error("GetCurrentDirectoryW ERROR"));
         }
-        else
+
+        return utf_convert(std::wstring(buffer, buffer + size));
+    }
+
+    std::string get_executable_path()
+    {
+        wchar_t buffer[MAX_PATH];
+        auto size = GetModuleFileNameW(NULL, buffer, MAX_PATH);
+        if (size == 0)
         {
-            throw std::runtime_error(last_error("Error when listing directory"));
+            throw std::runtime_error(last_error("Error calling GetModuleFileNameW"));
+        }
+
+        return utf_convert(std::wstring(buffer, buffer + size));
+    }
+
+    BOOL WINAPI ctrl_handler(DWORD ctrl_type)
+    {
+        return ctrl_type == CTRL_C_EVENT;
+    }
+
+    void set_ignore_ctrl_c(bool ignore)
+    {
+        if (!SetConsoleCtrlHandler(ctrl_handler, ignore))
+        {
+            std::cerr << last_error("Warning: SetConsoleCtrlHandler ERROR") << std::endl;
         }
     }
 
-    do
+    std::vector<WIN32_FIND_DATAW> explore_directory(const std::string &__directory, const std::string &__pattern = "\\*")
     {
-        results.emplace_back();
-    } while (FindNextFileW(h_file, &results.back()));
+        auto directory = join(__directory, __pattern);
+        std::vector<WIN32_FIND_DATAW> results(1);
 
-    results.pop_back();
+        HANDLE h_file = FindFirstFileW(utf_convert(directory).c_str(), &results[0]);
+        if (h_file == INVALID_HANDLE_VALUE)
+        {
+            if (GetLastError() == ERROR_FILE_NOT_FOUND) // No file with the specified pattern was found
+            {
+                return {};
+            }
+            else
+            {
+                throw std::runtime_error(last_error("Error when listing directory"));
+            }
+        }
 
-    if (!FindClose(h_file))
-    {
-        throw std::runtime_error(last_error("Error when closing file search handle"));
+        do
+        {
+            results.emplace_back();
+        } while (FindNextFileW(h_file, &results.back()));
+
+        results.pop_back();
+
+        if (!FindClose(h_file))
+        {
+            throw std::runtime_error(last_error("Error when closing file search handle"));
+        }
+
+        CloseHandle(h_file);
+        return results;
     }
 
-    CloseHandle(h_file);
-    return results;
-}
-
-bool startswith(const std::string &string, const std::string &prefix)
-{
-    if (string.size() < prefix.size())
+    bool startswith(const std::string &string, const std::string &prefix)
     {
-        return false;
-    }
-
-    for (unsigned i = 0; i < prefix.size(); i++)
-    {
-        if (string[i] != prefix[i])
+        if (string.size() < prefix.size())
         {
             return false;
         }
+
+        for (unsigned i = 0; i < prefix.size(); i++)
+        {
+            if (string[i] != prefix[i])
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
-    return true;
-}
-
-bool endswith(const std::string &string, const std::string &suffix)
-{
-    if (string.size() < suffix.size())
+    bool endswith(const std::string &string, const std::string &suffix)
     {
-        return false;
-    }
-
-    for (unsigned i = string.size() - suffix.size(); i < string.size(); i++)
-    {
-        if (string[i] != suffix[i + suffix.size() - string.size()])
+        if (string.size() < suffix.size())
         {
             return false;
         }
-    }
 
-    return true;
-}
-
-bool is_executable(LPCWSTR name)
-{
-    DWORD _;
-    return GetBinaryTypeW(name, &_);
-}
-
-std::string ngettext(const bool predicate, const std::string &first, const std::string &second)
-{
-    return predicate ? first : second;
-}
-
-bool is_math_symbol(char c)
-{
-    return c == '+' || c == '-' || c == '*' || c == '/' || c == ' ' || c == '%' || ('0' <= c && c <= '9') || c == '(' || c == ')';
-}
-
-template <typename T>
-T sqrt(const T value)
-{
-    if (value < 0)
-    {
-        throw std::out_of_range(format("Attempted to calculate square root of %lf < 0", value));
-    }
-
-    if (value == 0)
-    {
-        return 0;
-    }
-
-    T low = 0, high = std::max((T)1, value), accuracy = 1;
-    if constexpr (std::is_floating_point_v<T>)
-    {
-        accuracy = 1.0e-6;
-    }
-
-    while (high - low > accuracy)
-    {
-        double mid = (low + high) / 2;
-        if (mid * mid < value)
+        for (unsigned i = string.size() - suffix.size(); i < string.size(); i++)
         {
-            low = mid;
+            if (string[i] != suffix[i + suffix.size() - string.size()])
+            {
+                return false;
+            }
         }
-        else
-        {
-            high = mid;
-        }
+
+        return true;
     }
 
-    return high;
-}
-
-std::vector<long long> range(const long long start, const long long end)
-{
-    std::vector<long long> result;
-    for (long long i = start; i < end; i++)
+    bool is_executable(LPCWSTR name)
     {
-        result.push_back(i);
+        DWORD _;
+        return GetBinaryTypeW(name, &_);
     }
-    return result;
-}}
+
+    std::string ngettext(const bool predicate, const std::string &first, const std::string &second)
+    {
+        return predicate ? first : second;
+    }
+
+    bool is_math_symbol(char c)
+    {
+        return c == '+' || c == '-' || c == '*' || c == '/' || c == ' ' || c == '%' || ('0' <= c && c <= '9') || c == '(' || c == ')';
+    }
+
+    bool is_valid_variable(const std::string &name)
+    {
+        for (auto c : name)
+        {
+            if (('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') || ('0' <= c && c <= '9') || c == '_')
+            {
+                continue;
+            }
+
+            return false;
+        }
+
+        return true;
+    }
+
+    template <typename T>
+    T sqrt(const T value)
+    {
+        if (value < 0)
+        {
+            throw std::out_of_range(format("Attempted to calculate square root of %lf < 0", value));
+        }
+
+        if (value == 0)
+        {
+            return 0;
+        }
+
+        T low = 0, high = std::max((T)1, value), accuracy = 1;
+        if constexpr (std::is_floating_point_v<T>)
+        {
+            accuracy = 1.0e-6;
+        }
+
+        while (high - low > accuracy)
+        {
+            double mid = (low + high) / 2;
+            if (mid * mid < value)
+            {
+                low = mid;
+            }
+            else
+            {
+                high = mid;
+            }
+        }
+
+        return high;
+    }
+
+    std::vector<long long> range(const long long start, const long long end)
+    {
+        std::vector<long long> result;
+        for (long long i = start; i < end; i++)
+        {
+            result.push_back(i);
+        }
+        return result;
+    }
+}

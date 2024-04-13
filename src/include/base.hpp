@@ -148,15 +148,22 @@ namespace liteshell
                 stream << "  " << name << " [...]" << std::endl;
             }
 
-            stream << long_description << std::endl;
+            if (!long_description.empty())
+            {
+                stream << std::endl
+                       << long_description << std::endl;
+            }
+
             if (!aliases.empty())
             {
-                stream << "Aliases: " << utils::join(aliases.begin(), aliases.end(), ", ") << std::endl;
+                stream << std::endl
+                       << "Aliases: " << utils::join(aliases.begin(), aliases.end(), ", ") << std::endl;
             }
 
             if (!groups.empty())
             {
-                stream << "Parameters:" << std::endl;
+                stream << std::endl
+                       << "Parameters:" << std::endl;
                 for (auto &aliases : groups)
                 {
                     auto c = constraint.get_constraint(*aliases.begin());

@@ -2,13 +2,6 @@
 
 #include <all.hpp>
 
-const char __cd_description[] = R"(Display the name of or change the current directory.
-
-Call this command with no argument to get the working directory (similar to Unix shell's "pwd").
-When a positional argument is provided, the shell will attempt to change the working directory to
-the specified path. If the path is not found, an error will be returned.
-)";
-
 class CdCommand : public liteshell::BaseCommand
 {
 public:
@@ -16,9 +9,14 @@ public:
         : liteshell::BaseCommand(
               "cd",
               "Get or set the working directory",
-              __cd_description,
+              "Display the name of or change the current directory.\n\n"
+              "Call this command with no argument to get the working directory (similar to Unix shell's \"pwd\").\n"
+              "When a positional argument is provided, the shell will attempt to change the working directory to\n"
+              "the specified path. If the path is not found, an error will be returned.",
               {},
-              liteshell::CommandConstraint(1, 2)) {}
+              liteshell::CommandConstraint(1, 2))
+    {
+    }
 
     DWORD run(const liteshell::Context &context)
     {
