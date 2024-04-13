@@ -7,7 +7,7 @@
 #include "subprocess.hpp"
 #include "wrapper.hpp"
 
-#define BATCH_EXT ".firefly"
+#define BATCH_EXT ".ff"
 #define BUFFER_SIZE 4096
 
 namespace liteshell

@@ -1,4 +1,8 @@
 # lite-shell
+
+[![Test](https://github.com/Serious-senpai/lite-shell/actions/workflows/test.yml/badge.svg)](https://github.com/Serious-senpai/lite-shell/actions/workflows/test.yml)
+[![Lint](https://github.com/Serious-senpai/lite-shell/actions/workflows/lint.yml/badge.svg)](https://github.com/Serious-senpai/lite-shell/actions/workflows/lint.yml)
+
 Lightweight Windows command shell
 
 ## Build instructions
