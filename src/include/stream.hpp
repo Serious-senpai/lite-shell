@@ -12,9 +12,9 @@ namespace liteshell
         std::list<std::string>::iterator iterator = list.begin();
 
     public:
-        static const int FORCE_STDOUT = 0b100;
-        static const int FORCE_STDIN = 0b010;
-        static const int FORCE_STREAM = 0b001;
+        static const int FORCE_STDOUT = 1 << 2;
+        static const int FORCE_STDIN = 1 << 1;
+        static const int FORCE_STREAM = 1 << 0;
 
         bool echo = true;
 
