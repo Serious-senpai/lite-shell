@@ -13,7 +13,7 @@ public:
               "Retrieves the current system date and time",
               "",
               {},
-              liteshell::CommandConstraint(1, 1)) {}
+              liteshell::CommandConstraint()) {}
 
     DWORD run(const liteshell::Context &context)
     {

@@ -15,6 +15,8 @@ namespace liteshell
     /**
      * Represents a command shell client. The application should hold only one instance of this class.
      *
+     * TODO: Design this class as a singleton
+     *
      * This class is responsible for managing commands, subprocesses and errorlevel. It also provides a method
      * to run the shell indefinitely.
      */
@@ -44,7 +46,7 @@ namespace liteshell
 
         CommandWrapper<BaseCommand> get_command(const Context &context) const
         {
-            if (context.tokens.size() == 0)
+            if (context.tokens.empty())
             {
                 throw std::invalid_argument("No command provided");
             }
@@ -61,6 +63,10 @@ namespace liteshell
          */
         std::optional<std::string> resolve(const std::string &token) const
         {
+#ifdef DEBUG
+            std::cout << "Resolving executable from \"" << token << "\"" << std::endl;
+#endif
+
             auto t = utils::strip(token, '\\', '/');
             auto find_executable = [this, &t](const std::string &directory) -> std::optional<std::string>
             {
@@ -273,6 +279,9 @@ namespace liteshell
             try
             {
                 auto stripped_message = utils::strip(environment->resolve(utils::strip(message)));
+#ifdef DEBUG
+                std::cout << utils::format("Processing command \"%s\"", stripped_message.c_str()) << std::endl;
+#endif
                 // Special sequences
                 if (stripped_message == ECHO_ON)
                 {
@@ -292,16 +301,25 @@ namespace liteshell
                 }
                 else
                 {
-                    auto context = Context::get_context(this, stripped_message, CommandConstraint());
+                    auto context = Context::get_context(this, stripped_message);
                     try
                     {
                         auto wrapper = get_command(context);
+
+#ifdef DEBUG
+                        std::cout << "Matched command \"" << wrapper.command->name << "\"" << std::endl;
+#endif
+
                         auto constraint = wrapper.command->constraint;
-                        auto errorlevel = wrapper.run(constraint.require_context_parsing ? context.parse(constraint) : context);
+                        auto errorlevel = wrapper.run(context.parse(constraint));
                         environment->set_value("errorlevel", std::to_string(errorlevel));
                     }
                     catch (CommandNotFound &e)
                     {
+#ifdef DEBUG
+                        std::cout << "No command found. Resolving as an executable/script." << std::endl;
+#endif
+
                         auto executable = resolve(context.tokens[0]);
                         if (executable.has_value()) // Is an executable or batch file
                         {
@@ -346,6 +364,7 @@ namespace liteshell
         void on_error(std::exception &e) const
         {
             DWORD errorlevel = 1000;
+            bool casted = false;
 
 #define ERROR_CODE(exception_type, code)               \
     {                                                  \
@@ -354,6 +373,7 @@ namespace liteshell
         {                                              \
             errorlevel = code;                         \
             std::cerr << ptr->what() << std::endl;     \
+            casted = true;                             \
         }                                              \
     }
 
@@ -363,8 +383,16 @@ namespace liteshell
             ERROR_CODE(SubprocessCreationError, 903);
             ERROR_CODE(EnvironmentResolveError, 904);
             ERROR_CODE(CommandNotFound, 905);
+            ERROR_CODE(ArgumentMissingError, 906);
+            ERROR_CODE(UnrecognizedOption, 907);
+            ERROR_CODE(TooManyPositionalArguments, 908);
 
 #undef ERROR_CODE
+
+            if (!casted)
+            {
+                std::cerr << "An unknown exception occurred: " << e.what() << std::endl;
+            }
 
             environment->set_value("errorlevel", std::to_string(errorlevel));
         }

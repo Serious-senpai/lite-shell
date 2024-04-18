@@ -6,12 +6,18 @@ const std::set<std::string> __for_types = {"range", "split"};
 
 liteshell::CommandConstraint __constraint_ForCommand()
 {
-    liteshell::CommandConstraint constraint(3, 4);
-    constraint.add_argument(
+    liteshell::CommandConstraint constraint(
+        "var", "The name of the loop variable", true,
+        "x", "The start of the loop range, or the string to split", true,
+        "y", "The end of the loop range", false);
+    constraint.add_option(
         "-t", "--type",
-        true,
-        "The type of loop, must be one of " + utils::join(__for_types.begin(), __for_types.end(), "/"),
-        1, 1);
+        "The type of loop",
+        liteshell::PositionalArgument(
+            "type",
+            "Must be one of " + utils::join(__for_types.begin(), __for_types.end(), "/"),
+            false, true),
+        true);
     return constraint;
 }
 
@@ -80,16 +86,12 @@ public:
 
     DWORD run(const liteshell::Context &context)
     {
-        auto type = context.kwargs.at("-t")[0];
+        auto type = context.get("-t type");
+        auto loop_var = context.get("var");
         if (type == "range")
         {
-            auto loop_var = context.args[1];
-            auto start = 0ll, end = context.client->get_environment()->eval_ll(context.args[2]);
-            if (context.args.size() == 4)
-            {
-                start = end;
-                end = context.client->get_environment()->eval_ll(context.args[3]);
-            }
+            auto start = context.client->get_environment()->eval_ll(context.get("x")),
+                 end = context.client->get_environment()->eval_ll(context.get("y"));
 
             std::vector<std::string> loop_values;
             if (start < end)
@@ -111,8 +113,7 @@ public:
         }
         else if (type == "split")
         {
-            auto loop_var = context.args[1];
-            auto values = utils::split(context.args[2], ' ');
+            auto values = utils::split(context.get("x"), ' ');
             insert_commands(context, loop_var, values, get_lines(context));
         }
 

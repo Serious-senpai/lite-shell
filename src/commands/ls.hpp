@@ -8,17 +8,21 @@ public:
     LsCommand()
         : liteshell::BaseCommand(
               "ls",
-              "Display the content of a directory (default: the working directory)",
+              "Display the content of a directory",
               "",
               {"dir"},
-              liteshell::CommandConstraint(1, 2)) {}
+              liteshell::CommandConstraint("dir", "The directory to explore (default: the working directory)", false)) {}
 
     DWORD run(const liteshell::Context &context)
     {
         auto directory = utils::get_working_directory();
-        if (context.args.size() == 2)
+        try
         {
-            directory = context.args[1];
+            directory = context.get("dir");
+        }
+        catch (liteshell::ArgumentMissingError &e)
+        {
+            // pass
         }
 
         std::cout << "Exploring " << directory << std::endl;

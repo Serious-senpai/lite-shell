@@ -39,7 +39,12 @@ namespace liteshell
               description(description),
               long_description(long_description),
               aliases(aliases),
-              constraint(constraint) {}
+              constraint(constraint)
+        {
+#ifdef DEBUG
+            std::cout << "Constructed command \"" << name << "\"" << std::endl;
+#endif
+        }
 
         virtual ~BaseCommand() {}
 
@@ -61,91 +66,43 @@ namespace liteshell
         {
             std::stringstream stream;
             stream << description << std::endl;
-            stream << "Usage: " << std::endl;
 
-            const auto groups = constraint.get_alias_groups();
-            if (constraint.require_context_parsing && constraint.arguments_checking)
+            stream << std::endl
+                   << "Usage: " << name << " ";
+
+            std::vector<std::string> arguments;
+            for (auto &argument : constraint.positional)
             {
-                std::vector<std::set<std::string>> optional, required;
-                for (auto &aliases : groups)
-                {
-                    if (aliases.empty())
-                    {
-                        throw std::runtime_error(utils::format("Command %s has an unexpected empty alias group", name.c_str()));
-                    }
-
-                    auto name = *aliases.begin();
-                    auto c = constraint.get_constraint(name);
-                    if (c.required)
-                    {
-                        required.push_back(aliases);
-                    }
-                    else
-                    {
-                        optional.push_back(aliases);
-                    }
-                }
-
-                if (optional.size() > 64) // unsigned long long has 64 bits
-                {
-                    throw std::runtime_error(utils::format("Command %s has %d optional arguments, only a maximum of 64 is supported", name.c_str(), optional.size()));
-                }
-
-                std::string args_display;
-                auto bounds = constraint.args_bounds;
-                bounds.first--;
-                bounds.second--;
-                if (bounds.first == bounds.second)
-                {
-                    args_display = utils::format("[%d %s]", bounds.second, utils::ngettext(bounds.second == 1, "argument", "arguments").c_str());
-                }
-                else
-                {
-                    args_display = utils::format("[%d-%d %s]", bounds.first, bounds.second, utils::ngettext(bounds.second == 1, "argument", "arguments").c_str());
-                }
-
-                auto display = [this](const std::set<std::string> aliases)
-                {
-                    std::stringstream display;
-                    display << utils::join(aliases.begin(), aliases.end(), "|");
-
-                    auto bounds = constraint.get_constraint(*aliases.begin()).bounds;
-                    if (bounds.second > 0)
-                    {
-                        if (bounds.first == bounds.second)
-                        {
-                            display << " [" << bounds.second << " " << utils::ngettext(bounds.second == 1, "argument", "arguments") << "]";
-                        }
-                        else
-                        {
-                            display << " [" << bounds.first << "-" << bounds.second << " " << utils::ngettext(bounds.second == 1, "argument", "arguments") << "]";
-                        }
-                    }
-
-                    return display.str();
-                };
-
-                for (unsigned long long bitmask = 0ull; bitmask < (1ull << optional.size()); bitmask++)
-                {
-                    stream << "  " << name << " " << args_display;
-                    for (auto &aliases : required)
-                    {
-                        stream << " " << display(aliases);
-                    }
-
-                    for (unsigned long long i = 0; i < optional.size(); i++)
-                    {
-                        if (bitmask & (1ull << i))
-                        {
-                            stream << " " << display(optional[i]);
-                        }
-                    }
-                    stream << std::endl;
-                }
+                arguments.push_back(argument.display());
             }
-            else
+            for (auto &argument : constraint.get_options_vector())
             {
-                stream << "  " << name << " [...]" << std::endl;
+                arguments.push_back(argument.display());
+            }
+
+            if (!arguments.empty())
+            {
+                stream << utils::join(arguments.begin(), arguments.end(), " ") << std::endl;
+                stream << "Parameters:" << std::endl;
+
+                for (auto &argument : constraint.positional)
+                {
+                    stream << " " << argument.display() << " " << utils::ngettext(argument.required, "(required)", "(optional)") << std::endl;
+                    stream << "  " << argument.help << std::endl;
+                }
+
+                for (auto &argument : constraint.get_options_vector())
+                {
+                    auto names = argument.names();
+                    stream << " " << utils::join(names.begin(), names.end(), " | ") << " " << utils::ngettext(argument.required, "(required)", "(optional)") << std::endl;
+                    stream << "  " << argument.help << std::endl;
+
+                    for (auto &p : argument.positional)
+                    {
+                        stream << "   " << p.display() << " " << utils::ngettext(p.required, "(required)", "(optional)") << std::endl;
+                        stream << "    " << p.help << std::endl;
+                    }
+                }
             }
 
             if (!long_description.empty())
@@ -158,18 +115,6 @@ namespace liteshell
             {
                 stream << std::endl
                        << "Aliases: " << utils::join(aliases.begin(), aliases.end(), ", ") << std::endl;
-            }
-
-            if (!groups.empty())
-            {
-                stream << std::endl
-                       << "Parameters:" << std::endl;
-                for (auto &aliases : groups)
-                {
-                    auto c = constraint.get_constraint(*aliases.begin());
-                    stream << " " << utils::join(aliases.begin(), aliases.end(), "|") << " " << utils::ngettext(c.required, "(required)", "(optional)") << std::endl;
-                    stream << "  " << c.help << std::endl;
-                }
             }
 
             return stream.str();

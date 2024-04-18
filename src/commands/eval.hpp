@@ -4,10 +4,14 @@
 
 liteshell::CommandConstraint __constraint_EvalCommand()
 {
-    liteshell::CommandConstraint constraint(2, 2);
-    constraint.add_argument("-m", false, "treat the input as a mathematical expression instead of a string and evaluate it", 0, 0);
-    constraint.add_argument("-p", false, "print the input to stdout, read stdin and treat it as the original input", 0, 0);
-    constraint.add_argument("-s", false, "save the input to an environment variable instead of printing to stdout", 1, 1);
+    liteshell::CommandConstraint constraint("expression", "A string expression, or a math expression if -m is specified", true);
+    constraint.add_option("-m", "Treat the input as a mathematical expression instead of a string and evaluate it");
+    constraint.add_option("-p", "Print the input to stdout, read stdin and treat it as the original input");
+    constraint.add_option(
+        "-s",
+        "Save the input to an environment variable instead of printing to stdout",
+        liteshell::PositionalArgument("var", "The variable name", false, true));
+
     return constraint;
 }
 
@@ -27,7 +31,7 @@ public:
 
     DWORD run(const liteshell::Context &context)
     {
-        auto input = context.args[1];
+        auto input = context.get("expression");
         if (context.present.count("-p"))
         {
             input = context.client->get_stream()->getline(input, liteshell::InputStream::FORCE_STDOUT | liteshell::InputStream::FORCE_STDIN);
@@ -36,7 +40,7 @@ public:
         auto result = context.present.count("-m") ? std::to_string(context.client->get_environment()->eval_ll(input)) : input;
         if (context.present.count("-s"))
         {
-            auto name = context.kwargs.at("-s")[0];
+            auto name = context.get("-s var");
             if (!utils::is_valid_variable(name))
             {
                 throw std::invalid_argument(utils::format("Invalid variable name \"%s\"", name.c_str()));

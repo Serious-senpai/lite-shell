@@ -57,6 +57,34 @@ def invalid_argument_test(command: str) -> None:
     execute_command(command, expected_exit_code=901)
 
 
+def bad_alloc_test(command: str) -> None:
+    execute_command(command, expected_exit_code=902)
+
+
+def subprocess_creation_error_test(command: str) -> None:
+    execute_command(command, expected_exit_code=903)
+
+
+def environment_resolve_error_test(command: str) -> None:
+    execute_command(command, expected_exit_code=904)
+
+
+def command_not_found_test(command: str) -> None:
+    execute_command(command, expected_exit_code=905)
+
+
+def argument_missing_test(command: str) -> None:
+    execute_command(command, expected_exit_code=906)
+
+
+def unrecognized_option_test(command: str) -> None:
+    execute_command(command, expected_exit_code=907)
+
+
+def too_many_positional_arguments_test(command: str) -> None:
+    execute_command(command, expected_exit_code=908)
+
+
 def match(token: str, string: str) -> Optional[re.Match[str]]:
     pattern = r"(?:[^\w]|^)" + re.escape(token) + r"(?:[^\w]|$)"
     print(f"Matching token:\n{token!r}\n" + "-" * 30 + f"\n{string!r}")
@@ -82,16 +110,7 @@ def test_escape() -> None:
     assert stderr.strip() == ""
 
 
-def test_args() -> None:
-    stdout, stderr = execute_command("args hello world -abc test --b-c 1")
-    assert_match("-a", stdout)
-    assert_match("-b", stdout)
-    assert_match("-c", stdout)
-    assert_match("--b-c", stdout)
-    assert stderr.strip() == ""
-
-
-def test_cat() -> None:
+def test_cat_1() -> None:
     path = root_dir / "src" / "shell.cpp"
     with open(path, "r", encoding="utf-8") as file:
         data = file.read()
@@ -102,13 +121,22 @@ def test_cat() -> None:
 
 
 def test_cat_2() -> None:
-    invalid_argument_test("cat")
-    invalid_argument_test("cat -a")
-    invalid_argument_test("cat -a 2")
-    invalid_argument_test("cat foo bar")
+    argument_missing_test("cat")
 
 
-def test_date() -> None:
+def test_cat_3() -> None:
+    unrecognized_option_test("cat -a")
+
+
+def test_cat_4() -> None:
+    unrecognized_option_test("cat -a 2")
+
+
+def test_cat_5() -> None:
+    too_many_positional_arguments_test("cat foo bar")
+
+
+def test_date_1() -> None:
     utc_now = datetime.now(timezone.utc)
     utc_display = "/".join(map(str, [utc_now.day, utc_now.month, utc_now.year]))  # dd/mm/yyyy
 
@@ -123,10 +151,19 @@ def test_date() -> None:
 
 
 def test_date_2() -> None:
-    invalid_argument_test("date -a")
-    invalid_argument_test("date -a 2")
-    invalid_argument_test("date foo")
-    invalid_argument_test("date foo bar")
+    unrecognized_option_test("date -a")
+
+
+def test_date_3() -> None:
+    unrecognized_option_test("date -a 2")
+
+
+def test_date_4() -> None:
+    too_many_positional_arguments_test("date foo")
+
+
+def test_date_5() -> None:
+    too_many_positional_arguments_test("date foo bar")
 
 
 def test_echo() -> None:
@@ -139,8 +176,8 @@ def test_echo() -> None:
     assert stderr.strip() == ""
 
 
-def test_eval() -> None:
-    invalid_argument_test("eval")
+def test_eval_1() -> None:
+    argument_missing_test("eval")
 
 
 def test_eval_2() -> None:
@@ -163,7 +200,7 @@ def test_eval_5() -> None:
 
 
 def test_eval_7() -> None:
-    invalid_argument_test("eval -a")
+    unrecognized_option_test("eval -a")
 
 
 def test_eval_8() -> None:
@@ -223,10 +260,10 @@ def test_eval_18() -> None:
 
 
 def test_eval_19() -> None:
-    invalid_argument_test("eval 2 -s")
+    argument_missing_test("eval 2 -s")
 
 
-def test_exit() -> None:
+def test_exit_1() -> None:
     execute_command("exit", expected_exit_code=0)
     for exit_code in random.choices(range(100), k=5):
         _, stderr = execute_command(f"exit {exit_code}", expected_exit_code=exit_code)
@@ -235,12 +272,18 @@ def test_exit() -> None:
 
 
 def test_exit_2() -> None:
-    invalid_argument_test("exit -a")
-    invalid_argument_test("exit -a 2")
-    invalid_argument_test("exit foo bar")
+    unrecognized_option_test("exit -a")
 
 
-def test_help() -> None:
+def test_exit_3() -> None:
+    unrecognized_option_test("exit -a 2")
+
+
+def test_exit_4() -> None:
+    too_many_positional_arguments_test("exit foo bar")
+
+
+def test_help_1() -> None:
     default_test("help")
     default_test("help help")
 
@@ -249,9 +292,15 @@ def test_help() -> None:
 
 
 def test_help_2() -> None:
-    invalid_argument_test("help -a")
-    invalid_argument_test("help -a 2")
-    invalid_argument_test("help foo bar")
+    unrecognized_option_test("help -a")
+
+
+def test_help_3() -> None:
+    unrecognized_option_test("help -a 2")
+
+
+def test_help_4() -> None:
+    too_many_positional_arguments_test("help foo bar")
 
 
 def test_ps() -> None:

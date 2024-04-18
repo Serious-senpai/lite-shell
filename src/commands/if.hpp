@@ -7,8 +7,11 @@ const char __if_description[] = R"(
 
 liteshell::CommandConstraint __constraint_IfCommand()
 {
-    liteshell::CommandConstraint constraint(4, 4);
-    constraint.add_argument("-m", false, "perform mathematical comparison instead of string comparison", 0, 0);
+    liteshell::CommandConstraint constraint(
+        "x", "The first value to compare", true,
+        "operator", "The operator to use for comparison", true,
+        "y", "The second value to compare", true);
+    constraint.add_option("-m", "Perform mathematical comparison instead of string comparison", false);
     return constraint;
 }
 
@@ -19,8 +22,7 @@ public:
         : liteshell::BaseCommand(
               "if",
               "Compare strings or math expressions",
-              "The command syntax is: if <value> <operator> <value>\n"
-              "where <operator> must be one of the values: \"==\", \"!=\", \"<\", \">\", \"<=\", \">=\".\n\n"
+              "<operator> must be one of the values: \"==\", \"!=\", \"<\", \">\", \"<=\", \">=\".\n\n"
               "The strings are compared using the lexicography order.\n"
               "If the flag -m is set, perform mathematical evaluation before making comparisons.\n"
               "To end each condition section, use \"else\"/\"endif\".",
@@ -31,7 +33,7 @@ public:
 
     DWORD run(const liteshell::Context &context)
     {
-        auto first = context.args[1], op = context.args[2], second = context.args[3];
+        auto first = context.get("x"), op = context.get("operator"), second = context.get("y");
         bool force_stream = !context.client->get_stream()->eof();
 
         unsigned counter = 1;

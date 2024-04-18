@@ -14,19 +14,20 @@ public:
               "When a positional argument is provided, the shell will attempt to change the working directory to\n"
               "the specified path. If the path is not found, an error will be returned.",
               {},
-              liteshell::CommandConstraint(1, 2))
+              liteshell::CommandConstraint("path", "The path to change the working directory to", false))
     {
     }
 
     DWORD run(const liteshell::Context &context)
     {
-        if (context.args.size() == 1)
+        auto path = context.values.at("path");
+        if (path.size() == 1)
         {
             std::cout << utils::get_working_directory() << std::endl;
         }
         else
         {
-            auto target = context.args[1];
+            auto target = path[1];
             if (!SetCurrentDirectoryW(utils::utf_convert(target).c_str()))
             {
                 throw std::runtime_error(utils::last_error(utils::format("Error when changing directory to %s", target.c_str())));

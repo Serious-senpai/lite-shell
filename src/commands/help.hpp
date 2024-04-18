@@ -12,13 +12,27 @@ public:
               "Provides help information about shell commands.\n"
               "To get help for a specific command, specify its name as the first argument (e.g. \"help help\").",
               {},
-              liteshell::CommandConstraint(1, 2))
+              liteshell::CommandConstraint("command", "The command to get help for", false))
     {
     }
 
     DWORD run(const liteshell::Context &context)
     {
-        if (context.args.size() == 1) // Get all commands
+        try
+        {
+            auto name = context.get("command");
+            auto wrapper = context.client->get_optional_command(name);
+            if (wrapper.has_value())
+            {
+                std::cout << wrapper->command->help();
+            }
+            else
+            {
+                auto error = liteshell::CommandNotFound(name, context.client->fuzzy_command_search(name).c_str());
+                throw std::invalid_argument(error.message);
+            }
+        }
+        catch (liteshell::ArgumentMissingError &e)
         {
             auto commands = context.client->walk_commands();
             std::size_t max_width = 0;
@@ -35,20 +49,6 @@ public:
                     std::cout << " ";
                 }
                 std::cout << wrapper.command->description << std::endl;
-            }
-        }
-        else // Get help for a specific command
-        {
-            auto name = context.args[1];
-            auto wrapper = context.client->get_optional_command(name);
-            if (wrapper.has_value())
-            {
-                std::cout << wrapper->command->help();
-            }
-            else
-            {
-                auto error = liteshell::CommandNotFound(name, context.client->fuzzy_command_search(name).c_str());
-                throw std::invalid_argument(error.message);
             }
         }
 

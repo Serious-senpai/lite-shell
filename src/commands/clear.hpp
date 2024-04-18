@@ -11,7 +11,7 @@ public:
               "Clear the console screen",
               "",
               {"cls"},
-              liteshell::CommandConstraint(1, 1)) {}
+              liteshell::CommandConstraint()) {}
 
     DWORD run(const liteshell::Context &context)
     {
