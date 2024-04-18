@@ -66,7 +66,44 @@ namespace liteshell
         {
             std::stringstream stream;
             stream << description << std::endl;
-            stream << "Usage: " << std::endl;
+
+            stream << std::endl
+                   << "Usage: " << name << " ";
+
+            std::vector<std::string> arguments;
+            for (auto &argument : constraint.positional)
+            {
+                arguments.push_back(argument.display());
+            }
+            for (auto &argument : constraint.get_options_vector())
+            {
+                arguments.push_back(argument.display());
+            }
+
+            if (!arguments.empty())
+            {
+                stream << utils::join(arguments.begin(), arguments.end(), " ") << std::endl;
+                stream << "Parameters:" << std::endl;
+
+                for (auto &argument : constraint.positional)
+                {
+                    stream << " " << argument.display() << " " << utils::ngettext(argument.required, "(required)", "(optional)") << std::endl;
+                    stream << "  " << argument.help << std::endl;
+                }
+
+                for (auto &argument : constraint.get_options_vector())
+                {
+                    auto names = argument.names();
+                    stream << " " << utils::join(names.begin(), names.end(), " | ") << " " << utils::ngettext(argument.required, "(required)", "(optional)") << std::endl;
+                    stream << "  " << argument.help << std::endl;
+
+                    for (auto &p : argument.positional)
+                    {
+                        stream << "   " << p.display() << " " << utils::ngettext(p.required, "(required)", "(optional)") << std::endl;
+                        stream << "    " << p.help << std::endl;
+                    }
+                }
+            }
 
             if (!long_description.empty())
             {

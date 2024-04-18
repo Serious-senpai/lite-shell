@@ -202,7 +202,7 @@ namespace liteshell
 #endif
 
             std::vector<std::string> new_tokens_v(new_tokens.begin(), new_tokens.end());
-            const auto options = constraint->get_options();
+            const auto options = constraint->get_options_map();
 
             auto positional_iter = constraint->positional.begin();
             std::map<std::string, std::vector<PositionalArgument>::const_iterator> options_iter;

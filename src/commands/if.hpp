@@ -11,7 +11,7 @@ liteshell::CommandConstraint __constraint_IfCommand()
         "x", "The first value to compare", true,
         "operator", "The operator to use for comparison", true,
         "y", "The second value to compare", true);
-    constraint.add_option("-m", "perform mathematical comparison instead of string comparison", false);
+    constraint.add_option("-m", "Perform mathematical comparison instead of string comparison", false);
     return constraint;
 }
 

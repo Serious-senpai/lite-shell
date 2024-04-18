@@ -5,11 +5,11 @@
 liteshell::CommandConstraint __constraint_EvalCommand()
 {
     liteshell::CommandConstraint constraint("expression", "A string expression, or a math expression if -m is specified", true);
-    constraint.add_option("-m", "treat the input as a mathematical expression instead of a string and evaluate it");
-    constraint.add_option("-p", "print the input to stdout, read stdin and treat it as the original input");
+    constraint.add_option("-m", "Treat the input as a mathematical expression instead of a string and evaluate it");
+    constraint.add_option("-p", "Print the input to stdout, read stdin and treat it as the original input");
     constraint.add_option(
         "-s",
-        "save the input to an environment variable instead of printing to stdout",
+        "Save the input to an environment variable instead of printing to stdout",
         liteshell::PositionalArgument("var", "The variable name", false, true));
 
     return constraint;

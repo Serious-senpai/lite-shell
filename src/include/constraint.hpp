@@ -245,7 +245,7 @@ namespace liteshell
             return options_map.find(name) != options_map.end();
         }
 
-        std::map<std::string, Option> get_options() const
+        std::map<std::string, Option> get_options_map() const
         {
             std::map<std::string, Option> result;
             for (auto &option : options)
@@ -262,6 +262,11 @@ namespace liteshell
             }
 
             return result;
+        }
+
+        std::vector<Option> get_options_vector() const
+        {
+            return options;
         }
 
         CommandConstraint *add_option(const Option &argument)
