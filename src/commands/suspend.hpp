@@ -11,11 +11,11 @@ public:
               "Increase the suspend count of a subprocess with the given PID",
               "",
               {},
-              liteshell::CommandConstraint(2, 2)) {}
+              liteshell::CommandConstraint("pid", "The PID of the target process", true)) {}
 
     DWORD run(const liteshell::Context &context)
     {
-        DWORD pid = std::stoul(context.args[1]);
+        DWORD pid = std::stoul(context.get("pid"));
         auto iterators = context.client->get_subprocesses();
         for (auto wrapper = iterators.first; wrapper != iterators.second; wrapper++)
         {

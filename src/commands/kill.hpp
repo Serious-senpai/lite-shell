@@ -8,18 +8,25 @@ public:
     KillCommand()
         : liteshell::BaseCommand(
               "kill",
-              "Kill a subprocess with the given PID and exit code (default: 1)",
+              "Kill a subprocess with the given PID and exit code ",
               "",
               {},
-              liteshell::CommandConstraint(2, 3)) {}
+              liteshell::CommandConstraint(
+                  "pid", "The PID of the subprocess to kill", true,
+                  "exit_code", "The exit code to use when killing the subprocess (default: 1)", false)) {}
 
     DWORD run(const liteshell::Context &context)
     {
-        DWORD pid = std::stoul(context.args[1]);
+        DWORD pid = std::stoul(context.get("pid"));
         UINT exit_code = 1;
-        if (context.args.size() == 3)
+
+        try
         {
-            exit_code = std::stoul(context.args[2]);
+            exit_code = std::stoul(context.get("exit_code"));
+        }
+        catch (liteshell::ArgumentMissingError &e)
+        {
+            // pass
         }
 
         auto iterators = context.client->get_subprocesses();

@@ -133,19 +133,22 @@ namespace utils
         return c == '+' || c == '-' || c == '*' || c == '/' || c == ' ' || c == '%' || ('0' <= c && c <= '9') || c == '(' || c == ')';
     }
 
+    const boost::regex _variable_name = boost::regex(R"(^\w+$)");
     bool is_valid_variable(const std::string &name)
     {
-        for (auto c : name)
-        {
-            if (('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') || ('0' <= c && c <= '9') || c == '_')
-            {
-                continue;
-            }
+        return boost::regex_match(name, _variable_name);
+    }
 
-            return false;
-        }
+    const boost::regex _short_option_name = boost::regex(R"(^-[a-zA-Z]$)");
+    bool is_valid_short_option(const std::string &name)
+    {
+        return boost::regex_match(name, _short_option_name);
+    }
 
-        return true;
+    const boost::regex _long_option_name = boost::regex(R"(^--[a-zA-Z\-_]+$)");
+    bool is_valid_long_option(const std::string &name)
+    {
+        return boost::regex_match(name, _long_option_name);
     }
 
     template <typename T>

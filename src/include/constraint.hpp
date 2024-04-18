@@ -1,255 +1,338 @@
 #pragma once
 
 #include "format.hpp"
+#include "utils.hpp"
 
 namespace liteshell
 {
-    class ArgumentConstraint
+    class _BaseArgument
     {
     public:
-        const std::string help;
-        const std::pair<unsigned, unsigned> bounds;
-        const std::set<std::string> aliases;
         const bool required;
 
-        ArgumentConstraint(
+        _BaseArgument(const bool required) : required(required) {}
+
+        virtual std::string display() const = 0;
+    };
+
+    class PositionalArgument : public _BaseArgument
+    {
+    public:
+        const std::string name;
+        const std::string help;
+        const bool many;
+
+        PositionalArgument(
+            const std::string &name,
             const std::string &help,
-            const unsigned lower_bound,
-            const unsigned upper_bound,
-            const std::set<std::string> &aliases,
+            const bool many,
             const bool required)
-            : help(help), bounds(std::make_pair(lower_bound, upper_bound)), aliases(aliases), required(required)
+            : _BaseArgument(required), name(name), help(help), many(many)
         {
-            if (lower_bound > upper_bound)
+            if (!utils::is_valid_variable(name))
             {
-                throw std::invalid_argument(utils::format("lower_bound = %d > upper_bound = %d", lower_bound, upper_bound));
+                throw std::invalid_argument(utils::format("\"%s\" is not a valid argument name", name.c_str()));
             }
+        }
+
+        std::string display() const
+        {
+            auto result = "<" + name + ">";
+            if (many)
+            {
+                result += "...";
+            }
+
+            if (!required)
+            {
+                result = "[" + result + "]";
+            }
+
+            return result;
+        }
+    };
+
+    class _SupportsMultiplePositionalArguments
+    {
+    private:
+        const std::map<std::string, unsigned> _positional_map;
+        static std::map<std::string, unsigned> _create_map(const std::vector<PositionalArgument> &positional);
+
+    public:
+        const std::vector<PositionalArgument> positional;
+
+        _SupportsMultiplePositionalArguments(const std::vector<PositionalArgument> &positional)
+            : _positional_map(_create_map(positional)), positional(positional)
+        {
+            std::set<std::string> names;
+            for (auto &argument : positional)
+            {
+                if (names.count(argument.name))
+                {
+                    throw std::invalid_argument(utils::format("Duplicate positional argument \"%s\" within an Option", argument.name.c_str()));
+                }
+
+                names.insert(argument.name);
+            }
+
+            if (!positional.empty())
+            {
+                for (unsigned i = 0; i < positional.size() - 1; i++)
+                {
+                    if (positional[i].many)
+                    {
+                        throw std::invalid_argument(utils::format("Variadic positional argument must be the last argument (\"%s\")", positional[i].name.c_str()));
+                    }
+                }
+            }
+        }
+
+        PositionalArgument get_positional(const std::string &name) const
+        {
+            auto iter = _positional_map.find(name);
+            if (iter == _positional_map.end())
+            {
+                throw std::invalid_argument(utils::format("Positional argument \"%s\" does not exist", name.c_str()));
+            }
+
+            return positional[iter->second];
+        }
+    };
+
+    std::map<std::string, unsigned> _SupportsMultiplePositionalArguments::_create_map(
+        const std::vector<PositionalArgument> &positional)
+    {
+        std::map<std::string, unsigned> result;
+        for (unsigned i = 0; i < positional.size(); i++)
+        {
+            result.insert(std::make_pair(positional[i].name, i));
+        }
+
+        return result;
+    }
+
+    class Option : public _BaseArgument, _SupportsMultiplePositionalArguments
+    {
+    public:
+        const std::optional<std::string> short_name;
+        const std::optional<std::string> long_name;
+        const std::string help;
+        using _SupportsMultiplePositionalArguments::positional;
+
+        Option(
+            const std::optional<std::string> &short_name,
+            const std::optional<std::string> &long_name,
+            const std::string &help,
+            const std::vector<PositionalArgument> &positional,
+            const bool required) : _BaseArgument(required),
+                                   _SupportsMultiplePositionalArguments(positional),
+                                   short_name(short_name),
+                                   long_name(long_name),
+                                   help(help)
+        {
+            if (!short_name.has_value() && !long_name.has_value())
+            {
+                throw std::runtime_error("Option cannot have both short_name and long_name set to std::nullopt");
+            }
+
+            if (short_name.has_value())
+            {
+                if (!utils::startswith(*short_name, "-"))
+                {
+                    throw std::invalid_argument(utils::format("Option name must start with \"-\" (currently \"%s\")", short_name->c_str()));
+                }
+                if (!utils::is_valid_short_option(*short_name))
+                {
+                    throw std::invalid_argument(utils::format("\"%s\" is not a valid argument name", short_name->c_str()));
+                }
+            }
+
+            if (long_name.has_value())
+            {
+                if (!utils::startswith(*long_name, "--"))
+                {
+                    throw std::invalid_argument(utils::format("Option name must start with \"--\" (currently \"%s\")", long_name->c_str()));
+                }
+                if (!utils::is_valid_long_option(*long_name))
+                {
+                    throw std::invalid_argument(utils::format("\"%s\" is not a valid argument name", long_name->c_str()));
+                }
+            }
+        }
+
+        std::vector<std::string> names() const
+        {
+            std::vector<std::string> result;
+            if (short_name.has_value())
+            {
+                result.push_back(*short_name);
+            }
+
+            if (long_name.has_value())
+            {
+                result.push_back(*long_name);
+            }
+
+            return result;
+        }
+
+        std::string display() const
+        {
+            std::stringstream stream;
+            stream << (short_name.has_value() ? *short_name : *long_name);
+
+            for (auto &argument : positional)
+            {
+                stream << " " << argument.display();
+            }
+
+            auto result = stream.str();
+            if (!required)
+            {
+                result = "[" + result + "]";
+            }
+
+            return result;
         }
     };
 
     /* Represents the constraints for a command */
-    class CommandConstraint
+    class CommandConstraint : public _SupportsMultiplePositionalArguments
     {
     private:
-        std::vector<ArgumentConstraint> constraints;
-        std::map<std::string, unsigned> names;
+        std::vector<Option> options;
+        std::map<std::string, unsigned> options_map;
 
-        CommandConstraint(
-            const bool require_context_parsing,
-            const bool arguments_checking,
-            const std::pair<unsigned, unsigned> &args_bounds)
-            : require_context_parsing(require_context_parsing),
-              arguments_checking(arguments_checking),
-              args_bounds(args_bounds)
+        void check_valid_option_name(const std::string &name) const
         {
-            if (require_context_parsing && arguments_checking)
+            if (has_option(name))
             {
-                if (args_bounds.first > args_bounds.second)
-                {
-                    throw std::invalid_argument("Lower bound of positional arguments must be less than or equal to the upper bound");
-                }
-
-                if (args_bounds.first == 0)
-                {
-                    throw std::invalid_argument("Lower bound of positional arguments must be at least 1");
-                }
+                throw std::invalid_argument(utils::format("Argument \"%s\" already exists", name.c_str()));
             }
         }
 
-        template <typename... Args>
-        CommandConstraint *add_argument(
-            const bool required,
-            const std::string &help,
-            const unsigned lower_bound,
-            const unsigned upper_bound,
-            const std::string &name,
-            const Args &...aliases)
+    public:
+        CommandConstraint() : _SupportsMultiplePositionalArguments({}) {}
+
+        CommandConstraint(const std::vector<PositionalArgument> &positional)
+            : _SupportsMultiplePositionalArguments(positional) {}
+
+        CommandConstraint(
+            const std::string &name, const std::string &help, const bool required,
+            const bool many = false)
+            : CommandConstraint({PositionalArgument(name, help, many, required)}) {}
+
+        CommandConstraint(
+            const std::string &name_1, const std::string &help_1, const bool required_1,
+            const std::string &name_2, const std::string &help_2, const bool required_2,
+            const bool many = false)
+            : CommandConstraint(
+                  {PositionalArgument(name_1, help_1, false, required_1),
+                   PositionalArgument(name_2, help_2, many, required_2)}) {}
+
+        CommandConstraint(
+            const std::string &name_1, const std::string &help_1, const bool required_1,
+            const std::string &name_2, const std::string &help_2, const bool required_2,
+            const std::string &name_3, const std::string &help_3, const bool required_3,
+            const bool many = false)
+            : CommandConstraint(
+                  {PositionalArgument(name_1, help_1, false, required_1),
+                   PositionalArgument(name_2, help_2, false, required_2),
+                   PositionalArgument(name_3, help_3, many, required_3)}) {}
+
+        bool has_option(const std::string &name) const
         {
-            check_context_parsing();
+            return options_map.find(name) != options_map.end();
+        }
 
-            std::set<std::string> alias_group = {name, aliases...};
-            constraints.emplace_back(help, lower_bound, upper_bound, alias_group, required);
-
-            for (auto &alias : alias_group)
+        std::map<std::string, Option> get_options() const
+        {
+            std::map<std::string, Option> result;
+            for (auto &option : options)
             {
-                if (has_argument(alias))
+                if (option.short_name.has_value())
                 {
-                    throw std::invalid_argument(utils::format("Argument %s already exists", alias.c_str()));
+                    result.insert(std::make_pair(*option.short_name, option));
                 }
 
-                names[alias] = constraints.size() - 1;
+                if (option.long_name.has_value())
+                {
+                    result.insert(std::make_pair(*option.long_name, option));
+                }
+            }
+
+            return result;
+        }
+
+        CommandConstraint *add_option(const Option &argument)
+        {
+            options.push_back(argument);
+
+            if (argument.short_name.has_value())
+            {
+                check_valid_option_name(*argument.short_name);
+                options_map[*argument.short_name] = options.size() - 1;
+            }
+
+            if (argument.long_name.has_value())
+            {
+                check_valid_option_name(*argument.long_name);
+                options_map[*argument.long_name] = options.size() - 1;
             }
 
             return this;
         }
 
-    public:
-        /**
-         * @brief Whether this command require the context to be parsed. If this value if `false`, a context passed to the command callback
-         * will have `.args` and `.kwargs` set to empty containers.
-         */
-        const bool require_context_parsing;
-
-        /**
-         * @brief Whether to perform arguments checking (check positional and named arguments) on command input. If `require_context_parsing`
-         * is `false`, this attribute has no effect.
-         */
-        const bool arguments_checking;
-
-        /**
-         * @brief lower and upper bound of the number of positional arguments. If `require_context_parsing` or `arguments_checking` is
-         * `false`, this attribute has no effect.
-         */
-        const std::pair<unsigned, unsigned> args_bounds;
-
-        /**
-         * @brief Construct an `CommandConstraint` object with `require_context_parsing` set to `false`.
-         */
-        CommandConstraint() : CommandConstraint(false, false, std::make_pair(0, 0)) {}
-
-        /**
-         * @brief Construct an `CommandConstraint` object with `require_context_parsing` set to `true` and `arguments_checking` set to
-         * `false`.
-         *
-         * @param arguments_checking Must be `false`
-         */
-        CommandConstraint(const bool arguments_checking) : CommandConstraint(true, false, std::make_pair(0, 0))
-        {
-            if (arguments_checking)
-            {
-                throw std::invalid_argument("This overload does not allow arguments checking");
-            }
-        }
-
-        /**
-         * @brief Construct an `CommandConstraint` object with `require_context_parsing` and `arguments_checking` set to `true`.
-         *
-         * @param args_lower The lower bound of the number of positional arguments
-         *  @param args_upper The upper bound of the number of positional arguments
-         */
-        CommandConstraint(const unsigned args_lower, const unsigned args_upper)
-            : CommandConstraint(true, true, std::make_pair(args_lower, args_upper)) {}
-
-        /* Throw an error if this constraint has `require_context_parsing` set to `false` */
-        void check_context_parsing()
-        {
-            if (!require_context_parsing)
-            {
-                throw std::invalid_argument("CommandConstraint object does not support context parsing");
-            }
-        }
-
-        /**
-         * @brief Add a named argument with no alias to this constraint
-         *
-         * @param name The argument name (e.g. "-v")
-         * @param required Whether the argument is required
-         * @param help The help message for the argument
-         * @param lower_bound The lower bound of the number of arguments
-         * @param upper_bound The upper bound of the number of arguments
-         *
-         * @return A pointer to this constraint
-         */
-        CommandConstraint *add_argument(
-            const std::string &name,
-            const bool required,
+        CommandConstraint *add_option(
+            const std::string &short_name,
+            const std::string &long_name,
             const std::string &help,
-            const unsigned lower_bound,
-            const unsigned upper_bound)
+            const std::vector<PositionalArgument> &arguments,
+            const bool required = false)
         {
-            return add_argument(required, help, lower_bound, upper_bound, name);
+            return add_option(Option(short_name, long_name, help, arguments, required));
         }
 
-        /**
-         * @brief Add a named argument with 1 alias to this constraint
-         *
-         * @param name The name of the argument (e.g. "-v")
-         * @param alias_1 The first alias of the argument
-         * @param required Whether the argument is required
-         * @param help The help message for the argument
-         * @param lower_bound The lower bound of the number of arguments
-         * @param upper_bound The upper bound of the number of arguments
-         *
-         * @return A pointer to this constraint
-         */
-        CommandConstraint *add_argument(
-            const std::string &name,
-            const std::string &alias_1,
-            const bool required,
+        CommandConstraint *add_option(
+            const std::string &short_name,
+            const std::string &long_name,
             const std::string &help,
-            const unsigned lower_bound,
-            const unsigned upper_bound)
+            const PositionalArgument &argument,
+            const bool required = false)
         {
-            return add_argument(required, help, lower_bound, upper_bound, name, alias_1);
+            return add_option(Option(short_name, long_name, help, {argument}, required));
         }
 
-        /**
-         * @brief Add a named argument with 2 aliases to this constraint
-         *
-         * @param name The name of the argument (e.g. "-v")
-         * @param alias_1 The first alias of the argument
-         * @param alias_2 The second alias of the argument
-         * @param required Whether the argument is required
-         * @param help The help message for the argument
-         * @param lower_bound The lower bound of the number of arguments
-         * @param upper_bound The upper bound of the number of arguments
-         *
-         * @return A pointer to this constraint
-         */
-        CommandConstraint *add_argument(
+        CommandConstraint *add_option(
             const std::string &name,
-            const std::string &alias_1,
-            const std::string &alias_2,
-            const bool required,
             const std::string &help,
-            const unsigned lower_bound,
-            const unsigned upper_bound)
+            const std::vector<PositionalArgument> &arguments,
+            const bool required = false)
         {
-            return add_argument(required, help, lower_bound, upper_bound, name, alias_1, alias_2);
-        }
-
-        /**
-         * @brief Whether the current constraint allows a specific named argument
-         *
-         * @param name The argument name (e.g. "-v")
-         * @return `true` if the argument is allowed, `false` otherwise
-         */
-        bool has_argument(const std::string &name) const
-        {
-            return names.count(name);
-        }
-
-        /**
-         * @brief Get the constraint for a specific named argument
-         *
-         * @param name The argument name (e.g. "-v")
-         * @return The constraint for the argument
-         */
-        ArgumentConstraint get_constraint(const std::string &name) const
-        {
-            auto iter = names.find(name);
-            if (iter == names.end())
+            if (utils::startswith(name, "--"))
             {
-                throw std::invalid_argument(utils::format("Argument %s does not exist", name.c_str()));
+                return add_option(Option(std::nullopt, name, help, arguments, required));
             }
 
-            return constraints[iter->second];
+            return add_option(Option(name, std::nullopt, help, arguments, required));
         }
 
-        /**
-         * @brief Get the alias groups for this constraint
-         *
-         * @return A vector of sets of aliases
-         */
-        std::vector<std::set<std::string>> get_alias_groups() const
+        CommandConstraint *add_option(
+            const std::string &name,
+            const std::string &help,
+            const PositionalArgument &argument,
+            const bool required = false)
         {
-            std::vector<std::set<std::string>> alias_groups;
-            for (auto &constraint : constraints)
-            {
-                alias_groups.push_back(constraint.aliases);
-            }
+            std::vector<PositionalArgument> arguments(1, argument);
+            return add_option(name, help, arguments, required);
+        }
 
-            return alias_groups;
+        CommandConstraint *add_option(
+            const std::string &name,
+            const std::string &help,
+            const bool required = false)
+        {
+            return add_option(name, help, {}, required);
         }
     };
 }

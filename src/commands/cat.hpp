@@ -11,14 +11,14 @@ public:
               "Read a file",
               "Displays the content of a text file.",
               {"type"},
-              liteshell::CommandConstraint(2, 2))
+              liteshell::CommandConstraint("file", "The file to read", true))
     {
     }
 
     DWORD run(const liteshell::Context &context)
     {
         auto h_file = CreateFileW(
-            utils::utf_convert(context.args[1]).c_str(),
+            utils::utf_convert(context.get("file")).c_str(),
             GENERIC_READ,
             FILE_SHARE_READ,
             NULL,

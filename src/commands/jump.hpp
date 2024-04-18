@@ -12,13 +12,13 @@ public:
               "Examples: \"jump end\", \"jump :end\".\n"
               "When reading from batch scripts, a label :EOF will automatically be added to the end.",
               {},
-              liteshell::CommandConstraint(2, 2))
+              liteshell::CommandConstraint("label", "The label to jump to", true))
     {
     }
 
     DWORD run(const liteshell::Context &context)
     {
-        auto label = context.args[1];
+        auto label = context.get("label");
         if (label[0] != ':')
         {
             label = ':' + label;

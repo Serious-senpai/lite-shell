@@ -11,11 +11,11 @@ public:
               "Make a new directory",
               "",
               {"md"},
-              liteshell::CommandConstraint(2, 2)) {}
+              liteshell::CommandConstraint("dir", "The name of the new directory", true)) {}
 
     DWORD run(const liteshell::Context &context)
     {
-        if (!CreateDirectoryW(utils::utf_convert(context.args[1]).c_str(), NULL))
+        if (!CreateDirectoryW(utils::utf_convert(context.get("dir")).c_str(), NULL))
         {
             throw std::runtime_error(utils::last_error("Unable to create directory"));
         }

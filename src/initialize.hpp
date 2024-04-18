@@ -2,7 +2,6 @@
 
 #include <all.hpp>
 
-#include "commands/args.hpp"
 #include "commands/cat.hpp"
 #include "commands/cd.hpp"
 #include "commands/clear.hpp"
@@ -25,8 +24,7 @@
 
 void initialize(liteshell::Client *client)
 {
-    client->add_command(std::make_shared<ArgsCommand>())
-        ->add_command(std::make_shared<CatCommand>())
+    client->add_command(std::make_shared<CatCommand>())
         ->add_command(std::make_shared<CdCommand>())
         ->add_command(std::make_shared<ClearCommand>())
         ->add_command(std::make_shared<DateCommand>())

@@ -11,7 +11,7 @@ public:
               "Get all subprocesses of the current shell, regardless of their states",
               "",
               {},
-              liteshell::CommandConstraint(1, 1)) {}
+              liteshell::CommandConstraint()) {}
 
     DWORD run(const liteshell::Context &context)
     {
