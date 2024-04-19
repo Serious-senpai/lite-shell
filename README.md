@@ -43,9 +43,6 @@ To execute the tests, simply invoke `pytest .` (or `pytest -v .` for more verbos
 > }
 > ```
 
-> [!WARNING]  
-> This section is outdated.
-
 This section will guide you through adding a command to the application quickly. We will create a command `add` which calculates the sum of 2 numbers: `add 4 5` should print a value of `9`.
 
 Note that commands within the application always run in the main process. If you want to isolate the execution in a subprocess, create a standalone executable (with `int main(int argc, const char *argv[])`) in [src/external](/src/external) instead.
@@ -54,44 +51,39 @@ First, navigate to [src/commands](/src/commands) and create a new file `add.hpp`
 ```cpp
 #pragma once
 
-class AddCommand : public BaseCommand
+#include <all.hpp>
+
+class AddCommand : public liteshell::BaseCommand
 {
 public:
-    AddCommand() : BaseCommand("add", "Add 2 numbers", "", {}, CommandConstraint(3, 3)) {}
+    AddCommand()
+        : liteshell::BaseCommand(
+              "add",
+              "Add 2 integers",
+              "Calculate the sum of 2 long long integers",
+              {},
+              liteshell::CommandConstraint(
+                  "x", "The first integer", true,
+                  "y", "The second integer", true)) {}
 
-    DWORD run(const Context &context)
+    DWORD run(const liteshell::Context &context)
     {
+        auto x = std::stoll(context.get("x")), y = std::stoll(context.get("y"));
+        std::cout << x + y << std::endl;
+
         return 0;
     }
 };
 ```
-- The preprocessor directive `#pragma once` ensures that this header file will be included only once within the application code, you can read more about it [here](https://en.wikipedia.org/wiki/Pragma_once).
-- All commands must have a default constructor that accepts no argument, so we define a constructor `AddCommand() : BaseCommand("add", "Add 2 numbers", "", {}, CommandConstraint(3, 3)) {}`. When calling `AddCommand()`, it will propagate to the constructor of `BaseCommand`, which initializes the following attributes:
-  - Command name: `add`
-  - Command help: `Add 2 numbers` - this will show up when using `help` or `help add`
-  - Command long description: this will show up when using `help add`, we are currently using an empty string for this command since it's quite simple anyway.
-  - Command aliases: `{}`, which denotes an empty list. If, for example, you add `sum` here (i.e. `{"sum"}`), then invoking `sum 4 5` will have the same effect as invoking `add 4 5`
-  - Arguments constraint: `CommandConstraint(3, 3)` means that the command accepts *from* 3 *to* 3 positional arguments (i.e. exactly **3** positional arguments): Note that the command name is treated as a positional argument too (e.g. `add 4 5` has 3 arguments: `add`, `4` and `5`).
-- The method `DWORD run(const Context &context)` is the command callback, it is called whenever this command is invoked and should return a `DWORD` value (i.e. an integer). If the command succeeds, a value of `0` is usually returned.
+This is the implementation of the `AddCommand` class. In fact, any commands must inherit `liteshell::BaseCommand`. The `AddCommand()` constructor calls to its super constructor with the following arguments:
+```cpp
+BaseCommand(const std::string &name, const std::string &description, const std::string &long_description, const std::initializer_list<std::string> &aliases, const CommandConstraint &constraint);
+```
 
-At this point, your IDE may complain a lot about compilation errors. Just ignore it and continue the next step.
+In the signature above, `name` is the name of the command (e.g. `add`), `description` is the description what will be shown when running `help` (e.g. `Add 2 integers`), `long_description` is the description that will be shown when running `help <command>` (e.g. running `help add` will print `Calculate the sum of 2 long long integers`).
+
+The argument `alias` is a list of command aliases (the command `add` has no alias, so we are leaving this argument as an empty string). Finally, the `constraint` argument must be a `CommandConstraint` object, which states how arguments should be passed to the command and automatically generates a beautiful help message for you. In this example, a `CommandConstraint` object was created with 2 positional arguments: `x` and `y`, the string `The first integer` and `The second integer` are used to generate help message when running `help add`, the boolean values `true` indicate that both of these arguments are required.
 
 Second, navigate to [src/initialize.hpp](/src/initialize.hpp) and add `#include "commands/add.hpp"`. In the function `void initialize(Client *client)`, add a call `client->add_command(std::make_shared<AddCommand>())`.
 
-Notice that we haven't implemented the calculation for sum of integers yet, but now you can build the shell by running [scripts/build.bat](/scripts/build.bat) to see the changes - try typing the `help` and `help add` commands in the shell to see that we have added the command successfully.
-
-However, at this point, invoking `add 4 5` prints nothing to the screen! The reason is because we haven't implement the logic inside `DWORD run(const Context &context)` yet. Paste the following code to the method:
-```cpp
-    DWORD run(const Context &context)
-    {
-        auto first = std::stoll(context.args[1]),
-             second = std::stoll(context.args[2]);
-
-        std::cout << first + second << std::endl;
-
-        return 0;
-    }
-```
-The `context.args` attribute is a [vector](https://cplusplus.com/reference/vector/vector/) of 3 elements which contains the command positional arguments (e.g. `add`, `4` and `5`). Then, we use `std::stoll` to convert them to 2 `long long` values - `first` and `second`. Finally, we print `first + second` to stdout before returning `0` to indicate that the command succeeded.
-
-You can now build the shell again and test to see that the command works as expected.
+You can now build the shell using [scripts/build.bat](/scripts/build.bat) and test to see that the command works as expected! Try typing `help`, `help add` and `add 4 5`.
