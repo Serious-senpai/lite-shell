@@ -41,6 +41,11 @@ namespace liteshell
               aliases(aliases),
               constraint(constraint)
         {
+            if (!utils::is_valid_command(name))
+            {
+                throw std::invalid_argument(utils::format("Invalid command name \"%s\"", name.c_str()));
+            }
+
 #ifdef DEBUG
             std::cout << "Constructed command \"" << name << "\"" << std::endl;
 #endif

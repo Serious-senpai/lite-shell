@@ -133,6 +133,12 @@ namespace utils
         return c == '+' || c == '-' || c == '*' || c == '/' || c == ' ' || c == '%' || ('0' <= c && c <= '9') || c == '(' || c == ')';
     }
 
+    const boost::regex _command_name = boost::regex(R"(^\w+$)");
+    bool is_valid_command(const std::string &name)
+    {
+        return boost::regex_match(name, _command_name);
+    }
+
     const boost::regex _variable_name = boost::regex(R"(^\w+$)");
     bool is_valid_variable(const std::string &name)
     {
