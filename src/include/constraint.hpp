@@ -8,30 +8,42 @@ namespace liteshell
     class _BaseArgument
     {
     public:
-        /* Whether this argument is required or optional */
+        /**
+         * Whether this argument is required or optional
+         */
         const bool required;
 
         _BaseArgument(const bool required) : required(required) {}
 
-        /* A string displaying this argument in the "Usage" section of the help menu */
+        /**
+         * A string displaying this argument in the "Usage" section of the help menu
+         */
         virtual std::string display() const = 0;
     };
 
-    /* Represents a command-line positional argument */
+    /**
+     * Represents a command-line positional argument
+     */
     class PositionalArgument : public _BaseArgument
     {
     public:
-        /* The name of the positional argument */
+        /**
+         * The name of the positional argument
+         */
         const std::string name;
 
-        /* The string describing this positional argument */
+        /**
+         * The string describing this positional argument
+         */
         const std::string help;
 
-        /* Whether this positional argument can have multiple values */
+        /**
+         * Whether this positional argument can have multiple values
+         */
         const bool many;
 
         /**
-         * Construct a new `PositionalArgument`
+         * @brief Construct a new `PositionalArgument`
          *
          * @param name The name of the positional argument
          * @param help The string describing this positional argument
@@ -75,7 +87,9 @@ namespace liteshell
         static std::map<std::string, unsigned> _create_map(const std::vector<PositionalArgument> &positional);
 
     public:
-        /* An array of positional arguments within this constraint */
+        /**
+         * An array of positional arguments within this constraint
+         */
         const std::vector<PositionalArgument> positional;
 
         _SupportsMultiplePositionalArguments(const std::vector<PositionalArgument> &positional)
@@ -136,17 +150,25 @@ namespace liteshell
         return result;
     }
 
-    /* Represents a command-line option */
+    /**
+     * Represents a command-line option
+     */
     class Option : public _BaseArgument, _SupportsMultiplePositionalArguments
     {
     public:
-        /* The short name of the option e.g. `-v` */
+        /**
+         * The short name of the option e.g. `-v`
+         */
         const std::optional<std::string> short_name;
 
-        /* The long name of the option e.g. `--verbose` */
+        /**
+         * The long name of the option e.g. `--verbose`
+         */
         const std::optional<std::string> long_name;
 
-        /* The string describing this option */
+        /**
+         * The string describing this option
+         */
         const std::string help;
         using _SupportsMultiplePositionalArguments::positional;
 
@@ -240,7 +262,9 @@ namespace liteshell
         }
     };
 
-    /* Represents the constraints for a command */
+    /**
+     * Represents the constraints for a command
+     */
     class CommandConstraint : public _SupportsMultiplePositionalArguments
     {
     private:
@@ -323,13 +347,17 @@ namespace liteshell
                    PositionalArgument(name_2, help_2, false, required_2),
                    PositionalArgument(name_3, help_3, many, required_3)}) {}
 
-        /* Whether there exists an `Option` with the given name */
+        /**
+         * Whether there exists an `Option` with the given name
+         */
         bool has_option(const std::string &name) const
         {
             return options_map.find(name) != options_map.end();
         }
 
-        /* Get a mapping from option names to their corresponding options */
+        /**
+         * Get a mapping from option names to their corresponding options
+         */
         std::map<std::string, Option> get_options_map() const
         {
             std::map<std::string, Option> result;

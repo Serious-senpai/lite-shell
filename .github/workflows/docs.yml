@@ -1,0 +1,34 @@
+name: Build docs
+
+on:
+  push:
+    branches:
+      - main
+
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build 
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install doxygen
+        run: choco install doxygen.install
+
+      - name: Build documentation
+        run: doxygen
+
+      - name: Upload build
+        uses: actions/upload-artifact@v4
+        with:
+          name: docs
+          path: docs/

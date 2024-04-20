@@ -3,5 +3,6 @@
 .venv/
 .vscode/
 build/
+docs/
 
 run.bat
