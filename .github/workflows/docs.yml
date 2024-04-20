@@ -22,7 +22,7 @@ jobs:
           submodules: recursive
 
       - name: Install doxygen
-        run: choco install doxygen.install
+        run: choco install doxygen.portable
 
       - name: Build documentation
         run: doxygen
