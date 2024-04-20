@@ -28,12 +28,24 @@ namespace utils
     std::vector<std::string> split(const std::string &original, const char delimiter)
     {
         std::vector<std::string> result;
-        std::istringstream stream(original);
-        std::string token;
-        while (std::getline(stream, token, delimiter))
+        bool create_new = true;
+        for (auto c : original)
         {
-            result.push_back(token);
+            if (c == delimiter)
+            {
+                create_new = true;
+                continue;
+            }
+
+            if (create_new)
+            {
+                result.push_back("");
+                create_new = false;
+            }
+
+            result.back().push_back(c);
         }
+
         return result;
     }
 }

@@ -482,3 +482,12 @@ def test_script_6() -> None:
     assert_not_match("@OFF", stdout)
     assert_not_match("@ON", stdout)
     assert stderr.strip() == ""
+
+
+def test_script_7() -> None:
+    stdout, stderr = execute_command("tests/shell-script-7")
+
+    assert_match("lmao this dumb string", stdout)
+    assert_not_match("@OFF", stdout)
+    assert_not_match("@ON", stdout)
+    assert stderr.strip() == ""
