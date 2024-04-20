@@ -8,20 +8,36 @@ namespace liteshell
     class _BaseArgument
     {
     public:
+        /* Whether this argument is required or optional */
         const bool required;
 
         _BaseArgument(const bool required) : required(required) {}
 
+        /* A string displaying this argument in the "Usage" section of the help menu */
         virtual std::string display() const = 0;
     };
 
+    /* Represents a command-line positional argument */
     class PositionalArgument : public _BaseArgument
     {
     public:
+        /* The name of the positional argument */
         const std::string name;
+
+        /* The string describing this positional argument */
         const std::string help;
+
+        /* Whether this positional argument can have multiple values */
         const bool many;
 
+        /**
+         * Construct a new `PositionalArgument`
+         *
+         * @param name The name of the positional argument
+         * @param help The string describing this positional argument
+         * @param required Whether this positional argument is required or optional
+         * @param many Whether this positional argument can have multiple values
+         */
         PositionalArgument(
             const std::string &name,
             const std::string &help,
@@ -59,6 +75,7 @@ namespace liteshell
         static std::map<std::string, unsigned> _create_map(const std::vector<PositionalArgument> &positional);
 
     public:
+        /* An array of positional arguments within this constraint */
         const std::vector<PositionalArgument> positional;
 
         _SupportsMultiplePositionalArguments(const std::vector<PositionalArgument> &positional)
@@ -87,6 +104,14 @@ namespace liteshell
             }
         }
 
+        /**
+         * Get a PositionalArgument object with the given name. If no positional argument was found,
+         * an `std::invalid_argument` exception is thrown.
+         *
+         * @param name The name of the positional argument
+         * @return The PositionalArgument object with the given name
+         * @throw `std::invalid_argument` if the positional argument does not exist
+         */
         PositionalArgument get_positional(const std::string &name) const
         {
             auto iter = _positional_map.find(name);
@@ -111,14 +136,28 @@ namespace liteshell
         return result;
     }
 
+    /* Represents a command-line option */
     class Option : public _BaseArgument, _SupportsMultiplePositionalArguments
     {
     public:
+        /* The short name of the option e.g. `-v` */
         const std::optional<std::string> short_name;
+
+        /* The long name of the option e.g. `--verbose` */
         const std::optional<std::string> long_name;
+
+        /* The string describing this option */
         const std::string help;
         using _SupportsMultiplePositionalArguments::positional;
 
+        /**
+         * Construct a new `Option`
+         *
+         * @param short_name The short name of the option e.g. `-v`
+         * @param long_name The long name of the option e.g. `--verbose`
+         * @param help The string describing this option
+         * @param positional The positional arguments for this option
+         */
         Option(
             const std::optional<std::string> &short_name,
             const std::optional<std::string> &long_name,
@@ -143,7 +182,7 @@ namespace liteshell
                 }
                 if (!utils::is_valid_short_option(*short_name))
                 {
-                    throw std::invalid_argument(utils::format("\"%s\" is not a valid argument name", short_name->c_str()));
+                    throw std::invalid_argument(utils::format("\"%s\" is not a valid option short name", short_name->c_str()));
                 }
             }
 
@@ -155,11 +194,16 @@ namespace liteshell
                 }
                 if (!utils::is_valid_long_option(*long_name))
                 {
-                    throw std::invalid_argument(utils::format("\"%s\" is not a valid argument name", long_name->c_str()));
+                    throw std::invalid_argument(utils::format("\"%s\" is not a valid option long name", long_name->c_str()));
                 }
             }
         }
 
+        /**
+         * Get all names of this option
+         *
+         * @return A vector containing all names of this option (length 1 or 2)
+         */
         std::vector<std::string> names() const
         {
             std::vector<std::string> result;
@@ -203,7 +247,7 @@ namespace liteshell
         std::vector<Option> options;
         std::map<std::string, unsigned> options_map;
 
-        void check_valid_option_name(const std::string &name) const
+        void check_duplicate_option_name(const std::string &name) const
         {
             if (has_option(name))
             {
@@ -212,16 +256,41 @@ namespace liteshell
         }
 
     public:
+        /* Construct a `CommandConstraint` with no positional argument */
         CommandConstraint() : _SupportsMultiplePositionalArguments({}) {}
 
+        /**
+         * Construct a `CommandConstraint` with the specified positional arguments
+         *
+         * @param positional The positional arguments for this command
+         */
         CommandConstraint(const std::vector<PositionalArgument> &positional)
             : _SupportsMultiplePositionalArguments(positional) {}
 
+        /**
+         * Construct a `CommandConstraint` with 1 positional argument
+         *
+         * @param name The name of the positional argument
+         * @param help The help message for the positional argument
+         * @param required Whether the positional argument is required
+         * @param many Whether the positional argument can have multiple values
+         */
         CommandConstraint(
             const std::string &name, const std::string &help, const bool required,
             const bool many = false)
             : CommandConstraint({PositionalArgument(name, help, many, required)}) {}
 
+        /**
+         * Construct a `CommandConstraint` with 2 positional arguments
+         *
+         * @param name_1 The name of the first positional argument
+         * @param help_1 The help message for the first positional argument
+         * @param required_1 Whether the first positional argument is required
+         * @param name_2 The name of the second positional argument
+         * @param help_2 The help message for the second positional argument
+         * @param required_2 Whether the second positional argument is required
+         * @param many Whether the second positional argument can have multiple values
+         */
         CommandConstraint(
             const std::string &name_1, const std::string &help_1, const bool required_1,
             const std::string &name_2, const std::string &help_2, const bool required_2,
@@ -230,6 +299,20 @@ namespace liteshell
                   {PositionalArgument(name_1, help_1, false, required_1),
                    PositionalArgument(name_2, help_2, many, required_2)}) {}
 
+        /**
+         * Construct a `CommandConstraint` with 3 positional arguments
+         *
+         * @param name_1 The name of the first positional argument
+         * @param help_1 The help message for the first positional argument
+         * @param required_1 Whether the first positional argument is required
+         * @param name_2 The name of the second positional argument
+         * @param help_2 The help message for the second positional argument
+         * @param required_2 Whether the second positional argument is required
+         * @param name_3 The name of the third positional argument
+         * @param help_3 The help message for the third positional argument
+         * @param required_3 Whether the third positional argument is required
+         * @param many Whether the third positional argument can have multiple values
+         */
         CommandConstraint(
             const std::string &name_1, const std::string &help_1, const bool required_1,
             const std::string &name_2, const std::string &help_2, const bool required_2,
@@ -240,54 +323,62 @@ namespace liteshell
                    PositionalArgument(name_2, help_2, false, required_2),
                    PositionalArgument(name_3, help_3, many, required_3)}) {}
 
+        /* Whether there exists an `Option` with the given name */
         bool has_option(const std::string &name) const
         {
             return options_map.find(name) != options_map.end();
         }
 
+        /* Get a mapping from option names to their corresponding options */
         std::map<std::string, Option> get_options_map() const
         {
             std::map<std::string, Option> result;
             for (auto &option : options)
             {
-                if (option.short_name.has_value())
+                for (auto &name : option.names())
                 {
-                    result.insert(std::make_pair(*option.short_name, option));
-                }
-
-                if (option.long_name.has_value())
-                {
-                    result.insert(std::make_pair(*option.long_name, option));
+                    result.insert(std::make_pair(name, option));
                 }
             }
 
             return result;
         }
 
+        /* Get a vector of all options with no duplication */
         std::vector<Option> get_options_vector() const
         {
             return options;
         }
 
-        CommandConstraint *add_option(const Option &argument)
+        /**
+         * Add an `Option` to this constraint
+         *
+         * @param option The `Option` to add
+         * @return A pointer to this `CommandConstraint` object
+         */
+        CommandConstraint *add_option(const Option &option)
         {
-            options.push_back(argument);
-
-            if (argument.short_name.has_value())
+            options.push_back(option);
+            for (auto &name : option.names())
             {
-                check_valid_option_name(*argument.short_name);
-                options_map[*argument.short_name] = options.size() - 1;
-            }
-
-            if (argument.long_name.has_value())
-            {
-                check_valid_option_name(*argument.long_name);
-                options_map[*argument.long_name] = options.size() - 1;
+                check_duplicate_option_name(name);
+                options_map[name] = options.size() - 1;
             }
 
             return this;
         }
 
+        /**
+         * Add an `Option` to this constraint with a list of inner positional arguments
+         *
+         * @param short_name The short name of the option
+         * @param long_name The long name of the option
+         * @param help The help message for the option
+         * @param arguments The positional arguments for the option
+         * @param required Whether the option is required
+         *
+         * @return A pointer to this `CommandConstraint` object
+         */
         CommandConstraint *add_option(
             const std::string &short_name,
             const std::string &long_name,
@@ -298,6 +389,17 @@ namespace liteshell
             return add_option(Option(short_name, long_name, help, arguments, required));
         }
 
+        /**
+         * Add an `Option` to this constraint with only 1 inner positional argument
+         *
+         * @param short_name The short name of the option
+         * @param long_name The long name of the option
+         * @param help The help message for the option
+         * @param argument The only positional argument for the option
+         * @param required Whether the option is required
+         *
+         * @return A pointer to this `CommandConstraint` object
+         */
         CommandConstraint *add_option(
             const std::string &short_name,
             const std::string &long_name,
@@ -308,20 +410,45 @@ namespace liteshell
             return add_option(Option(short_name, long_name, help, {argument}, required));
         }
 
+        /**
+         * Add an `Option` to this constraint with a list of inner positional arguments
+         *
+         * @param name The name of the option, the method will auto-detect whether this is a short or long name
+         * @param help The help message for the option
+         * @param arguments The positional arguments for the option
+         * @param required Whether the option is required
+         *
+         * @return A pointer to this `CommandConstraint` object
+         */
         CommandConstraint *add_option(
             const std::string &name,
             const std::string &help,
             const std::vector<PositionalArgument> &arguments,
             const bool required = false)
         {
-            if (utils::startswith(name, "--"))
+            if (utils::is_valid_long_option(name))
             {
                 return add_option(Option(std::nullopt, name, help, arguments, required));
             }
 
-            return add_option(Option(name, std::nullopt, help, arguments, required));
+            if (utils::is_valid_short_option(name))
+            {
+                return add_option(Option(name, std::nullopt, help, arguments, required));
+            }
+
+            throw std::invalid_argument(utils::format("\"%s\" is neither a valid short or long option name", name.c_str()));
         }
 
+        /**
+         * Add an `Option` to this constraint with only 1 inner positional argument
+         *
+         * @param name The name of the option, the method will auto-detect whether this is a short or long name
+         * @param help The help message for the option
+         * @param argument The only positional argument for the option
+         * @param required Whether the option is required
+         *
+         * @return A pointer to this `CommandConstraint` object
+         */
         CommandConstraint *add_option(
             const std::string &name,
             const std::string &help,
@@ -332,6 +459,15 @@ namespace liteshell
             return add_option(name, help, arguments, required);
         }
 
+        /**
+         * Add an `Option` to this constraint with no inner positional argument
+         *
+         * @param name The name of the option, the method will auto-detect whether this is a short or long name
+         * @param help The help message for the option
+         * @param required Whether the option is required
+         *
+         * @return A pointer to this `CommandConstraint` object
+         */
         CommandConstraint *add_option(
             const std::string &name,
             const std::string &help,
