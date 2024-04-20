@@ -1,6 +1,6 @@
 @OFF
 echoln "Starting test"
-for i 1000 2000 -t range
+for -t range i 1000 2000
     if "$i % 2" == 0 -m
         echoln "$i is even"
     else

@@ -1,5 +1,5 @@
 @OFF
-eval "Enter n = " -pms n
+eval -pms n "Enter n = "
 
 if $n < 0
     jump :is_not_prime
@@ -14,11 +14,11 @@ if $n == 1
 endif
 
 for div 2 "$n / 2 + 1" -t range
-    if "$n % $div" == 0 -m
+    if -m "$n % $div" == 0
         jump :is_not_prime
     endif
 
-    if "$div * $div" > $n -m
+    if -m "$div * $div" > $n
         jump :is_prime
     endif
 endfor

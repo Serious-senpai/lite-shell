@@ -2,8 +2,6 @@
 
 #include <all.hpp>
 
-const std::set<std::string> __for_types = {"range", "split"};
-
 liteshell::CommandConstraint __constraint_ForCommand()
 {
     liteshell::CommandConstraint constraint(
@@ -15,7 +13,9 @@ liteshell::CommandConstraint __constraint_ForCommand()
         "The type of loop",
         liteshell::PositionalArgument(
             "type",
-            "Must be one of " + utils::join(__for_types.begin(), __for_types.end(), "/"),
+            "Must be \"range\" or \"split\" \n"
+            "If \"range\" is specified, loop the variable within range [x, y) or [y, x)\n"
+            "If \"split\" is specified, split the string by spaces and loop the variable within the tokens",
             false, true),
         true);
     return constraint;

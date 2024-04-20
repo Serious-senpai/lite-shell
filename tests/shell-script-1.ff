@@ -2,4 +2,4 @@
 echoln "Starting test"
 eval -4700 -s fIrSt
 eval 11669 -s sEcOnD
-eval "$fIrSt + $sEcOnD" -m
+eval -m "$fIrSt + $sEcOnD"
