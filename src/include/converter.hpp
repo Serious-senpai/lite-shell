@@ -1,11 +1,10 @@
-// Source: https://stackoverflow.com/a/18374698
 #pragma once
 
 namespace utils
 {
     /**
-     * Convert `std::string` to `std::wstring`
-     *
+     * @brief Convert `std::string` to `std::wstring`
+     * @see https://stackoverflow.com/a/18374698
      * @param str An `std::string` to convert
      * @return The converted `std::wstring`
      */
@@ -16,8 +15,8 @@ namespace utils
     }
 
     /**
-     * Convert `std::wstring` to `std::wstring`
-     *
+     * @brief Convert `std::wstring` to `std::wstring`
+     * @see https://stackoverflow.com/a/18374698
      * @param wstr An `std::wstring` to convert
      * @return The converted `std::string`
      */

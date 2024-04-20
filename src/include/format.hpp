@@ -5,8 +5,8 @@
 namespace utils
 {
     /**
-     * Format a string with C specifiers.
-     * Source: https://stackoverflow.com/a/26221725
+     * @brief Format a string with C specifiers.
+     * @see https://stackoverflow.com/a/26221725
      *
      * @tparam ...Args The format arguments
      * @param format The format string

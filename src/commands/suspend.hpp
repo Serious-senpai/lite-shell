@@ -16,13 +16,12 @@ public:
     DWORD run(const liteshell::Context &context)
     {
         DWORD pid = std::stoul(context.get("pid"));
-        auto iterators = context.client->get_subprocesses();
-        for (auto wrapper = iterators.first; wrapper != iterators.second; wrapper++)
+        for (auto &wrapper : context.client->get_subprocesses())
         {
-            if (wrapper->pid() == pid)
+            if (wrapper.pid() == pid)
             {
-                wrapper->suspend();
-                std::cout << "Suspended process ID " << wrapper->pid() << ", thread ID " << wrapper->tid() << std::endl;
+                wrapper.suspend();
+                std::cout << "Suspended process ID " << wrapper.pid() << ", thread ID " << wrapper.tid() << std::endl;
                 return 0;
             }
         }

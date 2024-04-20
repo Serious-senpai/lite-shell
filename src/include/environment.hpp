@@ -4,6 +4,11 @@
 
 namespace liteshell
 {
+    /**
+     * @brief Represent the current environment of the shell.
+     *
+     * This class mostly contains data about active environment variables.
+     */
     class Environment
     {
     private:
@@ -13,7 +18,7 @@ namespace liteshell
 
     public:
         /**
-         * Set a value for an environment variable
+         * @brief Set a value for an environment variable
          *
          * @param name The name of the variable
          * @param value The value of the variable
@@ -27,10 +32,10 @@ namespace liteshell
         }
 
         /**
-         * Get the value of an environment variable
+         * @brief Get the value of an environment variable
          *
          * @param name The name of the variable
-         * @return The value of the variable
+         * @return The value of the variable, or an empty string if not found
          */
         std::string get_value(const std::string &name) const
         {
@@ -43,7 +48,7 @@ namespace liteshell
         }
 
         /**
-         * Get a mapping from environment variables to their values
+         * @brief Get a mapping from environment variables to their values
          *
          * @return A mapping from environment variables to their values
          */
@@ -53,7 +58,7 @@ namespace liteshell
         }
 
         /**
-         * Resolve all environment variables in a message
+         * @brief Resolve all environment variables in a message
          *
          * @param message The message to resolve
          * @return The resolved message
@@ -94,7 +99,7 @@ namespace liteshell
         }
 
         /**
-         * Evaluate a mathematical expression
+         * @brief Evaluate a mathematical expression
          *
          * @param expression The expression to evaluate
          * @return The result of the evaluation

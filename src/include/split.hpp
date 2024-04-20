@@ -4,7 +4,7 @@
 
 namespace utils
 {
-    /* Split a string into tokens using the native method CommandLineToArgvW */
+    /** @brief Split a string into tokens using the native method CommandLineToArgvW */
     std::vector<std::string> split(const std::string &original)
     {
         auto wstr = utf_convert(original);
@@ -25,6 +25,7 @@ namespace utils
         return args;
     }
 
+    /** @brief Split a string into tokens using a delimiter */
     std::vector<std::string> split(const std::string &original, const char delimiter)
     {
         std::vector<std::string> result;

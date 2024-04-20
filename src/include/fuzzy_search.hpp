@@ -5,6 +5,8 @@
 namespace utils
 {
     /**
+     * @brief Search for the closest matching string in a given range
+     *
      * Search for a string in range [`first`, `last`) that is closest to `value`
      *
      * @param first An iterator pointing to the first string

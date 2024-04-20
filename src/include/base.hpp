@@ -6,29 +6,37 @@
 namespace liteshell
 {
     /**
-     * Abstract base class for all local commands of the shell.
+     * @brief Abstract base class for all local commands of the shell.
      *
      * All built-in commands must inherit this class.
      */
     class BaseCommand
     {
     public:
-        /* The name of the command */
+        /** @brief The name of the command */
         const std::string name;
 
-        /* A short description of the command that will be shown when running `>help` */
+        /** @brief A short description of the command that will be shown when running `help` */
         const std::string description;
 
-        /* A long description of the command that will be shown when running `>help <name>` */
+        /** @brief A long description of the command that will be shown when running `help <name>` */
         const std::string long_description;
 
-        /* The list of aliases the command can be invoked under. */
+        /** @brief The list of aliases the command can be invoked under. */
         const std::vector<std::string> aliases;
 
-        /* The arguments constraint for this command */
+        /** @brief The arguments constraint for this command */
         const CommandConstraint constraint;
 
-        /* Construct a new command and initialize its attributes */
+        /**
+         * @brief Construct a new command and initialize its attributes
+         *
+         * @param name The name of the command
+         * @param description A short description of the command
+         * @param long_description A long description of the command
+         * @param aliases A list of aliases the command can be invoked under
+         * @param constraint The arguments constraint for this command
+         */
         BaseCommand(
             const std::string &name,
             const std::string &description,
@@ -51,10 +59,17 @@ namespace liteshell
 #endif
         }
 
+        /**
+         * @brief The command destructor
+         *
+         * The default implementation does nothing.
+         */
         virtual ~BaseCommand() {}
 
         /**
-         *Invoke this command and return a new errorlevel for the current shell. Subclasses must implement this method.
+         * @brief Invoke this command and return a new errorlevel for the current shell.
+         *
+         * Subclasses must implement this method.
          *
          * @param context The context in which the command is being invoked under.
          * @return The new errorlevel for the shell.
@@ -62,6 +77,8 @@ namespace liteshell
         virtual DWORD run(const Context &context) = 0;
 
         /**
+         * @brief Generate the help message
+         *
          * Returns a string containing the help information for this command.
          * The help information includes the command description, usage, aliases, and parameters.
          *

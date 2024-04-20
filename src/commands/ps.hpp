@@ -16,11 +16,10 @@ public:
     DWORD run(const liteshell::Context &context)
     {
         utils::Table displayer("PID", "Command line", "Exit code", "Suspended");
-        auto iterators = context.client->get_subprocesses();
-        for (auto wrapper = iterators.first; wrapper != iterators.second; wrapper++)
+        for (auto &wrapper : context.client->get_subprocesses())
         {
             std::string status_display;
-            auto status = wrapper->exit_code();
+            auto status = wrapper.exit_code();
             switch (status)
             {
             case STILL_ACTIVE:
@@ -34,9 +33,9 @@ public:
                 break;
             }
 
-            std::string suspend_display = wrapper->is_suspended() ? "Yes" : "No";
+            std::string suspend_display = wrapper.is_suspended() ? "Yes" : "No";
 
-            displayer.add_row(std::to_string(wrapper->pid()), wrapper->command, status_display, suspend_display);
+            displayer.add_row(std::to_string(wrapper.pid()), wrapper.command, status_display, suspend_display);
         }
 
         std::cout << displayer.display() << std::endl;

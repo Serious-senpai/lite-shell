@@ -12,6 +12,14 @@
 
 namespace std
 {
+    /**
+     * @brief This does exactly what you think it does
+     *
+     * @param _x The first value
+     * @param _y The second value
+     * @param _z The third value
+     * @return The minimum of the three values
+     */
     template <typename T>
     const T &min(const T &_x, const T &_y, const T &_z)
     {
@@ -19,19 +27,15 @@ namespace std
     }
 }
 
-template <typename T>
-void list_elements(std::ostream &stream, const std::vector<T> &_v)
+template <typename _ForwardIterator>
+void _list_elements(std::ostream &stream, const _ForwardIterator &_begin, const _ForwardIterator &_end)
 {
-    if (!_v.empty())
+    for (auto iter = _begin; iter != _end; iter++)
     {
-        unsigned n = _v.size();
-        for (unsigned i = 0; i < n; i++)
+        stream << *iter;
+        if (std::next(iter) != _end)
         {
-            stream << _v[i];
-            if (i < n - 1)
-            {
-                stream << ", ";
-            }
+            stream << ", ";
         }
     }
 }
@@ -40,7 +44,7 @@ template <typename T>
 std::ostream &operator<<(std::ostream &stream, const std::vector<T> &_v)
 {
     stream << "[";
-    list_elements(stream, _v);
+    _list_elements(stream, _v.begin(), _v.end());
     stream << "]";
 
     return stream;
@@ -50,7 +54,7 @@ template <typename T>
 std::ostream &operator<<(std::ostream &stream, const std::list<T> &_l)
 {
     stream << "[";
-    list_elements(stream, std::vector<T>(_l.begin(), _l.end()));
+    _list_elements(stream, _l.begin(), _l.end());
     stream << "]";
 
     return stream;
@@ -60,7 +64,7 @@ template <typename T, typename Compare, typename Alloc>
 std::ostream &operator<<(std::ostream &stream, const std::set<T, Compare, Alloc> &_s)
 {
     stream << "{";
-    list_elements(stream, std::vector<T>(_s.begin(), _s.end()));
+    _list_elements(stream, _s.begin(), _s.end());
     stream << "}";
 
     return stream;
@@ -70,7 +74,7 @@ template <typename T, typename Compare, typename Alloc>
 std::ostream &operator<<(std::ostream &stream, const std::multiset<T, Compare, Alloc> &_s)
 {
     stream << "{";
-    list_elements(stream, std::vector<T>(_s.begin(), _s.end()));
+    _list_elements(stream, _s.begin(), _s.end());
     stream << "}";
 
     return stream;
@@ -82,11 +86,10 @@ std::ostream &operator<<(std::ostream &stream, const std::map<T1, T2, Compare, A
     std::vector<std::pair<T1, T2>> _v(_m.begin(), _m.end());
 
     stream << "{";
-    int n = _v.size();
-    for (int i = 0; i < n; i++)
+    for (auto iter = _m.begin(); iter != _m.end(); iter++)
     {
-        stream << _v[i].first << ": " << _v[i].second;
-        if (i < n - 1)
+        stream << iter->first << ": " << iter->second;
+        if (std::next(iter) != _m.end())
         {
             stream << ", ";
         }

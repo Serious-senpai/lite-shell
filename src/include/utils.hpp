@@ -5,11 +5,18 @@
 
 namespace utils
 {
+    /**
+     * @brief Format the last error given by GetLastError
+     * @see https://learn.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-getlasterror
+     * @param message The message to prepend to the error
+     * @return The formatted error message
+     */
     std::string last_error(const std::string &message)
     {
         return format("%s: %d", message.c_str(), GetLastError());
     }
 
+    /** @brief Get the current working directory */
     std::string get_working_directory()
     {
         wchar_t buffer[MAX_PATH];
@@ -22,6 +29,10 @@ namespace utils
         return utf_convert(std::wstring(buffer, buffer + size));
     }
 
+    /**
+     * @brief Get the path of the executable i.e. the path of shell.exe
+     * @see https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-getmodulefilenamew
+     */
     std::string get_executable_path()
     {
         wchar_t buffer[MAX_PATH];
@@ -34,11 +45,13 @@ namespace utils
         return utf_convert(std::wstring(buffer, buffer + size));
     }
 
+    /** @brief The CTRL handler used by the command shell */
     BOOL WINAPI ctrl_handler(DWORD ctrl_type)
     {
         return ctrl_type == CTRL_C_EVENT;
     }
 
+    /** @brief Set whether to ignore Ctrl C signal */
     void set_ignore_ctrl_c(bool ignore)
     {
         if (!SetConsoleCtrlHandler(ctrl_handler, ignore))
@@ -47,6 +60,7 @@ namespace utils
         }
     }
 
+    /** @brief Explore a directory */
     std::vector<WIN32_FIND_DATAW> explore_directory(const std::string &__directory, const std::string &__pattern = "\\*")
     {
         auto directory = join(__directory, __pattern);
@@ -81,6 +95,13 @@ namespace utils
         return results;
     }
 
+    /**
+     * @brief Whether a string has the specified prefix
+     *
+     * @param string The string to check
+     * @param prefix The prefix to check for
+     * @return Whether the string has the specified prefix
+     */
     bool startswith(const std::string &string, const std::string &prefix)
     {
         if (string.size() < prefix.size())
@@ -99,6 +120,13 @@ namespace utils
         return true;
     }
 
+    /**
+     * @brief Whether a string has the specified suffix
+     *
+     * @param string The string to check
+     * @param suffix The suffix to check for
+     * @return Whether the string has the specified suffix
+     */
     bool endswith(const std::string &string, const std::string &suffix)
     {
         if (string.size() < suffix.size())
@@ -117,12 +145,21 @@ namespace utils
         return true;
     }
 
+    /**
+     * @brief Whether a file is executable
+     *
+     * @param name The name of the file
+     * @return Whether the file is executable
+     */
     bool is_executable(LPCWSTR name)
     {
         DWORD _;
         return GetBinaryTypeW(name, &_);
     }
 
+    /**
+     * @brief A helper method equivalent to `predicate ? first : second`
+     */
     std::string ngettext(const bool predicate, const std::string &first, const std::string &second)
     {
         return predicate ? first : second;
@@ -190,15 +227,5 @@ namespace utils
         }
 
         return high;
-    }
-
-    std::vector<long long> range(const long long start, const long long end)
-    {
-        std::vector<long long> result;
-        for (long long i = start; i < end; i++)
-        {
-            result.push_back(i);
-        }
-        return result;
     }
 }

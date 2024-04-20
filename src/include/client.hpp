@@ -13,6 +13,8 @@
 namespace liteshell
 {
     /**
+     * @brief The command shell application.
+     *
      * Represents a command shell client. The application should hold only one instance of this class.
      *
      * TODO: Design this class as a singleton
@@ -133,6 +135,7 @@ namespace liteshell
         }
 
     public:
+        /** @brief Construct a new `Client` object */
         Client() : environment(new Environment()), stream(new InputStream())
         {
             auto path = utils::get_executable_path();
@@ -175,7 +178,7 @@ namespace liteshell
         }
 
         /**
-         * Get all commands of the current command shell
+         * @brief Get all commands of the current command shell
          *
          * @return A set containing all commands
          */
@@ -185,8 +188,8 @@ namespace liteshell
         }
 
         /**
-         * Get a command from the internal list of commands.
-         * This could also be used as a way to get aliases.
+         * @brief Get a command from the internal list of commands.
+         * This can also be used as a way to get aliases.
          *
          * @param name The name of the command to get.
          * @return The command that was requested. If not found, returns an empty optional.
@@ -202,20 +205,20 @@ namespace liteshell
         }
 
         /**
-         * Get all subprocesses of the current shell.
+         * @brief Get all subprocesses of the current shell.
          *
-         * @return A pair of iterators to the beginning and end of the subprocesses set.
+         * @return A reference to the subprocesses array
          */
-        std::pair<std::vector<ProcessInfoWrapper>::iterator, std::vector<ProcessInfoWrapper>::iterator> get_subprocesses()
+        std::vector<ProcessInfoWrapper> &get_subprocesses()
         {
-            return std::make_pair(subprocesses.begin(), subprocesses.end());
+            return subprocesses;
         }
 
         /**
-         * Adds a command into the internal list of commands.
+         * @brief Add a command to the internal list of commands.
          *
          * @param ptr A shared pointer `std::shared_ptr<BaseCommand>` to the command to add.
-         * @return A pointer to the current client.
+         * @return A pointer to the current client to allow fluent-style chaining
          */
         Client *add_command(const std::shared_ptr<BaseCommand> &ptr)
         {
@@ -238,7 +241,13 @@ namespace liteshell
             return this;
         }
 
-        std::string fuzzy_command_search(const std::string name) const
+        /**
+         * @brief Search for a command that matches most closely to the given name.
+         *
+         * @param name The name of the command to search for.
+         * @return The name of the command that was found.
+         */
+        std::string fuzzy_command_search(const std::string &name) const
         {
             std::vector<std::string> all;
             for (auto &wrapper : wrappers)
@@ -413,7 +422,7 @@ namespace liteshell
          * @param context A context holding the command to execute.
          * @return A wrapper object containing information about the subprocess.
          */
-        ProcessInfoWrapper spawn_subprocess(const Context &context)
+        ProcessInfoWrapper &spawn_subprocess(const Context &context)
         {
             STARTUPINFOW *startup_info = (STARTUPINFOW *)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(STARTUPINFOW));
             startup_info->cb = sizeof(startup_info);
@@ -453,7 +462,7 @@ namespace liteshell
                 CloseHandle(CreateThread(&sec_attrs, 0, waiter_thread, &process_info, 0, NULL));
                 */
 
-                return wrapper;
+                return subprocesses.back();
             }
             else
             {

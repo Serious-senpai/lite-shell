@@ -7,11 +7,13 @@
 namespace liteshell
 {
     /**
-    Represents the context in which a command is being invoked under.
-
-    This class contains a lot of meta data to help you understand more about the invocation context. This
-    class is not created manually and is instead passed around to commands as the only parameter.
-    */
+     * @brief The command invocation context.
+     *
+     * Represents the context in which a command is being invoked under.
+     *
+     * This class contains a lot of metadata to help you understand more about the invocation context. Instances
+     * of this class are not created manually and instead passed around to commands as the only parameter.
+     */
     class Context
     {
     private:
@@ -30,29 +32,35 @@ namespace liteshell
               constraint(constraint) {}
 
     public:
-        /* A suffix indicating that a command message should be run in a background */
+        /** @brief A suffix indicating that a command message should be run in a background */
         const char BACKGROUND_SUFFIX = '%';
 
-        /* The message that triggered the command being executed. */
+        /** @brief The message that triggered the command being executed. */
         const std::string message;
 
-        /* The list of tokens after parsing the message: e.g. `args a b -c d` will give `[args, a, b, -c, d]`. */
+        /** @brief The list of tokens after parsing the message: e.g. `args a b -c d` will give `[args, a, b, -c, d]`. */
         const std::vector<std::string> tokens;
 
-        /* A mapping of argument names to their values */
+        /** @brief A mapping of argument names to their values. */
         const std::map<std::string, std::vector<std::string>> values;
 
-        /**
-         * The options presenting in the command.
-         */
+        /** @brief The options presenting in the command. */
         const std::set<std::string> present;
 
-        /* A pointer to the client that contains the command being executed. */
+        /** @brief A pointer to the client that contains the command being executed. */
         class Client *const client;
 
-        /* The arguments constraint of this context object */
+        /** @brief The arguments constraint of this context object */
         const std::optional<CommandConstraint> constraint;
 
+        /**
+         * @brief Get the first value of an argument.
+         *
+         * Roughly equivalent to `.values[name][0]`.
+         *
+         * @param name The name of the argument to get
+         * @return The first value of the argument
+         */
         std::string get(const std::string &name) const
         {
 #ifdef DEBUG
@@ -69,7 +77,7 @@ namespace liteshell
         }
 
         /**
-         * Parse this context with new constraint.
+         * @brief Parse this context with another constraint.
          *
          * @param constraint The new constraint to parse the context with
          * @return A new context with the new constraint applied
@@ -80,9 +88,9 @@ namespace liteshell
         }
 
         /**
-         * Replace the first argument of the original command message
+         * @brief Replace the first token of the original command message
          *
-         * @param token the token to replace with
+         * @param token A new token to replace with
          * @return A new Context with the first argument replaced with the given token
          */
         Context replace_call(const std::string &token) const
@@ -102,7 +110,7 @@ namespace liteshell
         }
 
         /**
-         * Remove the background suffix token from the command message
+         * @brief Remove the background suffix token from the command message
          *
          * @return A new context with the background suffix token removed
          */
@@ -124,7 +132,7 @@ namespace liteshell
         }
 
         /**
-         * Determine whether this context is requesting to run in a background process.
+         * @brief Determine whether this context is requesting to run in a background process.
          *
          * @return `true` if the context is requesting to run in the background, `false` otherwise
          */
@@ -134,7 +142,7 @@ namespace liteshell
         }
 
         /**
-         * Construct a Context from a message
+         * @brief Construct a `Context` from a message
          *
          * @param client A pointer to the Client object
          * @param message The message to construct the context from
