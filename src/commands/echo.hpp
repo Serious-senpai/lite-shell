@@ -11,11 +11,12 @@ public:
               "Print to stdout but do not add a newline like \"echoln\"",
               "",
               {},
-              liteshell::CommandConstraint("text", "The text to print to stdout", true)) {}
+              liteshell::CommandConstraint("text", "The text to print to stdout", true, true)) {}
 
     DWORD run(const liteshell::Context &context)
     {
-        std::cout << context.get("text");
+        auto argument = context.values.at("text");
+        std::cout << utils::join(argument.begin(), argument.end(), " ");
         std::cout.flush();
         return 0;
     }

@@ -11,11 +11,12 @@ public:
               "Print to stdout and add a newline at the end",
               "",
               {},
-              liteshell::CommandConstraint("text", "The text to print to stdout", true)) {}
+              liteshell::CommandConstraint("text", "The text to print to stdout", true, true)) {}
 
     DWORD run(const liteshell::Context &context)
     {
-        std::cout << context.get("text") << std::endl;
+        auto argument = context.values.at("text");
+        std::cout << utils::join(argument.begin(), argument.end(), " ") << std::endl;
         return 0;
     }
 };

@@ -166,13 +166,18 @@ def test_date_5() -> None:
     too_many_positional_arguments_test("date foo bar")
 
 
-def test_echo() -> None:
-    # Do not include white spaces at both ends
-    test_string = r"hello world    1 2 --3 4 -abc3 --4 \"in quotes\""
+def test_echo_1() -> None:
+    test_string = r"hello world    1 2 --3 4 -abc3 --4 \"in quotes\"  "
     stdout, stderr = execute_command(f"echoln \"{test_string}\"")
 
     test_string = test_string.replace(r"\"", "\"")
     assert_match(test_string, stdout)
+    assert stderr.strip() == ""
+
+
+def test_echo_2() -> None:
+    stdout, stderr = execute_command("echo hello world")
+    assert_match("hello world", stdout)
     assert stderr.strip() == ""
 
 
