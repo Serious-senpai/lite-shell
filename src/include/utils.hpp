@@ -165,30 +165,64 @@ namespace utils
         return predicate ? first : second;
     }
 
+    /**
+     * @brief Whether a character is a mathematical symbol
+     *
+     * @param c The character to check
+     * @return Whether the character is a mathematical symbol
+     */
     bool is_math_symbol(char c)
     {
         return c == '+' || c == '-' || c == '*' || c == '/' || c == ' ' || c == '%' || ('0' <= c && c <= '9') || c == '(' || c == ')';
     }
 
     const boost::regex _command_name = boost::regex(R"(^\w+$)");
+
+    /**
+     * @brief Whether a string is a valid command name
+     *
+     * @param name The name to check
+     * @return Whether the name is a valid command name
+     */
     bool is_valid_command(const std::string &name)
     {
         return boost::regex_match(name, _command_name);
     }
 
     const boost::regex _variable_name = boost::regex(R"(^\w+$)");
+
+    /**
+     * @brief Whether a string is a valid variable name
+     *
+     * @param name The name to check
+     * @return Whether the name is a valid variable name
+     */
     bool is_valid_variable(const std::string &name)
     {
         return boost::regex_match(name, _variable_name);
     }
 
     const boost::regex _short_option_name = boost::regex(R"(^-[a-zA-Z]$)");
+
+    /**
+     * @brief Whether a string is a valid short option name
+     *
+     * @param name The name to check
+     * @return Whether the name is a valid short option name
+     */
     bool is_valid_short_option(const std::string &name)
     {
         return boost::regex_match(name, _short_option_name);
     }
 
     const boost::regex _long_option_name = boost::regex(R"(^--[a-zA-Z\-_]+$)");
+
+    /**
+     * @brief Whether a string is a valid long option name
+     *
+     * @param name The name to check
+     * @return Whether the name is a valid long option name
+     */
     bool is_valid_long_option(const std::string &name)
     {
         return boost::regex_match(name, _long_option_name);

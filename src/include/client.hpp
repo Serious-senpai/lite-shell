@@ -58,6 +58,7 @@ namespace liteshell
 
         /**
          * @brief Find an executable that `token` points to.
+         *
          * The function will first look in the current working directory, then in the directories specified in `resolve_order`.
          *
          * @param token The token to resolve. This token may contain path separators.
@@ -134,6 +135,47 @@ namespace liteshell
             fstream.close();
         }
 
+        /**
+         * @brief An error handler that process exceptions thrown during command execution.
+         *
+         * @param e The exception object that was thrown.
+         */
+        void on_error(std::exception &e) const
+        {
+            DWORD errorlevel = 1000;
+            bool casted = false;
+
+#define ERROR_CODE(exception_type, code)               \
+    {                                                  \
+        auto ptr = dynamic_cast<exception_type *>(&e); \
+        if (ptr != NULL)                               \
+        {                                              \
+            errorlevel = code;                         \
+            std::cerr << ptr->what() << std::endl;     \
+            casted = true;                             \
+        }                                              \
+    }
+
+            ERROR_CODE(std::runtime_error, 900);
+            ERROR_CODE(std::invalid_argument, 901);
+            ERROR_CODE(std::bad_alloc, 902);
+            ERROR_CODE(SubprocessCreationError, 903);
+            ERROR_CODE(EnvironmentResolveError, 904);
+            ERROR_CODE(CommandNotFound, 905);
+            ERROR_CODE(ArgumentMissingError, 906);
+            ERROR_CODE(UnrecognizedOption, 907);
+            ERROR_CODE(TooManyPositionalArguments, 908);
+
+#undef ERROR_CODE
+
+            if (!casted)
+            {
+                std::cerr << "An unknown exception occurred: " << e.what() << std::endl;
+            }
+
+            environment->set_value("errorlevel", std::to_string(errorlevel));
+        }
+
     public:
         /** @brief Construct a new `Client` object */
         Client() : environment(new Environment()), stream(new InputStream())
@@ -158,7 +200,7 @@ namespace liteshell
         }
 
         /**
-         * @brief Get a pointer to the shell environment containing the variables
+         * @brief Get a pointer to the shell environment containing the variables.
          *
          * @return A pointer to the shell environment
          */
@@ -168,7 +210,7 @@ namespace liteshell
         }
 
         /**
-         * @brief Get a pointer to the input stream
+         * @brief Get a pointer to the input stream.
          *
          * @return A pointer to the input stream
          */
@@ -178,7 +220,7 @@ namespace liteshell
         }
 
         /**
-         * @brief Get all commands of the current command shell
+         * @brief Get all commands of the current command shell.
          *
          * @return A set containing all commands
          */
@@ -243,6 +285,7 @@ namespace liteshell
 
         /**
          * @brief Search for a command that matches most closely to the given name.
+         * @see `utils::fuzzy_search`
          *
          * @param name The name of the command to search for.
          * @return The name of the command that was found.
@@ -366,47 +409,6 @@ namespace liteshell
         }
 
         /**
-         * @brief An error handler that process exceptions thrown during command execution.
-         *
-         * @param e The exception object that was thrown.
-         */
-        void on_error(std::exception &e) const
-        {
-            DWORD errorlevel = 1000;
-            bool casted = false;
-
-#define ERROR_CODE(exception_type, code)               \
-    {                                                  \
-        auto ptr = dynamic_cast<exception_type *>(&e); \
-        if (ptr != NULL)                               \
-        {                                              \
-            errorlevel = code;                         \
-            std::cerr << ptr->what() << std::endl;     \
-            casted = true;                             \
-        }                                              \
-    }
-
-            ERROR_CODE(std::runtime_error, 900);
-            ERROR_CODE(std::invalid_argument, 901);
-            ERROR_CODE(std::bad_alloc, 902);
-            ERROR_CODE(SubprocessCreationError, 903);
-            ERROR_CODE(EnvironmentResolveError, 904);
-            ERROR_CODE(CommandNotFound, 905);
-            ERROR_CODE(ArgumentMissingError, 906);
-            ERROR_CODE(UnrecognizedOption, 907);
-            ERROR_CODE(TooManyPositionalArguments, 908);
-
-#undef ERROR_CODE
-
-            if (!casted)
-            {
-                std::cerr << "An unknown exception occurred: " << e.what() << std::endl;
-            }
-
-            environment->set_value("errorlevel", std::to_string(errorlevel));
-        }
-
-        /**
          * @brief Split the PATH environment variable into a vector of paths.
          *
          * @return A vector of paths
@@ -420,7 +422,7 @@ namespace liteshell
          * @brief Spawn a subprocess and execute `command` in it.
          *
          * @param context A context holding the command to execute.
-         * @return A wrapper object containing information about the subprocess.
+         * @return A reference to the wrapper object containing information about the subprocess.
          */
         ProcessInfoWrapper &spawn_subprocess(const Context &context)
         {
@@ -473,7 +475,7 @@ namespace liteshell
         }
 
         /**
-         * @brief Get the current errorlevel of the shell
+         * @brief Get the current errorlevel of the shell.
          *
          * @return The current errorlevel
          */

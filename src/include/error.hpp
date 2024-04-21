@@ -53,24 +53,28 @@ namespace liteshell
             : LiteShellException(utils::format("Command \"%s\" not found. Did you mean \"%s\"?", name.c_str(), suggestion.c_str())) {}
     };
 
+    /** @brief Exceptions regarding context parsing */
     class ContextException : public LiteShellException
     {
     public:
         ContextException(const std::string &message) : LiteShellException(message) {}
     };
 
+    /** @brief Exception thrown when a required argument is missing */
     class ArgumentMissingError : public ContextException
     {
     public:
         ArgumentMissingError(const std::string &name) : ContextException(utils::format("Argument \"%s\" is missing", name.c_str())) {}
     };
 
+    /** @brief Exception thrown when an unrecognized option is provided */
     class UnrecognizedOption : public ContextException
     {
     public:
         UnrecognizedOption(const std::string &name) : ContextException(utils::format("Unrecognized option \"%s\"", name.c_str())) {}
     };
 
+    /** @brief Exception thrown when the number of provided positional arguments exceeds the constraint */
     class TooManyPositionalArguments : public ContextException
     {
     public:

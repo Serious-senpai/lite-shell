@@ -22,14 +22,14 @@ namespace liteshell
         /** @brief A long description of the command that will be shown when running `help <name>` */
         const std::string long_description;
 
-        /** @brief The list of aliases the command can be invoked under. */
+        /** @brief A list of aliases the command can be invoked under. */
         const std::vector<std::string> aliases;
 
         /** @brief The arguments constraint for this command */
         const CommandConstraint constraint;
 
         /**
-         * @brief Construct a new command and initialize its attributes
+         * @brief Construct a new command and initialize its attributes.
          *
          * @param name The name of the command
          * @param description A short description of the command
@@ -60,7 +60,7 @@ namespace liteshell
         }
 
         /**
-         * @brief The command destructor
+         * @brief The command destructor.
          *
          * The default implementation does nothing.
          */
@@ -77,7 +77,7 @@ namespace liteshell
         virtual DWORD run(const Context &context) = 0;
 
         /**
-         * @brief Generate the help message
+         * @brief Generate the help message.
          *
          * Returns a string containing the help information for this command.
          * The help information includes the command description, usage, aliases, and parameters.

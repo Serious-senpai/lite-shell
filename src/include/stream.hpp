@@ -5,6 +5,12 @@
 
 namespace liteshell
 {
+    /**
+     * @brief The input stream manager
+     *
+     * This class manages the input stream for the shell. Typically, the input comes from stdin, but when reading from
+     * a batch script, the input stream comes from the script file instead.
+     */
     class InputStream
     {
     private:
@@ -12,12 +18,19 @@ namespace liteshell
         std::list<std::string>::iterator iterator = list.begin();
 
     public:
+        /** @brief A flag indicating that `getline` must echo the input to stdout */
         static const int FORCE_STDOUT = 1 << 2;
+
+        /** @brief A flag indicating that `getline` must read input from stdin */
         static const int FORCE_STDIN = 1 << 1;
+
+        /** @brief A flag indicating that `getline` must read input from file */
         static const int FORCE_STREAM = 1 << 0;
 
+        /** @brief The current echo state */
         bool echo = true;
 
+        /** @brief The echo state after the next command */
         bool peek_echo()
         {
             if (peek() == ECHO_ON)
@@ -33,6 +46,11 @@ namespace liteshell
             return echo;
         }
 
+        /**
+         * @brief Peek the next command in the stream.
+         * @return The next command in the input stream, or `std::nullopt` if the stream
+         * reaches EOF
+         */
         std::optional<std::string> peek()
         {
             for (auto iter = iterator; iter != list.end(); iter++)
@@ -47,11 +65,18 @@ namespace liteshell
             return std::nullopt;
         }
 
+        /**
+         * @brief Read the next command
+         *
+         * @param prompt The prompt to display before reading
+         * @param flags The flags to use when reading the command
+         * @return The next command in the input stream
+         */
         std::string getline(const std::string &prompt, const int flags)
         {
             if ((flags & FORCE_STDIN) & (flags & FORCE_STREAM))
             {
-                throw std::invalid_argument("Arguments conflict: force_stdin && force_stream");
+                throw std::invalid_argument("Arguments conflict: FORCE_STDIN && FORCE_STREAM");
             }
 
             if ((flags & FORCE_STREAM) && iterator == list.end())
@@ -117,11 +142,13 @@ namespace liteshell
             write(lines.begin(), lines.end());
         }
 
+        /** @brief Whether this stream reaches EOF */
         bool eof() const
         {
             return iterator == list.end();
         }
 
+        /** @brief Jump to the specified label */
         void jump(const std::string &label)
         {
             for (auto iter = iterator; iter != list.end(); iter++)

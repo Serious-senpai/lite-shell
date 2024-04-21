@@ -9,36 +9,36 @@ namespace liteshell
     {
     public:
         /**
-         * Whether this argument is required or optional
+         * @brief Whether this argument is required or optional
          */
         const bool required;
 
         _BaseArgument(const bool required) : required(required) {}
 
         /**
-         * A string displaying this argument in the "Usage" section of the help menu
+         * @brief A string displaying this argument in the "Usage" section of the help menu
          */
         virtual std::string display() const = 0;
     };
 
     /**
-     * Represents a command-line positional argument
+     * @brief Represents a command-line positional argument
      */
     class PositionalArgument : public _BaseArgument
     {
     public:
         /**
-         * The name of the positional argument
+         * @brief The name of the positional argument
          */
         const std::string name;
 
         /**
-         * The string describing this positional argument
+         * @brief The string describing this positional argument
          */
         const std::string help;
 
         /**
-         * Whether this positional argument can have multiple values
+         * @brief Whether this positional argument can have multiple values
          */
         const bool many;
 
@@ -88,7 +88,7 @@ namespace liteshell
 
     public:
         /**
-         * An array of positional arguments within this constraint
+         * @brief An array of positional arguments within this constraint
          */
         const std::vector<PositionalArgument> positional;
 
@@ -119,11 +119,13 @@ namespace liteshell
         }
 
         /**
-         * Get a PositionalArgument object with the given name. If no positional argument was found,
+         * @brief Find a `PositionalArgument` object with the given name.
+         *
+         * Get a `PositionalArgument` object with the given name. If no positional argument was found,
          * an `std::invalid_argument` exception is thrown.
          *
          * @param name The name of the positional argument
-         * @return The PositionalArgument object with the given name
+         * @return The `PositionalArgument` object with the given name
          * @throw `std::invalid_argument` if the positional argument does not exist
          */
         PositionalArgument get_positional(const std::string &name) const
@@ -151,34 +153,35 @@ namespace liteshell
     }
 
     /**
-     * Represents a command-line option
+     * @brief Represents a command-line option
      */
     class Option : public _BaseArgument, _SupportsMultiplePositionalArguments
     {
     public:
         /**
-         * The short name of the option e.g. `-v`
+         * @brief The short name of the option e.g. `-v`
          */
         const std::optional<std::string> short_name;
 
         /**
-         * The long name of the option e.g. `--verbose`
+         * @brief The long name of the option e.g. `--verbose`
          */
         const std::optional<std::string> long_name;
 
         /**
-         * The string describing this option
+         * @brief The string describing this option
          */
         const std::string help;
         using _SupportsMultiplePositionalArguments::positional;
 
         /**
-         * Construct a new `Option`
+         * @brief Construct a new `Option`
          *
          * @param short_name The short name of the option e.g. `-v`
          * @param long_name The long name of the option e.g. `--verbose`
          * @param help The string describing this option
          * @param positional The positional arguments for this option
+         * @param required Whether this option is required or optional
          */
         Option(
             const std::optional<std::string> &short_name,
@@ -222,7 +225,7 @@ namespace liteshell
         }
 
         /**
-         * Get all names of this option
+         * @brief Get all names of this option
          *
          * @return A vector containing all names of this option (length 1 or 2)
          */
@@ -262,9 +265,7 @@ namespace liteshell
         }
     };
 
-    /**
-     * Represents the constraints for a command
-     */
+    /** @brief Represents the constraints for a command */
     class CommandConstraint : public _SupportsMultiplePositionalArguments
     {
     private:
@@ -280,11 +281,11 @@ namespace liteshell
         }
 
     public:
-        /* Construct a `CommandConstraint` with no positional argument */
+        /** @brief Construct a `CommandConstraint` with no positional argument */
         CommandConstraint() : _SupportsMultiplePositionalArguments({}) {}
 
         /**
-         * Construct a `CommandConstraint` with the specified positional arguments
+         * @brief Construct a `CommandConstraint` with the specified positional arguments
          *
          * @param positional The positional arguments for this command
          */
@@ -292,7 +293,7 @@ namespace liteshell
             : _SupportsMultiplePositionalArguments(positional) {}
 
         /**
-         * Construct a `CommandConstraint` with 1 positional argument
+         * @brief Construct a `CommandConstraint` with 1 positional argument
          *
          * @param name The name of the positional argument
          * @param help The help message for the positional argument
@@ -305,7 +306,7 @@ namespace liteshell
             : CommandConstraint({PositionalArgument(name, help, many, required)}) {}
 
         /**
-         * Construct a `CommandConstraint` with 2 positional arguments
+         * @brief Construct a `CommandConstraint` with 2 positional arguments
          *
          * @param name_1 The name of the first positional argument
          * @param help_1 The help message for the first positional argument
@@ -324,7 +325,7 @@ namespace liteshell
                    PositionalArgument(name_2, help_2, many, required_2)}) {}
 
         /**
-         * Construct a `CommandConstraint` with 3 positional arguments
+         * @brief Construct a `CommandConstraint` with 3 positional arguments
          *
          * @param name_1 The name of the first positional argument
          * @param help_1 The help message for the first positional argument
@@ -347,17 +348,13 @@ namespace liteshell
                    PositionalArgument(name_2, help_2, false, required_2),
                    PositionalArgument(name_3, help_3, many, required_3)}) {}
 
-        /**
-         * Whether there exists an `Option` with the given name
-         */
+        /** @brief Whether there exists an `Option` with the given name */
         bool has_option(const std::string &name) const
         {
             return options_map.find(name) != options_map.end();
         }
 
-        /**
-         * Get a mapping from option names to their corresponding options
-         */
+        /** @brief Get a mapping from option names to their corresponding options */
         std::map<std::string, Option> get_options_map() const
         {
             std::map<std::string, Option> result;
@@ -372,14 +369,14 @@ namespace liteshell
             return result;
         }
 
-        /* Get a vector of all options with no duplication */
+        /** @brief Get a vector of all options with no duplication */
         std::vector<Option> get_options_vector() const
         {
             return options;
         }
 
         /**
-         * Add an `Option` to this constraint
+         * @brief Add an `Option` to this constraint
          *
          * @param option The `Option` to add
          * @return A pointer to this `CommandConstraint` object
@@ -397,7 +394,7 @@ namespace liteshell
         }
 
         /**
-         * Add an `Option` to this constraint with a list of inner positional arguments
+         * @brief Add an `Option` to this constraint with a list of inner positional arguments
          *
          * @param short_name The short name of the option
          * @param long_name The long name of the option
@@ -418,7 +415,7 @@ namespace liteshell
         }
 
         /**
-         * Add an `Option` to this constraint with only 1 inner positional argument
+         * @brief Add an `Option` to this constraint with only 1 inner positional argument
          *
          * @param short_name The short name of the option
          * @param long_name The long name of the option
@@ -439,7 +436,7 @@ namespace liteshell
         }
 
         /**
-         * Add an `Option` to this constraint with a list of inner positional arguments
+         * @brief Add an `Option` to this constraint with a list of inner positional arguments
          *
          * @param name The name of the option, the method will auto-detect whether this is a short or long name
          * @param help The help message for the option
@@ -468,7 +465,7 @@ namespace liteshell
         }
 
         /**
-         * Add an `Option` to this constraint with only 1 inner positional argument
+         * @brief Add an `Option` to this constraint with only 1 inner positional argument
          *
          * @param name The name of the option, the method will auto-detect whether this is a short or long name
          * @param help The help message for the option
@@ -488,7 +485,7 @@ namespace liteshell
         }
 
         /**
-         * Add an `Option` to this constraint with no inner positional argument
+         * @brief Add an `Option` to this constraint with no inner positional argument
          *
          * @param name The name of the option, the method will auto-detect whether this is a short or long name
          * @param help The help message for the option

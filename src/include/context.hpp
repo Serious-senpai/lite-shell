@@ -57,6 +57,7 @@ namespace liteshell
          * @brief Get the first value of an argument.
          *
          * Roughly equivalent to `.values[name][0]`.
+         * @see `values`
          *
          * @param name The name of the argument to get
          * @return The first value of the argument
@@ -82,7 +83,7 @@ namespace liteshell
          * @param constraint The new constraint to parse the context with
          * @return A new context with the new constraint applied
          */
-        Context parse(const CommandConstraint &constraint) const
+        Context parse(const std::optional<CommandConstraint> &constraint) const
         {
             return get_context(client, message, constraint);
         }
@@ -110,7 +111,8 @@ namespace liteshell
         }
 
         /**
-         * @brief Remove the background suffix token from the command message
+         * @brief Remove the background suffix token from the command message.
+         * @see `BACKGROUND_SUFFIX`
          *
          * @return A new context with the background suffix token removed
          */
@@ -133,6 +135,7 @@ namespace liteshell
 
         /**
          * @brief Determine whether this context is requesting to run in a background process.
+         * @see `BACKGROUND_SUFFIX`
          *
          * @return `true` if the context is requesting to run in the background, `false` otherwise
          */
@@ -146,7 +149,8 @@ namespace liteshell
          *
          * @param client A pointer to the Client object
          * @param message The message to construct the context from
-         * @param constraint The constraint to parse the context with
+         * @param constraint The constraint to parse the context with (if `std::nullopt` is provided, the
+         * resulting `Context` will have its `Context::values` and `Context::present` be empty containers)
          * @return A new context object
          */
         static Context get_context(class Client *const client, const std::string &message, const std::optional<CommandConstraint> &constraint = std::nullopt);
