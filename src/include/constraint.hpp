@@ -63,6 +63,7 @@ namespace liteshell
             }
         }
 
+        /** @copydoc _BaseArgument::display */
         std::string display() const
         {
             auto result = "<" + name + ">";
@@ -245,6 +246,7 @@ namespace liteshell
             return result;
         }
 
+        /** @copydoc _BaseArgument::display */
         std::string display() const
         {
             std::stringstream stream;
