@@ -17,14 +17,14 @@ namespace liteshell
      *
      * Represents a command shell client. The application should hold only one instance of this class.
      *
-     * TODO: Design this class as a singleton
-     *
      * This class is responsible for managing commands, subprocesses and errorlevel. It also provides a method
      * to run the shell indefinitely.
      */
     class Client
     {
     private:
+        static std::shared_ptr<Client> _instance;
+
         const std::vector<std::string> extensions = {".exe", BATCH_EXT};
 
         std::vector<ProcessInfoWrapper> subprocesses;
@@ -177,9 +177,26 @@ namespace liteshell
         }
 
     public:
-        /** @brief Construct a new `Client` object */
+        /**
+         * @brief Get the `Client` instance.
+         *
+         * @return A shared pointer to the `Client` instance
+         */
+        static std::shared_ptr<Client> get_instance();
+
+        /**
+         * @brief Construct a new `Client` object
+         *
+         * Use `Client::get_instance()` instead.
+         * @see `Client::get_instance()`
+         */
         Client() : environment(std::make_unique<Environment>()), stream(std::make_unique<InputStream>())
         {
+            if (_instance != nullptr)
+            {
+                throw std::runtime_error("An instance of Client already exists");
+            }
+
             auto path = utils::get_executable_path();
             auto size = path.size();
             while (size > 0 && path[size - 1] != '\\')
@@ -353,7 +370,7 @@ namespace liteshell
                 }
                 else
                 {
-                    auto context = Context::get_context(this, stripped_message);
+                    auto context = Context::get_context(_instance, stripped_message);
                     try
                     {
                         auto wrapper = get_command(context);
@@ -484,4 +501,15 @@ namespace liteshell
             return std::stoul(environment->get_value("errorlevel"));
         }
     };
+
+    std::shared_ptr<Client> Client::_instance(nullptr);
+    std::shared_ptr<Client> Client::get_instance()
+    {
+        if (_instance == nullptr)
+        {
+            _instance = std::make_shared<Client>();
+        }
+
+        return _instance;
+    }
 }

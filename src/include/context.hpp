@@ -22,7 +22,7 @@ namespace liteshell
             const std::vector<std::string> &tokens,
             const std::map<std::string, std::vector<std::string>> &values,
             const std::set<std::string> &present,
-            class Client *const client,
+            const std::shared_ptr<class Client> &client,
             const std::optional<CommandConstraint> &constraint)
             : message(message),
               tokens(tokens),
@@ -33,7 +33,7 @@ namespace liteshell
 
     public:
         /** @brief A suffix indicating that a command message should be run in a background */
-        const char BACKGROUND_SUFFIX = '%';
+        static const char BACKGROUND_SUFFIX = '%';
 
         /** @brief The message that triggered the command being executed. */
         const std::string message;
@@ -48,7 +48,7 @@ namespace liteshell
         const std::set<std::string> present;
 
         /** @brief A pointer to the client that contains the command being executed. */
-        class Client *const client;
+        const std::shared_ptr<class Client> client;
 
         /** @brief The arguments constraint of this context object */
         const std::optional<CommandConstraint> constraint;
@@ -153,10 +153,10 @@ namespace liteshell
          * resulting `Context` will have its `Context::values` and `Context::present` be empty containers)
          * @return A new context object
          */
-        static Context get_context(class Client *const client, const std::string &message, const std::optional<CommandConstraint> &constraint = std::nullopt);
+        static Context get_context(const std::shared_ptr<Client> &client, const std::string &message, const std::optional<CommandConstraint> &constraint = std::nullopt);
     };
 
-    Context Context::get_context(class Client *const client, const std::string &message, const std::optional<CommandConstraint> &constraint)
+    Context Context::get_context(const std::shared_ptr<Client> &client, const std::string &message, const std::optional<CommandConstraint> &constraint)
     {
         const auto tokens = utils::split(message);
 #ifdef DEBUG
