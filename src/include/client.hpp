@@ -32,8 +32,8 @@ namespace liteshell
         std::vector<CommandWrapper<BaseCommand>> wrappers;
         std::map<std::string, unsigned> commands;
 
-        Environment *const environment;
-        InputStream *const stream;
+        const std::unique_ptr<Environment> environment;
+        const std::unique_ptr<InputStream> stream;
 
         CommandWrapper<BaseCommand> get_command(const std::string &name) const
         {
@@ -178,7 +178,7 @@ namespace liteshell
 
     public:
         /** @brief Construct a new `Client` object */
-        Client() : environment(new Environment()), stream(new InputStream())
+        Client() : environment(std::make_unique<Environment>()), stream(std::make_unique<InputStream>())
         {
             auto path = utils::get_executable_path();
             auto size = path.size();
@@ -206,7 +206,7 @@ namespace liteshell
          */
         Environment *get_environment() const
         {
-            return environment;
+            return environment.get();
         }
 
         /**
@@ -216,7 +216,7 @@ namespace liteshell
          */
         InputStream *get_stream() const
         {
-            return stream;
+            return stream.get();
         }
 
         /**
