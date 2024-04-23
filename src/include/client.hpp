@@ -185,9 +185,8 @@ namespace liteshell
         static std::shared_ptr<Client> get_instance();
 
         /**
-         * @brief Construct a new `Client` object
+         * @brief Construct a new `Client` object. Use `Client::get_instance()` instead.
          *
-         * Use `Client::get_instance()` instead.
          * @see `Client::get_instance()`
          */
         Client() : environment(std::make_unique<Environment>()), stream(std::make_unique<InputStream>())
