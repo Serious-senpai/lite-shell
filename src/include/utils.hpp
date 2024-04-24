@@ -109,7 +109,7 @@ namespace utils
             return false;
         }
 
-        for (unsigned i = 0; i < prefix.size(); i++)
+        for (std::size_t i = 0; i < prefix.size(); i++)
         {
             if (string[i] != prefix[i])
             {
@@ -134,7 +134,7 @@ namespace utils
             return false;
         }
 
-        for (unsigned i = string.size() - suffix.size(); i < string.size(); i++)
+        for (std::size_t i = string.size() - suffix.size(); i < string.size(); i++)
         {
             if (string[i] != suffix[i + suffix.size() - string.size()])
             {

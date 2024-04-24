@@ -181,7 +181,7 @@ namespace liteshell
                     else if (iter->size() > 2)
                     {
                         std::vector<std::string> options;
-                        for (unsigned i = 1; i < iter->size(); i++)
+                        for (std::size_t i = 1; i < iter->size(); i++)
                         {
                             options.push_back(utils::format("-%c", iter->at(i)));
                         }
@@ -223,7 +223,7 @@ namespace liteshell
                 options_iter[name] = option.positional.cbegin();
             }
 
-            for (unsigned i = 1; i < new_tokens_v.size(); i++)
+            for (std::size_t i = 1; i < new_tokens_v.size(); i++)
             {
                 const auto token = new_tokens_v[i];
 #ifdef DEBUG

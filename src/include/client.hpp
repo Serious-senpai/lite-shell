@@ -30,7 +30,7 @@ namespace liteshell
         std::vector<ProcessInfoWrapper> subprocesses;
 
         std::vector<CommandWrapper<BaseCommand>> wrappers;
-        std::map<std::string, unsigned> commands;
+        std::map<std::string, std::size_t> commands;
 
         const std::unique_ptr<Environment> environment;
         const std::unique_ptr<InputStream> stream;

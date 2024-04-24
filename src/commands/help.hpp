@@ -44,7 +44,7 @@ public:
             for (auto &wrapper : commands)
             {
                 std::cout << wrapper.command->name;
-                for (std::size_t i = wrapper.command->name.size(); i < max_width; i++)
+                for (auto i = wrapper.command->name.size(); i < max_width; i++)
                 {
                     std::cout << " ";
                 }

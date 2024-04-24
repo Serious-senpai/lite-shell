@@ -14,7 +14,7 @@ namespace utils
      * @return The formatted string
      */
     template <typename... Args>
-    std::string format(const std::string &format, Args... args)
+    std::string format(const std::string &format, const Args &...args)
     {
         int size_s = std::snprintf(nullptr, 0, format.c_str(), args...) + 1; // Extra space for '\0'
         if (size_s <= 0)

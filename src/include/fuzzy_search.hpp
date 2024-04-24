@@ -16,7 +16,7 @@ namespace utils
      * @return An iterator pointing to the string that is closest to `value`
      */
     template <typename _ForwardIterator>
-    _ForwardIterator fuzzy_search(_ForwardIterator first, _ForwardIterator last, const std::string &value)
+    _ForwardIterator fuzzy_search(const _ForwardIterator &first, const _ForwardIterator &last, const std::string &value)
     {
         if (first == last)
         {

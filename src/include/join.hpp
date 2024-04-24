@@ -41,7 +41,7 @@ namespace utils
     std::string join(std::string first, std::string second)
     {
         {
-            auto size = first.size();
+            std::size_t size = first.size();
             while (size > 0 && first[size - 1] == '\\')
             {
                 size--;
@@ -50,8 +50,8 @@ namespace utils
         }
 
         {
-            unsigned index = 0;
-            while (index < second.size() - 1 && second[index] == '\\')
+            std::size_t index = 0;
+            while (index + 1 < second.size() && second[index] == '\\')
             {
                 index++;
             }

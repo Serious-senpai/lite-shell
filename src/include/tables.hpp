@@ -4,7 +4,7 @@
 
 namespace utils
 {
-    /* A helper class to display ASCII table on the console */
+    /** @brief Helper class to display ASCII table on the console */
     class Table
     {
     private:
@@ -26,92 +26,53 @@ namespace utils
         }
 
     public:
-        /* The number of columns, this number is unchanged */
-        const unsigned columns;
+        /** @brief The number of columns in the table */
+        const std::size_t columns;
 
-        /* Whether each row should align left */
+        /** @brief Whether each row should align left or right */
         bool align_left = true;
 
-        Table(const std::string &column) : Table({column}) {}
-        Table(
-            const std::string &column_1,
-            const std::string &column_2)
-            : Table({column_1, column_2}) {}
-        Table(
-            const std::string &column_1,
-            const std::string &column_2,
-            const std::string &column_3)
-            : Table({column_1, column_2, column_3}) {}
-        Table(
-            const std::string &column_1,
-            const std::string &column_2,
-            const std::string &column_3,
-            const std::string &column_4)
-            : Table({column_1, column_2, column_3, column_4}) {}
-        Table(
-            const std::string &column_1,
-            const std::string &column_2,
-            const std::string &column_3,
-            const std::string &column_4,
-            const std::string &column_5)
-            : Table({column_1, column_2, column_3, column_4, column_5}) {}
+        /**
+         * @brief Construct a new `Table` with the specified column headers.
+         *
+         * The number of column headers will be equal to the number of columns in the table.
+         *
+         * @see `columns`
+         * @param columns The column headers
+         */
+        template <typename... Args>
+        Table(const Args &...columns) : Table({columns...}) {}
 
-        void add_row(const std::string &column)
+        /**
+         * @brief Add a new row to the table.
+         *
+         * The number of columns in this row must match the number of columns in the table.
+         *
+         * @param values The values in the row
+         */
+        template <typename... Args>
+        void add_row(const Args &...values)
         {
-            add_row({column});
+            add_row({values...});
         }
 
-        void add_row(
-            const std::string &column_1,
-            const std::string &column_2)
-        {
-            add_row({column_1, column_2});
-        }
-
-        void add_row(
-            const std::string &column_1,
-            const std::string &column_2,
-            const std::string &column_3)
-        {
-            add_row({column_1, column_2, column_3});
-        }
-
-        void add_row(
-            const std::string &column_1,
-            const std::string &column_2,
-            const std::string &column_3,
-            const std::string &column_4)
-        {
-            add_row({column_1, column_2, column_3, column_4});
-        }
-
-        void add_row(
-            const std::string &column_1,
-            const std::string &column_2,
-            const std::string &column_3,
-            const std::string &column_4,
-            const std::string &column_5)
-        {
-            add_row({column_1, column_2, column_3, column_4, column_5});
-        }
-
-        /* An ASCII string displaying the table */
+        /** @brief An ASCII string displaying the table */
         std::string display()
         {
-            std::vector<unsigned> column_widths(columns);
+            std::vector<std::size_t> column_widths(columns);
             for (auto &row : rows)
             {
-                for (unsigned column = 0; column < columns; column++)
+                for (std::size_t column = 0; column < columns; column++)
                 {
-                    column_widths[column] = std::max(column_widths[column], 2u + (unsigned)row[column].size());
+                    column_widths[column] = std::max(column_widths[column], 2u + row[column].size());
                 }
             }
 
             std::vector<std::string> lines;
-            for (unsigned row = 0; row < rows.size(); row++)
+            for (std::size_t row = 0; row < rows.size(); row++)
             {
                 std::string line;
-                for (unsigned column = 0; column < columns; column++)
+                for (std::size_t column = 0; column < columns; column++)
                 {
                     if (align_left)
                     {
@@ -119,7 +80,7 @@ namespace utils
                         line += rows[row][column];
                     }
 
-                    for (unsigned i = 0; i < column_widths[column] - rows[row][column].size() - 1; i++)
+                    for (std::size_t i = 0; i < column_widths[column] - rows[row][column].size() - 1; i++)
                     {
                         line += ' ';
                     }
@@ -138,9 +99,9 @@ namespace utils
                 if (row == 0)
                 {
                     std::string line;
-                    for (unsigned column = 0; column < columns; column++)
+                    for (std::size_t column = 0; column < columns; column++)
                     {
-                        for (unsigned i = 0; i < column_widths[column]; i++)
+                        for (std::size_t i = 0; i < column_widths[column]; i++)
                         {
                             line += '-';
                         }

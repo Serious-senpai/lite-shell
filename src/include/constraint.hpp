@@ -84,8 +84,8 @@ namespace liteshell
     class _SupportsMultiplePositionalArguments
     {
     private:
-        const std::map<std::string, unsigned> _positional_map;
-        static std::map<std::string, unsigned> _create_map(const std::vector<PositionalArgument> &positional);
+        const std::map<std::string, std::size_t> _positional_map;
+        static std::map<std::string, std::size_t> _create_map(const std::vector<PositionalArgument> &positional);
 
     public:
         /**
@@ -109,7 +109,7 @@ namespace liteshell
 
             if (!positional.empty())
             {
-                for (unsigned i = 0; i < positional.size() - 1; i++)
+                for (std::size_t i = 0; i < positional.size() - 1; i++)
                 {
                     if (positional[i].many)
                     {
@@ -141,11 +141,11 @@ namespace liteshell
         }
     };
 
-    std::map<std::string, unsigned> _SupportsMultiplePositionalArguments::_create_map(
+    std::map<std::string, std::size_t> _SupportsMultiplePositionalArguments::_create_map(
         const std::vector<PositionalArgument> &positional)
     {
-        std::map<std::string, unsigned> result;
-        for (unsigned i = 0; i < positional.size(); i++)
+        std::map<std::string, std::size_t> result;
+        for (std::size_t i = 0; i < positional.size(); i++)
         {
             result.insert(std::make_pair(positional[i].name, i));
         }
@@ -272,7 +272,7 @@ namespace liteshell
     {
     private:
         std::vector<Option> options;
-        std::map<std::string, unsigned> options_map;
+        std::map<std::string, std::size_t> options_map;
 
         void check_duplicate_option_name(const std::string &name) const
         {
