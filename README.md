@@ -12,12 +12,23 @@ Lightweight Windows command shell
 A C++17 compiler (in Windows, of course) is required. To build the source files, run [scripts/build.bat](/scripts/build.bat).
 This batch script will build the executables under the `build/` directory, which contains the command shell `shell.exe`.
 
+The documentation is built using [Doxygen](https://www.doxygen.nl/). To build the docs, simply run `doxygen` at the root of the repository.
+
 ## Run tests
 The tests are written in Python and executed with [pytest](https://docs.pytest.org/). Although not necessary, it is recommended to create a virtual Python environment using `python3 -m venv .venv` first before installing the dependencies with `pip install -r requirements.txt`.
 
 To execute the tests, simply invoke `pytest .` (or `pytest -v .` for more verbose output).
 
-## Quickstart
+## Features
+- Extensible, flexible and powerful command framework (command syntax following [docopt](http://docopt.org/), automatic command parser, automatic arguments checking, auto-generated help message,...)
+- Support batch scripts execution (*\*.ff* files)
+- Support environment variables e.g. `$PATH` or `${PATH}`
+    - Indexed arrays are possible e.g. `${arr_${i}}`
+- Support background execution of external executable (by adding `%` at the end of the command) e.g. `sleep 3000 %`
+
+See the test scripts in [tests/](/tests) for more details.
+
+## Developer quickstart
 
 > [!CAUTION]  
 > Do not use the C/C++ [system](https://cplusplus.com/reference/cstdlib/system/) function since it makes this whole project becomes pointless. Otherwise, the following code is sufficient for 90% of the functionalities:
