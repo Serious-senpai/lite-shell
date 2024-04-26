@@ -69,12 +69,12 @@ namespace utils
         HANDLE h_file = FindFirstFileW(utf_convert(directory).c_str(), &results[0]);
         if (h_file == INVALID_HANDLE_VALUE)
         {
-            if (GetLastError() == ERROR_FILE_NOT_FOUND) // No file with the specified pattern was found
+            switch (GetLastError())
             {
+            case ERROR_FILE_NOT_FOUND:
+            case ERROR_ACCESS_DENIED:
                 return {};
-            }
-            else
-            {
+            default:
                 throw std::runtime_error(last_error("Error when listing directory"));
             }
         }

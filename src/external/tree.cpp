@@ -1,5 +1,16 @@
 #include <all.hpp>
 
+bool ignore(const WIN32_FIND_DATAW &data)
+{
+    auto name = utils::utf_convert(data.cFileName);
+    if (name == "." || name == "..")
+    {
+        return true;
+    }
+
+    return false;
+}
+
 int main(int argc, const char **argv)
 {
     auto directory = utils::get_working_directory();
@@ -13,24 +24,34 @@ int main(int argc, const char **argv)
     std::vector<std::pair<int, std::pair<std::string, WIN32_FIND_DATAW>>> stack;
     for (const auto &child : utils::explore_directory(directory))
     {
-        stack.push_back(std::make_pair(0, std::make_pair(directory, child)));
+        if (!ignore(child))
+        {
+            stack.push_back(std::make_pair(0, std::make_pair(directory, child)));
+        }
     }
 
+    unsigned long long bitmask = (unsigned long long)-1;
     while (!stack.empty())
     {
         const auto [level, file] = stack.back();
         const auto [path, data] = file;
 
         stack.pop_back();
-
-        for (int i = 0; i < level - 1; i++)
+        if (level > 63)
         {
-            std::cout << (char)179 << "   "; // │
+            throw std::runtime_error("Too many levels of nesting");
+        }
+
+        bitmask |= ~((1ull << level) - 1);
+        for (int i = 0; i < level; i++)
+        {
+            std::cout << ((bitmask & (1ull << i)) ? (char)179 : ' ') << "   "; // │
         }
 
         if (stack.empty() || stack.back().first < level)
         {
             std::cout << (char)192; // └
+            bitmask &= ~(1ull << level);
         }
         else
         {
@@ -51,7 +72,10 @@ int main(int argc, const char **argv)
             const auto new_path = utils::join(path, filename);
             for (const auto &child : utils::explore_directory(new_path))
             {
-                stack.push_back(std::make_pair(level + 1, std::make_pair(new_path, child)));
+                if (!ignore(child))
+                {
+                    stack.push_back(std::make_pair(level + 1, std::make_pair(new_path, child)));
+                }
             }
         }
     }
