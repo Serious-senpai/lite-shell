@@ -66,8 +66,7 @@ int main(int argc, const char **argv)
             (data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) &&
             !(data.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN) &&
             !(data.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) &&
-            (filename != ".") &&
-            (filename != ".."))
+            !ignore(data))
         {
             const auto new_path = utils::join(path, filename);
             for (const auto &child : utils::explore_directory(new_path))
