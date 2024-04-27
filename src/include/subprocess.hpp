@@ -3,8 +3,8 @@
 namespace liteshell
 {
     /**
-     * @brief A wrapper of [PROCESS_INFORMATION](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/ns-processthreadsapi-process_information)
-     * containing information of a subprocess
+     * @brief A wrapper of [`PROCESS_INFORMATION`](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/ns-processthreadsapi-process_information)
+     * containing information of a subprocess.
      */
     class ProcessInfoWrapper
     {

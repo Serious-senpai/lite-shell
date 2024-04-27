@@ -6,8 +6,8 @@
 namespace utils
 {
     /**
-     * @brief Format the last error given by GetLastError
-     * @see https://learn.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-getlasterror
+     * @brief Format the last error given by [`GetLastError`](https://learn.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-getlasterror)
+     *
      * @param message The message to prepend to the error
      * @return The formatted error message
      */
@@ -30,8 +30,8 @@ namespace utils
     }
 
     /**
-     * @brief Get the path of the executable i.e. the path of shell.exe
-     * @see https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-getmodulefilenamew
+     * @brief Get the path of the executable i.e. the path of shell.exe using
+     * [`GetModuleFileNameW`](https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-getmodulefilenamew).
      */
     std::string get_executable_path()
     {

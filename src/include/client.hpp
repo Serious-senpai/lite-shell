@@ -265,7 +265,7 @@ namespace liteshell
         /**
          * @brief Get all subprocesses of the current shell.
          *
-         * @return A reference to the subprocesses array
+         * @return An array of pointers to `ProcessInfoWrapper` objects.
          */
         std::vector<ProcessInfoWrapper *> get_subprocesses()
         {
