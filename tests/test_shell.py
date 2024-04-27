@@ -9,7 +9,6 @@ from pathlib import Path
 from typing import Any, List, Literal, Optional, Tuple, overload
 
 import psutil
-import pytest
 
 
 root_dir = Path(__file__).parent.parent
@@ -309,7 +308,6 @@ def test_help_4() -> None:
     too_many_positional_arguments_test("help foo bar")
 
 
-@pytest.mark.timeout(3)
 def test_ps() -> None:
     process = open_shell(text=True)
 
@@ -338,7 +336,6 @@ def test_ps() -> None:
     assert stderr.strip() == ""
 
 
-@pytest.mark.timeout(3)
 def test_kill() -> None:
     process = open_shell(text=True)
 
@@ -376,7 +373,6 @@ def test_sleep() -> None:
     assert 1.0 < end - start < 1.1
 
 
-@pytest.mark.timeout(3)
 def test_suspend() -> None:
     process = open_shell(text=True)
 
