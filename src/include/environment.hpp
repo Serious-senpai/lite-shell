@@ -16,7 +16,15 @@ namespace liteshell
         const boost::regex escape_resolver = boost::regex(R"(\$\$)");
         std::map<std::string, std::string> variables;
 
+        Environment(const Environment &) = delete;
+        Environment &operator=(const Environment &) = delete;
+
     public:
+        /**
+         * @brief Construct a new `Environment` object
+         */
+        Environment() {}
+
         /**
          * @brief Set a value for an environment variable
          *

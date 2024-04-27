@@ -17,6 +17,9 @@ namespace liteshell
         std::list<std::string> list;
         std::list<std::string>::iterator iterator = list.begin();
 
+        InputStream(const InputStream &) = delete;
+        InputStream &operator=(const InputStream &) = delete;
+
     public:
         /** @brief A flag indicating that `getline` must echo the input to stdout */
         static const int FORCE_STDOUT = 1 << 2;
@@ -29,6 +32,11 @@ namespace liteshell
 
         /** @brief The current echo state */
         bool echo = true;
+
+        /**
+         * @brief Construct a new `InputStream` object
+         */
+        InputStream() {}
 
         /** @brief The echo state after the next command */
         bool peek_echo()
