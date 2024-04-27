@@ -14,6 +14,9 @@ namespace liteshell
         /** @brief The underlying PROCESS_INFORMATION struct. The inner handles should never been closed. */
         const PROCESS_INFORMATION info;
 
+        ProcessInfoWrapper(const ProcessInfoWrapper &) = delete;
+        ProcessInfoWrapper &operator=(const ProcessInfoWrapper &) = delete;
+
     public:
         /** @brief The subprocess command line */
         const std::string command;

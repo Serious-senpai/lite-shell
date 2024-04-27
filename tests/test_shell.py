@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any, List, Literal, Optional, Tuple, overload
 
 import psutil
+import pytest
 
 
 root_dir = Path(__file__).parent.parent
@@ -308,6 +309,7 @@ def test_help_4() -> None:
     too_many_positional_arguments_test("help foo bar")
 
 
+@pytest.mark.timeout(3)
 def test_ps() -> None:
     process = open_shell(text=True)
 
@@ -336,6 +338,7 @@ def test_ps() -> None:
     assert stderr.strip() == ""
 
 
+@pytest.mark.timeout(3)
 def test_kill() -> None:
     process = open_shell(text=True)
 
@@ -370,7 +373,37 @@ def test_sleep() -> None:
     default_test("sleep 1000")
     end = time.perf_counter()
 
-    assert 1.0 < end - start < 1.2
+    assert 1.0 < end - start < 1.1
+
+
+@pytest.mark.timeout(3)
+def test_suspend() -> None:
+    process = open_shell(text=True)
+
+    assert process.stdin is not None
+    process.stdin.write("sleep 1000 %\n")
+    process.stdin.flush()
+
+    time.sleep(0.5)
+
+    # https://stackoverflow.com/a/31214525
+    subprocesses = psutil.Process().children(recursive=True)
+    print(subprocesses)
+
+    pid = -1
+    for p in subprocesses:
+        if "sleep" in p.name():
+            pid = p.pid
+            break
+
+    assert pid != -1
+
+    stdout, stderr = process.communicate(f"suspend {pid}\nps\nresume {pid}\nexit\n")
+    assert_match(str(pid), stdout)
+    assert_match("STILL_ACTIVE", stdout)
+    assert_match("Yes", stdout)
+    assert process.returncode == 0
+    assert stderr.strip() == ""
 
 
 def is_prime(value: int, /) -> bool:

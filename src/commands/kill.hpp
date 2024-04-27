@@ -29,11 +29,11 @@ public:
             // pass
         }
 
-        for (auto &wrapper : context.client->get_subprocesses())
+        for (auto wrapper_ptr : context.client->get_subprocesses())
         {
-            if (wrapper.pid() == pid)
+            if (wrapper_ptr->pid() == pid)
             {
-                wrapper.kill(exit_code);
+                wrapper_ptr->kill(exit_code);
                 std::cout << "Terminated process " << pid << " with exit code " << exit_code << std::endl;
                 return 0;
             }

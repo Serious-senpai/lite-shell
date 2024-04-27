@@ -27,7 +27,7 @@ namespace liteshell
 
         const std::vector<std::string> extensions = {".exe", BATCH_EXT};
 
-        std::vector<ProcessInfoWrapper> subprocesses;
+        std::vector<ProcessInfoWrapper *> subprocesses;
 
         std::vector<CommandWrapper<BaseCommand>> wrappers;
         std::map<std::string, std::size_t> commands;
@@ -267,7 +267,7 @@ namespace liteshell
          *
          * @return A reference to the subprocesses array
          */
-        std::vector<ProcessInfoWrapper> &get_subprocesses()
+        std::vector<ProcessInfoWrapper *> get_subprocesses()
         {
             return subprocesses;
         }
@@ -402,8 +402,8 @@ namespace liteshell
                                 }
                                 else
                                 {
-                                    subprocess.wait(INFINITE);
-                                    environment->set_value("errorlevel", std::to_string(subprocess.exit_code()));
+                                    subprocess->wait(INFINITE);
+                                    environment->set_value("errorlevel", std::to_string(subprocess->exit_code()));
                                 }
                             }
                             else
@@ -438,9 +438,9 @@ namespace liteshell
          * @brief Spawn a subprocess and execute `command` in it.
          *
          * @param context A context holding the command to execute.
-         * @return A reference to the wrapper object containing information about the subprocess.
+         * @return A pointer to the wrapper object containing information about the subprocess.
          */
-        ProcessInfoWrapper &spawn_subprocess(const Context &context)
+        ProcessInfoWrapper *spawn_subprocess(const Context &context)
         {
             STARTUPINFOW *startup_info = (STARTUPINFOW *)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(STARTUPINFOW));
             startup_info->cb = sizeof(startup_info);
@@ -462,9 +462,9 @@ namespace liteshell
             );
             HeapFree(GetProcessHeap(), 0, startup_info);
 
-            ProcessInfoWrapper wrapper(process_info, final_context.message);
             if (success)
             {
+                ProcessInfoWrapper *wrapper = new ProcessInfoWrapper(process_info, final_context.message);
                 subprocesses.push_back(wrapper);
 
                 // Do not close the handles since we want to keep track of all subprocesses in our current shell (unless explicitly closed)
@@ -480,7 +480,7 @@ namespace liteshell
                 CloseHandle(CreateThread(&sec_attrs, 0, waiter_thread, &process_info, 0, NULL));
                 */
 
-                return subprocesses.back();
+                return wrapper;
             }
             else
             {
