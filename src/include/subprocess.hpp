@@ -9,10 +9,10 @@ namespace liteshell
     class ProcessInfoWrapper
     {
     private:
-        bool suspended = false;
+        bool _suspended = false;
 
-        /** @brief The underlying PROCESS_INFORMATION struct. The inner handles should never been closed. */
-        const PROCESS_INFORMATION info;
+        /** @brief The underlying PROCESS_INFORMATION struct. The inner handles should never be closed. */
+        const PROCESS_INFORMATION _info;
 
         ProcessInfoWrapper(const ProcessInfoWrapper &) = delete;
         ProcessInfoWrapper &operator=(const ProcessInfoWrapper &) = delete;
@@ -23,25 +23,25 @@ namespace liteshell
 
         /** @brief Construct a new `ProcessInfoWrapper` object */
         ProcessInfoWrapper(const PROCESS_INFORMATION &info, const std::string &command)
-            : info(info), command(command) {}
+            : _info(info), command(command) {}
 
         /** @brief Whether the subprocess is suspended */
         bool is_suspended() const
         {
-            return suspended;
+            return _suspended;
         }
 
         /** @brief Suspend the subprocess */
         void suspend()
         {
-            if (!suspended)
+            if (!_suspended)
             {
-                if (SuspendThread(info.hThread) == (DWORD)-1)
+                if (SuspendThread(_info.hThread) == (DWORD)-1)
                 {
                     throw std::runtime_error(utils::last_error("SuspendThread ERROR"));
                 }
 
-                suspended = true;
+                _suspended = true;
             }
             else
             {
@@ -52,14 +52,14 @@ namespace liteshell
         /** @brief Resume the subprocess */
         void resume()
         {
-            if (suspended)
+            if (_suspended)
             {
-                if (ResumeThread(info.hThread) == (DWORD)-1)
+                if (ResumeThread(_info.hThread) == (DWORD)-1)
                 {
                     throw std::runtime_error(utils::last_error("ResumeThread ERROR"));
                 }
 
-                suspended = false;
+                _suspended = false;
             }
             else
             {
@@ -74,7 +74,7 @@ namespace liteshell
          */
         void wait(DWORD milliseconds)
         {
-            WaitForSingleObject(info.hProcess, milliseconds);
+            WaitForSingleObject(_info.hProcess, milliseconds);
         }
 
         /**
@@ -84,7 +84,7 @@ namespace liteshell
          */
         void kill(UINT exit_code)
         {
-            if (!TerminateProcess(info.hProcess, exit_code))
+            if (!TerminateProcess(_info.hProcess, exit_code))
             {
                 throw std::runtime_error(utils::last_error("TerminateProcess ERROR"));
             }
@@ -98,7 +98,7 @@ namespace liteshell
         DWORD exit_code() const
         {
             DWORD exit_code;
-            GetExitCodeProcess(info.hProcess, &exit_code);
+            GetExitCodeProcess(_info.hProcess, &exit_code);
             return exit_code;
         }
 
@@ -109,7 +109,7 @@ namespace liteshell
          */
         DWORD pid() const
         {
-            return info.dwProcessId;
+            return _info.dwProcessId;
         }
 
         /**
@@ -119,7 +119,7 @@ namespace liteshell
          */
         DWORD tid() const
         {
-            return info.dwThreadId;
+            return _info.dwThreadId;
         }
     };
 }

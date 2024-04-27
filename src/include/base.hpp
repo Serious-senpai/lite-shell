@@ -25,7 +25,7 @@ namespace liteshell
         /** @brief A list of aliases the command can be invoked under. */
         const std::vector<std::string> aliases;
 
-        /** @brief The arguments constraint for this command */
+        /** @brief The arguments constraint of the command */
         const CommandConstraint constraint;
 
         /**
@@ -35,7 +35,7 @@ namespace liteshell
          * @param description A short description of the command
          * @param long_description A long description of the command
          * @param aliases A list of aliases the command can be invoked under
-         * @param constraint The arguments constraint for this command
+         * @param constraint The arguments constraint of the command
          */
         BaseCommand(
             const std::string &name,
@@ -58,13 +58,6 @@ namespace liteshell
             std::cout << "Constructed command \"" << name << "\"" << std::endl;
 #endif
         }
-
-        /**
-         * @brief The command destructor.
-         *
-         * The default implementation does nothing.
-         */
-        virtual ~BaseCommand() {}
 
         /**
          * @brief Invoke this command and return a new errorlevel for the current shell.

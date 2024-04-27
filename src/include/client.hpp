@@ -25,35 +25,35 @@ namespace liteshell
     private:
         static std::shared_ptr<Client> _instance;
 
-        const std::vector<std::string> extensions = {".exe", BATCH_EXT};
+        const std::vector<std::string> _extensions = {".exe", BATCH_EXT};
 
         std::vector<ProcessInfoWrapper *> subprocesses;
 
-        std::vector<CommandWrapper<BaseCommand>> wrappers;
-        std::map<std::string, std::size_t> commands;
+        std::vector<CommandWrapper<BaseCommand>> _wrappers;
+        std::map<std::string, std::size_t> _commands;
 
-        const std::unique_ptr<Environment> environment;
-        const std::unique_ptr<InputStream> stream;
+        const std::unique_ptr<Environment> _environment;
+        const std::unique_ptr<InputStream> _stream;
 
-        CommandWrapper<BaseCommand> get_command(const std::string &name) const
+        CommandWrapper<BaseCommand> _get_command(const std::string &name) const
         {
-            auto iter = commands.find(name);
-            if (iter == commands.end())
+            auto iter = _commands.find(name);
+            if (iter == _commands.end())
             {
                 throw CommandNotFound(name, fuzzy_command_search(name).c_str());
             }
 
-            return wrappers[iter->second];
+            return _wrappers[iter->second];
         }
 
-        CommandWrapper<BaseCommand> get_command(const Context &context) const
+        CommandWrapper<BaseCommand> _get_command(const Context &context) const
         {
             if (context.tokens.empty())
             {
                 throw std::invalid_argument("No command provided");
             }
 
-            return get_command(context.tokens[0]);
+            return _get_command(context.tokens[0]);
         }
 
         /**
@@ -78,7 +78,7 @@ namespace liteshell
                     for (const auto &file : utils::explore_directory(directory, t + "*"))
                     {
                         auto filename = utils::utf_convert(std::wstring(file.cFileName));
-                        for (auto &extension : extensions)
+                        for (auto &extension : _extensions)
                         {
                             if (utils::endswith(filename, extension))
                             {
@@ -130,7 +130,7 @@ namespace liteshell
             data += "\n:EOF\n";
             data += ECHO_ON;
 
-            stream->write(data);
+            _stream->write(data);
 
             fstream.close();
         }
@@ -173,7 +173,7 @@ namespace liteshell
                 std::cerr << "An unknown exception occurred: " << e.what() << std::endl;
             }
 
-            environment->set_value("errorlevel", std::to_string(errorlevel));
+            _environment->set_value("errorlevel", std::to_string(errorlevel));
         }
 
     public:
@@ -189,7 +189,7 @@ namespace liteshell
          *
          * @see `Client::get_instance()`
          */
-        Client() : environment(std::make_unique<Environment>()), stream(std::make_unique<InputStream>())
+        Client() : _environment(std::make_unique<Environment>()), _stream(std::make_unique<InputStream>())
         {
             if (_instance != nullptr)
             {
@@ -211,8 +211,8 @@ namespace liteshell
 
             std::string env_path = utils::utf_convert(buffer);
 
-            environment->set_value("PATH", path.substr(0, size) + ";" + env_path);
-            environment->set_value("errorlevel", "0");
+            _environment->set_value("PATH", path.substr(0, size) + ";" + env_path);
+            _environment->set_value("errorlevel", "0");
         }
 
         /**
@@ -222,7 +222,7 @@ namespace liteshell
          */
         Environment *get_environment() const
         {
-            return environment.get();
+            return _environment.get();
         }
 
         /**
@@ -232,7 +232,7 @@ namespace liteshell
          */
         InputStream *get_stream() const
         {
-            return stream.get();
+            return _stream.get();
         }
 
         /**
@@ -242,7 +242,7 @@ namespace liteshell
          */
         std::set<CommandWrapper<BaseCommand>> walk_commands() const
         {
-            return std::set<CommandWrapper<BaseCommand>>(wrappers.begin(), wrappers.end());
+            return std::set<CommandWrapper<BaseCommand>>(_wrappers.begin(), _wrappers.end());
         }
 
         /**
@@ -254,12 +254,12 @@ namespace liteshell
          */
         std::optional<CommandWrapper<BaseCommand>> get_optional_command(const std::string &name) const
         {
-            auto iter = commands.find(name);
-            if (iter == commands.end())
+            auto iter = _commands.find(name);
+            if (iter == _commands.end())
             {
                 return std::nullopt;
             }
-            return wrappers[iter->second];
+            return _wrappers[iter->second];
         }
 
         /**
@@ -280,20 +280,20 @@ namespace liteshell
          */
         Client *add_command(const std::shared_ptr<BaseCommand> &ptr)
         {
-            if (commands.find(ptr->name) != commands.end())
+            if (_commands.find(ptr->name) != _commands.end())
             {
                 throw std::runtime_error(utils::format("Command %s already exists", ptr->name));
             }
 
-            wrappers.emplace_back(ptr);
-            commands[ptr->name] = wrappers.size() - 1;
+            _wrappers.emplace_back(ptr);
+            _commands[ptr->name] = _wrappers.size() - 1;
             for (auto &alias : ptr->aliases)
             {
-                if (commands.find(alias) != commands.end())
+                if (_commands.find(alias) != _commands.end())
                 {
                     throw std::runtime_error(utils::format("Command %s already exists", alias));
                 }
-                commands[alias] = wrappers.size() - 1;
+                _commands[alias] = _wrappers.size() - 1;
             }
 
             return this;
@@ -309,7 +309,7 @@ namespace liteshell
         std::string fuzzy_command_search(const std::string &name) const
         {
             std::vector<std::string> all;
-            for (auto &wrapper : wrappers)
+            for (auto &wrapper : _wrappers)
             {
                 all.push_back(wrapper.command->name);
                 for (auto &alias : wrapper.command->aliases)
@@ -329,7 +329,7 @@ namespace liteshell
             utils::set_ignore_ctrl_c(true);
             while (true)
             {
-                process_command(stream->getline(utils::format("\nliteshell~%s>", utils::get_working_directory().c_str()), 0));
+                process_command(_stream->getline(utils::format("\nliteshell~%s>", utils::get_working_directory().c_str()), 0));
             }
         }
 
@@ -346,18 +346,18 @@ namespace liteshell
         {
             try
             {
-                auto stripped_message = utils::strip(environment->resolve(utils::strip(message)));
+                auto stripped_message = utils::strip(_environment->resolve(utils::strip(message)));
 #ifdef DEBUG
                 std::cout << utils::format("Processing command \"%s\"", stripped_message.c_str()) << std::endl;
 #endif
                 // Special sequences
                 if (stripped_message == ECHO_ON)
                 {
-                    stream->echo = true;
+                    _stream->echo = true;
                 }
                 else if (stripped_message == ECHO_OFF)
                 {
-                    stream->echo = false;
+                    _stream->echo = false;
                 }
                 else if (stripped_message.empty())
                 {
@@ -372,7 +372,7 @@ namespace liteshell
                     auto context = Context::get_context(_instance, stripped_message);
                     try
                     {
-                        auto wrapper = get_command(context);
+                        auto wrapper = _get_command(context);
 
 #ifdef DEBUG
                         std::cout << "Matched command \"" << wrapper.command->name << "\"" << std::endl;
@@ -380,7 +380,7 @@ namespace liteshell
 
                         auto constraint = wrapper.command->constraint;
                         auto errorlevel = wrapper.run(context.parse(constraint));
-                        environment->set_value("errorlevel", std::to_string(errorlevel));
+                        _environment->set_value("errorlevel", std::to_string(errorlevel));
                     }
                     catch (CommandNotFound &e)
                     {
@@ -398,12 +398,12 @@ namespace liteshell
                                 auto subprocess = spawn_subprocess(final_context);
                                 if (final_context.is_background_request())
                                 {
-                                    environment->set_value("errorlevel", "0");
+                                    _environment->set_value("errorlevel", "0");
                                 }
                                 else
                                 {
                                     subprocess->wait(INFINITE);
-                                    environment->set_value("errorlevel", std::to_string(subprocess->exit_code()));
+                                    _environment->set_value("errorlevel", std::to_string(subprocess->exit_code()));
                                 }
                             }
                             else
@@ -431,7 +431,7 @@ namespace liteshell
          */
         std::vector<std::string> get_resolve_order() const
         {
-            return utils::split(environment->get_value("PATH"), ';');
+            return utils::split(_environment->get_value("PATH"), ';');
         }
 
         /**
@@ -497,7 +497,7 @@ namespace liteshell
          */
         DWORD get_errorlevel() const
         {
-            return std::stoul(environment->get_value("errorlevel"));
+            return std::stoul(_environment->get_value("errorlevel"));
         }
     };
 
