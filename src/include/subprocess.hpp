@@ -2,28 +2,36 @@
 
 namespace liteshell
 {
-    /* A wrapper of PROCESS_INFORMATION containing information of a subprocess */
+    /**
+     * @brief A wrapper of [PROCESS_INFORMATION](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/ns-processthreadsapi-process_information)
+     * containing information of a subprocess
+     */
     class ProcessInfoWrapper
     {
     private:
         bool suspended = false;
 
-        /* The underlying PROCESS_INFORMATION struct. The inner handles should never been closed. */
+        /** @brief The underlying PROCESS_INFORMATION struct. The inner handles should never been closed. */
         const PROCESS_INFORMATION info;
 
     public:
-        /* The subprocess command line */
+        /** @brief The subprocess command line */
         const std::string command;
 
+        ProcessInfoWrapper(const ProcessInfoWrapper &) = delete;
+        ProcessInfoWrapper &operator=(const ProcessInfoWrapper &) = delete;
+
+        /** @brief Construct a new `ProcessInfoWrapper` object */
         ProcessInfoWrapper(const PROCESS_INFORMATION &info, const std::string &command)
             : info(info), command(command) {}
 
-        /* Whether the subprocess is suspended */
+        /** @brief Whether the subprocess is suspended */
         bool is_suspended() const
         {
             return suspended;
         }
 
+        /** @brief Suspend the subprocess */
         void suspend()
         {
             if (!suspended)
@@ -41,6 +49,7 @@ namespace liteshell
             }
         }
 
+        /** @brief Resume the subprocess */
         void resume()
         {
             if (suspended)
@@ -58,11 +67,21 @@ namespace liteshell
             }
         }
 
+        /**
+         * @brief Wait for the subprocess with timeout
+         *
+         * @param milliseconds The timeout in milliseconds, may equal to `INFINITE`
+         */
         void wait(DWORD milliseconds)
         {
             WaitForSingleObject(info.hProcess, milliseconds);
         }
 
+        /**
+         * @brief Kill the subprocess
+         *
+         * @param exit_code The exit code of the subprocess
+         */
         void kill(UINT exit_code)
         {
             if (!TerminateProcess(info.hProcess, exit_code))
@@ -71,6 +90,11 @@ namespace liteshell
             }
         }
 
+        /**
+         * @brief Get the exit code of the subprocess
+         *
+         * @return The exit code of the subprocess
+         */
         DWORD exit_code() const
         {
             DWORD exit_code;
@@ -78,11 +102,21 @@ namespace liteshell
             return exit_code;
         }
 
+        /**
+         * @brief Get the process ID of the subprocess
+         *
+         * @return The process ID of the subprocess
+         */
         DWORD pid() const
         {
             return info.dwProcessId;
         }
 
+        /**
+         * @brief Get the thread ID of the subprocess
+         *
+         * @return The thread ID of the subprocess
+         */
         DWORD tid() const
         {
             return info.dwThreadId;
