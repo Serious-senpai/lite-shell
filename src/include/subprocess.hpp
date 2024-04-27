@@ -18,9 +18,6 @@ namespace liteshell
         /** @brief The subprocess command line */
         const std::string command;
 
-        ProcessInfoWrapper(const ProcessInfoWrapper &) = delete;
-        ProcessInfoWrapper &operator=(const ProcessInfoWrapper &) = delete;
-
         /** @brief Construct a new `ProcessInfoWrapper` object */
         ProcessInfoWrapper(const PROCESS_INFORMATION &info, const std::string &command)
             : info(info), command(command) {}
