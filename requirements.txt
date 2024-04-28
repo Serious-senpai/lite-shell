@@ -14,5 +14,5 @@ pyflakes==3.2.0
 pytest==8.1.1
 tomli==2.0.1
 types-colorama==0.4.15.20240311
-types-psutil==5.9.5.20240316
+types-psutil==5.9.5.20240423
 typing_extensions==4.11.0
