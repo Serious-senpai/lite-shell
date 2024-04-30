@@ -215,6 +215,15 @@ namespace liteshell
             _environment->set_value("errorlevel", "0");
         }
 
+        /** @brief Destructor for this object */
+        ~Client()
+        {
+            for (auto &subprocess : subprocesses)
+            {
+                delete subprocess;
+            }
+        }
+
         /**
          * @brief Get a pointer to the shell environment containing the variables.
          *
@@ -442,10 +451,10 @@ namespace liteshell
          */
         ProcessInfoWrapper *spawn_subprocess(const Context &context)
         {
-            STARTUPINFOW *startup_info = (STARTUPINFOW *)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(STARTUPINFOW));
-            startup_info->cb = sizeof(startup_info);
-
             auto final_context = context.strip_background_request();
+
+            STARTUPINFOW startup_info = {};
+            startup_info.cb = sizeof(startup_info);
 
             PROCESS_INFORMATION process_info;
             auto success = CreateProcessW(
@@ -457,10 +466,9 @@ namespace liteshell
                 0,                                                // dwCreationFlags
                 NULL,                                             // lpEnvironment
                 NULL,                                             // lpCurrentDirectory
-                startup_info,                                     // lpStartupInfo
+                &startup_info,                                    // lpStartupInfo
                 &process_info                                     // lpProcessInformation
             );
-            HeapFree(GetProcessHeap(), 0, startup_info);
 
             if (success)
             {

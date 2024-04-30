@@ -11,7 +11,7 @@ namespace liteshell
     private:
         bool _suspended = false;
 
-        /** @brief The underlying PROCESS_INFORMATION struct. The inner handles should never be closed. */
+        /** @brief The underlying PROCESS_INFORMATION struct. The inner handles should never be closed implicitly. */
         const PROCESS_INFORMATION _info;
 
         ProcessInfoWrapper(const ProcessInfoWrapper &) = delete;
@@ -24,6 +24,19 @@ namespace liteshell
         /** @brief Construct a new `ProcessInfoWrapper` object */
         ProcessInfoWrapper(const PROCESS_INFORMATION &info, const std::string &command)
             : _info(info), command(command) {}
+
+        /**
+         * @brief Destructor for this object.
+         *
+         * Since `ProcessInfoWrapper` is non-copyable and non-movable, this destructor calls
+         * [`CloseHandle`](https://learn.microsoft.com/en-us/windows/win32/api/handleapi/nf-handleapi-closehandle)
+         * to close the underlying handles of the subprocess.
+         */
+        ~ProcessInfoWrapper()
+        {
+            CloseHandle(_info.hProcess);
+            CloseHandle(_info.hThread);
+        }
 
         /** @brief Whether the subprocess is suspended */
         bool is_suspended() const
