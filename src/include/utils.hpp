@@ -6,7 +6,8 @@
 namespace utils
 {
     /**
-     * @brief Format the last error given by [`GetLastError`](https://learn.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-getlasterror)
+     * @brief Format the last error given by
+     * [`GetLastError`](https://learn.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-getlasterror).
      *
      * @param message The message to prepend to the error
      * @return The formatted error message
@@ -14,6 +15,26 @@ namespace utils
     std::string last_error(const std::string &message)
     {
         return format("%s: %d", message.c_str(), GetLastError());
+    }
+
+    /**
+     * @brief Get the size of the console window using
+     * [`GetConsoleScreenBufferInfo`](https://learn.microsoft.com/en-us/windows/console/getconsolescreenbufferinfo).
+     *
+     * @return The number of columns and rows, respectively.
+     */
+    std::pair<SHORT, SHORT> get_console_size()
+    {
+        CONSOLE_SCREEN_BUFFER_INFO info;
+        if (!GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &info))
+        {
+            throw last_error("GetConsoleScreenBufferInfo ERROR");
+        }
+
+        SHORT columns = info.srWindow.Right - info.srWindow.Left + 1,
+              rows = info.srWindow.Bottom - info.srWindow.Top + 1;
+
+        return std::make_pair(columns, rows);
     }
 
     /** @brief Get the current working directory */

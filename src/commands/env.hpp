@@ -15,11 +15,16 @@ public:
 
     DWORD run(const liteshell::Context &context)
     {
+        utils::Table displayer("Name", "Value");
+        std::size_t columns = utils::get_console_size().first;
+        displayer.limits = {30, columns - 30};
+
         for (auto &[name, value] : context.client->get_environment()->get_values())
         {
-            std::cout << name << "=" << value << "\n";
+            displayer.add_row(name, value);
         }
 
+        std::cout << displayer.display() << std::endl;
         return 0;
     }
 };

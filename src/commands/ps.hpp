@@ -16,6 +16,9 @@ public:
     DWORD run(const liteshell::Context &context)
     {
         utils::Table displayer("PID", "Command line", "Exit code", "Suspended");
+        std::size_t columns = utils::get_console_size().first;
+        displayer.limits = {6, columns - 36, 20, 10};
+
         for (auto wrapper_ptr : context.client->get_subprocesses())
         {
             std::string status_display;
