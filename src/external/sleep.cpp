@@ -4,10 +4,18 @@ int main(int argc, const char **argv)
 {
     if (argc != 2)
     {
-        std::cerr << "Expect exactly 1 argument (duration in milliseconds)" << std::endl;
-        return 1;
+        throw std::invalid_argument("Expect exactly 1 argument (duration in milliseconds)");
     }
 
-    Sleep(std::stoull(argv[1]));
+    try
+    {
+        DWORD duration = std::stoul(argv[1]);
+        Sleep(duration);
+    }
+    catch (std::out_of_range &_)
+    {
+        throw std::invalid_argument("Value is too large to convert to DWORD");
+    }
+
     return 0;
 }

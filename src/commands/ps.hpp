@@ -28,6 +28,9 @@ public:
             case STATUS_CONTROL_C_EXIT:
                 status_display = "CONTROL_C_EXIT";
                 break;
+            case STATUS_STACK_BUFFER_OVERRUN:
+                status_display = "STACK_BUFFER_OVERRUN";
+                break;
             default:
                 status_display = std::to_string(status);
                 break;
