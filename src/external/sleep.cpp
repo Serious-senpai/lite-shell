@@ -12,7 +12,7 @@ int main(int argc, const char **argv)
         DWORD duration = std::stoul(argv[1]);
         Sleep(duration);
     }
-    catch (std::out_of_range &_)
+    catch (std::out_of_range &)
     {
         throw std::invalid_argument("Value is too large to convert to DWORD");
     }

@@ -94,7 +94,7 @@ namespace utils
 
                             has_content = true;
                         }
-                        catch (std::out_of_range &_)
+                        catch (std::out_of_range &)
                         {
                             // pass
                         }

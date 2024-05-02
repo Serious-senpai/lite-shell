@@ -17,7 +17,7 @@ public:
     {
         try
         {
-            auto code = std::stoul(context.get("exitcode"));
+            auto code = std::stoi(context.get("exitcode"));
             exit(code);
         }
         catch (liteshell::ArgumentMissingError &e)

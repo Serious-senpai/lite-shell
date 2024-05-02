@@ -28,7 +28,7 @@ namespace utils
         CONSOLE_SCREEN_BUFFER_INFO info;
         if (!GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &info))
         {
-            throw last_error("GetConsoleScreenBufferInfo ERROR");
+            throw std::runtime_error(last_error("GetConsoleScreenBufferInfo ERROR"));
         }
 
         SHORT columns = info.srWindow.Right - info.srWindow.Left + 1,

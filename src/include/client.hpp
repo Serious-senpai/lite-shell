@@ -405,6 +405,7 @@ namespace liteshell
                                 auto final_context = context.replace_call(*executable);
 
                                 auto subprocess = spawn_subprocess(final_context);
+                                _environment->set_value("pid", std::to_string(subprocess->pid()));
                                 if (final_context.is_background_request())
                                 {
                                     _environment->set_value("errorlevel", "0");

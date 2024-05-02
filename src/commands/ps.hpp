@@ -16,8 +16,16 @@ public:
     DWORD run(const liteshell::Context &context)
     {
         utils::Table displayer("PID", "Command line", "Exit code", "Suspended");
-        std::size_t columns = utils::get_console_size().first;
-        displayer.limits = {6, columns - 36, 20, 10};
+        try
+        {
+            // This will throw std::runtime_error when running as a subprocess (testing with pytest for example)
+            std::size_t columns = utils::get_console_size().first;
+            displayer.limits = {6, columns - 36, 20, 10};
+        }
+        catch (std::runtime_error &)
+        {
+            // pass
+        }
 
         for (auto wrapper_ptr : context.client->get_subprocesses())
         {

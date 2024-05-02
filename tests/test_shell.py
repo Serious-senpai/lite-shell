@@ -33,10 +33,10 @@ def open_shell(*, text: bool) -> subprocess.Popen[Any]:
     )
 
 
-def execute_command(command: str, *, expected_exit_code: int = 0) -> Tuple[str, str]:
+def execute_command(command: str, *, expected_exit_code: Optional[int] = 0) -> Tuple[str, str]:
     process = open_shell(text=False)
     stdout, stderr = process.communicate(f"{command}\nexit\n".encode("utf-8"))
-    assert process.returncode == expected_exit_code
+    assert process.returncode == expected_exit_code or expected_exit_code is None
 
     def decode(data: bytes) -> str:
         return data.decode("utf-8").replace("\r", "")
@@ -87,7 +87,7 @@ def too_many_positional_arguments_test(command: str) -> None:
 
 def match(token: str, string: str) -> Optional[re.Match[str]]:
     pattern = r"(?:[^\w]|^)" + re.escape(token) + r"(?:[^\w]|$)"
-    print(f"Matching token:\n{token!r}\n" + "-" * 30 + f"\n{string!r}")
+    print(f"Matching token:\n{token!r}\n" + "-" * 48 + "\n" + repr(string) + "\n" + "-" * 48 + "\n" + string)
     return re.search(pattern, string, re.MULTILINE)
 
 
@@ -310,58 +310,25 @@ def test_help_4() -> None:
 
 def test_ps() -> None:
     process = open_shell(text=True)
+    stdout, stderr = process.communicate("sleep 1000 %\nps\nexit $pid\n")
+    pid = process.returncode
+    print(stderr)
 
-    assert process.stdin is not None
-    process.stdin.write("sleep 1000 %\nps\n")
-    process.stdin.flush()
-
-    time.sleep(0.5)
-
-    # https://stackoverflow.com/a/31214525
-    subprocesses = psutil.Process().children(recursive=True)
-    print(subprocesses)
-
-    pid = -1
-    for p in subprocesses:
-        if "sleep" in p.name():
-            pid = p.pid
-            break
-
-    assert pid != -1
-
-    stdout, stderr = process.communicate("exit\n")
+    assert isinstance(pid, int)
     assert_match(str(pid), stdout)
     assert_match("STILL_ACTIVE", stdout)
-    assert process.returncode == 0
     assert stderr.strip() == ""
 
 
 def test_kill() -> None:
     process = open_shell(text=True)
+    stdout, stderr = process.communicate("sleep 1000 %\nkill $pid 40000\nps\nexit $pid\n")
+    pid = process.returncode
 
-    assert process.stdin is not None
-    process.stdin.write("sleep 1000 %\n")
-    process.stdin.flush()
-
-    time.sleep(0.5)
-
-    # https://stackoverflow.com/a/31214525
-    subprocesses = psutil.Process().children(recursive=True)
-    print(subprocesses)
-
-    pid = -1
-    for p in subprocesses:
-        if "sleep" in p.name():
-            pid = p.pid
-            break
-
-    assert pid != -1
-
-    stdout, stderr = process.communicate(f"kill {pid} 40000\nps\nexit\n")
+    assert isinstance(pid, int)
     assert_match(str(pid), stdout)
     assert_match("40000", stdout)
     assert_not_match("STILL_ACTIVE", stdout)
-    assert process.returncode == 0
     assert stderr.strip() == ""
 
 
@@ -375,30 +342,13 @@ def test_sleep() -> None:
 
 def test_suspend() -> None:
     process = open_shell(text=True)
+    stdout, stderr = process.communicate("sleep 1000 %\nsuspend $pid\nps\nresume $pid\nexit $pid\n")
+    pid = process.returncode
 
-    assert process.stdin is not None
-    process.stdin.write("sleep 1000 %\n")
-    process.stdin.flush()
-
-    time.sleep(0.5)
-
-    # https://stackoverflow.com/a/31214525
-    subprocesses = psutil.Process().children(recursive=True)
-    print(subprocesses)
-
-    pid = -1
-    for p in subprocesses:
-        if "sleep" in p.name():
-            pid = p.pid
-            break
-
-    assert pid != -1
-
-    stdout, stderr = process.communicate(f"suspend {pid}\nps\nresume {pid}\nexit\n")
+    assert isinstance(pid, int)
     assert_match(str(pid), stdout)
     assert_match("STILL_ACTIVE", stdout)
     assert_match("Yes", stdout)
-    assert process.returncode == 0
     assert stderr.strip() == ""
 
 
