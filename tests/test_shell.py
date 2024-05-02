@@ -8,8 +8,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, List, Literal, Optional, Tuple, overload
 
-import psutil
-
 
 root_dir = Path(__file__).parent.parent
 build_dir = root_dir / "build"
