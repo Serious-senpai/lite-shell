@@ -12,4 +12,5 @@ pycodestyle==2.11.1
 pyflakes==3.2.0
 pytest==8.2.0
 tomli==2.0.1
+types-colorama==0.4.15.20240311
 typing_extensions==4.11.0
