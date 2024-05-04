@@ -11,17 +11,34 @@ set params=-O3 -Wall -I %root%\extern\regex\include -I %root%\src\include -std=c
 
 if "%1"=="debug" (
     set params=-D DEBUG %params%
+    set debug=true
     echo Building in debug mode
+) else (
+    set debug=false
 )
 
-echo Building %root%\src\shell.cpp to %root%\build\shell.exe
-g++ %params% %root%\src\shell.cpp -o %root%\build\shell.exe
+if "%1"=="assembly" (
+    set params=-S %params%
+    set assembly=true
+    echo Compiling to assembly
+) else (
+    set assembly=false
+)
+
+if "%assembly%" == "true" (
+    set extension=asm
+) else (
+    set extension=exe
+)
+
+echo Building %root%\src\shell.cpp to %root%\build\shell.%extension%
+g++ %params% %root%\src\shell.cpp -o %root%\build\shell.%extension%
 if %errorlevel% neq 0 exit /b %errorlevel%
 
 for %%f in (%root%\src\external\*) do (
     if /i %%~xf equ .cpp (
-        echo Building %%f to %root%\build\%%~nf.exe
-        g++ %params% %%f -o %root%\build\%%~nf.exe
+        echo Building %%f to %root%\build\%%~nf.%extension%
+        g++ %params% %%f -o %root%\build\%%~nf.%extension%
         if !errorlevel! neq 0 exit /b !errorlevel!
     )
 )
