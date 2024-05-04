@@ -20,18 +20,17 @@ public:
 
     DWORD run(const liteshell::Context &context)
     {
-        auto path = context.values.at("path");
-        if (path.size() == 1)
+        try
         {
-            std::cout << utils::get_working_directory() << std::endl;
-        }
-        else
-        {
-            auto target = path[1];
+            auto target = context.get("path");
             if (!SetCurrentDirectoryW(utils::utf_convert(target).c_str()))
             {
                 throw std::runtime_error(utils::last_error(utils::format("Error when changing directory to %s", target.c_str())));
             }
+        }
+        catch (liteshell::ArgumentMissingError &)
+        {
+            std::cout << utils::get_working_directory() << std::endl;
         }
 
         return 0;

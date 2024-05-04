@@ -353,6 +353,7 @@ namespace liteshell
          */
         void process_command(const std::string &message)
         {
+            _environment->set_value("cd", utils::get_working_directory().c_str());
             try
             {
                 auto stripped_message = utils::strip(_environment->resolve(utils::strip(message)));
