@@ -19,6 +19,8 @@ int main(int argc, const char **argv)
         directory = argv[1];
     }
 
+    bool ascii = argc > 2 && std::string(argv[2]) == "--ascii";
+
     std::cout << "Content of " << directory << ":" << std::endl;
 
     std::vector<std::pair<int, std::pair<std::string, WIN32_FIND_DATAW>>> stack;
@@ -45,26 +47,29 @@ int main(int argc, const char **argv)
         bitmask |= ~((1ull << level) - 1);
         for (int i = 0; i < level; i++)
         {
-            std::cout << ((bitmask & (1ull << i)) ? (char)179 : ' ') << "   "; // │
+            std::cout << ((bitmask & (1ull << i)) ? (ascii ? '|' : (char)179) : ' ') << "   "; // │
         }
 
         if (stack.empty() || stack.back().first < level)
         {
-            std::cout << (char)192; // └
+            std::cout << (ascii ? '+' : (char)192); // └
             bitmask &= ~(1ull << level);
         }
         else
         {
-            std::cout << (char)195; // ├
+            std::cout << (ascii ? '+' : (char)195); // ├
         }
-        std::cout << (char)196 << (char)196 << (char)196; // ───
+
+        for (int i = 0; i < 3; i++)
+        {
+            std::cout << (ascii ? '-' : (char)196); // ─
+        }
 
         auto filename = utils::utf_convert(data.cFileName);
         std::cout << filename << '\n';
 
         if (
             (data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) &&
-            !(data.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN) &&
             !(data.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) &&
             !ignore(data))
         {
