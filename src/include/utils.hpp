@@ -166,6 +166,21 @@ namespace utils
         return true;
     }
 
+    std::string regex_escape(const std::string &original)
+    {
+        std::stringstream result;
+        for (char c : original)
+        {
+            if (c == '.' || c == '*' || c == '+' || c == '?' || c == '|' || c == '(' || c == ')' ||
+                c == '[' || c == ']' || c == '{' || c == '}' || c == '\\' || c == '^' || c == '$')
+            {
+                result << '\\';
+            }
+            result << c;
+        }
+        return result.str();
+    }
+
     /**
      * @brief Whether a file is executable
      *

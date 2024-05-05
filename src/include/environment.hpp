@@ -97,7 +97,7 @@ namespace liteshell
                     for (auto &variable : variables)
                     {
                         auto pattern = boost::regex(utils::format("(?<!\\$)\\$(?:\\{%s\\}|%s)", variable.c_str(), variable.c_str()));
-                        result = boost::regex_replace(result, pattern, get_value(variable));
+                        result = boost::regex_replace(result, pattern, utils::regex_escape(get_value(variable)));
                     }
                 }
             }
