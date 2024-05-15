@@ -269,7 +269,7 @@ namespace utils
     {
         if (value < 0)
         {
-            throw std::out_of_range(format("Attempted to calculate square root of %lf < 0", value));
+            throw std::out_of_range(format("Attempted to calculate square root of %s < 0", std::to_string(value).c_str()));
         }
 
         if (value == 0)
