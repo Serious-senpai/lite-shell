@@ -18,7 +18,7 @@ if "%1"=="debug" (
 )
 
 if "%1"=="assembly" (
-    set params=-S %params%
+    set params=-S -fverbose-asm %params%
     set assembly=true
     echo Compiling to assembly
 ) else (
