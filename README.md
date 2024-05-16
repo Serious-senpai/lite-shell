@@ -35,6 +35,7 @@ See the test scripts in [tests/](/tests) for more details.
 > ```cpp
 > #include <cstdlib>
 > #include <iostream>
+> #include <string>
 >
 > int main()
 > {
@@ -42,7 +43,7 @@ See the test scripts in [tests/](/tests) for more details.
 >     {
 >         std::string input;
 >         std::cout << "\nliteshell>";
->         std::cin >> input;
+>         std::getline(std::cin, input);
 >         if (input == "exit")
 >         {
 >             break;
