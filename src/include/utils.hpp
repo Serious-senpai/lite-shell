@@ -264,6 +264,24 @@ namespace utils
         return boost::regex_match(name, _long_option_name);
     }
 
+    /**
+     * @brief Get the status of global memory using the native method
+     * [`GlobalMemoryStatusEx`](https://learn.microsoft.com/en-us/windows/win32/api/sysinfoapi/nf-sysinfoapi-globalmemorystatusex)
+     *
+     * @return The status of global memory
+     */
+    MEMORYSTATUSEX get_global_memory_status()
+    {
+        MEMORYSTATUSEX memory_status;
+        memory_status.dwLength = sizeof(memory_status);
+        if (!GlobalMemoryStatusEx(&memory_status))
+        {
+            throw std::runtime_error(last_error("GlobalMemoryStatusEx ERROR"));
+        }
+
+        return memory_status;
+    }
+
     template <typename T>
     T sqrt(const T value)
     {

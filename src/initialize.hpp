@@ -17,6 +17,7 @@
 #include "commands/jump.hpp"
 #include "commands/kill.hpp"
 #include "commands/ls.hpp"
+#include "commands/memory.hpp"
 #include "commands/mkdir.hpp"
 #include "commands/ps.hpp"
 #include "commands/resume.hpp"
@@ -39,6 +40,7 @@ void initialize(liteshell::Client *client)
         ->add_command(std::make_shared<JumpCommand>())
         ->add_command(std::make_shared<KillCommand>())
         ->add_command(std::make_shared<LsCommand>())
+        ->add_command(std::make_shared<MemoryCommand>())
         ->add_command(std::make_shared<MkdirCommand>())
         ->add_command(std::make_shared<PsCommand>())
         ->add_command(std::make_shared<ResumeCommand>())
