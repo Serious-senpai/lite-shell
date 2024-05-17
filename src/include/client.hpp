@@ -464,7 +464,7 @@ namespace liteshell
                 utils::utf_convert(final_context.message).data(), // lpCommandLine
                 NULL,                                             // lpProcessAttributes
                 NULL,                                             // lpThreadAttributes
-                true,                                             // bInheritHandles
+                TRUE,                                             // bInheritHandles
                 0,                                                // dwCreationFlags
                 NULL,                                             // lpEnvironment
                 NULL,                                             // lpCurrentDirectory
@@ -496,7 +496,7 @@ namespace liteshell
             {
                 CloseHandle(process_info.hProcess);
                 CloseHandle(process_info.hThread);
-                throw SubprocessCreationError(utils::last_error(utils::format("Unable to create subprocess: %s", final_context.message.c_str())));
+                throw SubprocessCreationError(utils::last_error(utils::format("Unable to create subprocess \"%s\"", final_context.message.c_str())));
             }
         }
 
