@@ -109,6 +109,49 @@ namespace utils
     }
 
     /**
+     * @brief Remove a directory recursively. It is the caller's responsibility to ensure that the directory exists.
+     *
+     * @param directory The directory to remove
+     * @return Whether the directory was removed successfully
+     */
+    bool remove_directory(const std::string &directory)
+    {
+        bool success = true;
+        for (const auto &file : list_files(join(directory, "*")))
+        {
+            auto filename = utf_convert(file.cFileName);
+
+            // Skip current and parent directory
+            if (filename == "." || filename == "..")
+            {
+                continue;
+            }
+
+            auto path = join(directory, filename);
+            if (file.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+            {
+                if (!remove_directory(path))
+                {
+                    success = false;
+                }
+            }
+            else if (!DeleteFileW(utf_convert(path).c_str()))
+            {
+                std::cerr << last_error(format("Error deleting file \"%s\"", path.c_str())) << std::endl;
+                success = false;
+            }
+        }
+
+        if (!RemoveDirectoryW(utf_convert(directory).c_str()))
+        {
+            std::cerr << last_error(format("Error deleting directory \"%s\"", directory.c_str())) << std::endl;
+            success = false;
+        }
+
+        return success;
+    }
+
+    /**
      * @brief Whether a string has the specified prefix
      *
      * @param string The string to check
@@ -158,6 +201,12 @@ namespace utils
         return true;
     }
 
+    /**
+     * @brief Escape a string to obtain a valid regex pattern
+     *
+     * @param original The original string
+     * @return The escaped string
+     */
     std::string regex_escape(const std::string &original)
     {
         std::stringstream result;
