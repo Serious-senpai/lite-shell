@@ -36,7 +36,7 @@ g++ %params% %root%\src\shell.cpp -o %root%\build\shell.%extension%
 if %errorlevel% neq 0 exit /b %errorlevel%
 
 for %%f in (%root%\src\external\*) do (
-    if /i %%~xf equ .cpp (
+    if "%%~xf" == ".cpp" (
         echo Building %%f to %root%\build\%%~nf.%extension%
         g++ %params% %%f -o %root%\build\%%~nf.%extension%
         if !errorlevel! neq 0 exit /b !errorlevel!

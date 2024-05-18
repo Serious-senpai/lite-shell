@@ -29,7 +29,7 @@ public:
 
         utils::Table displayer("Name", "Type", "Size");
 
-        for (const auto &data : utils::explore_directory(directory))
+        for (const auto &data : utils::list_files(utils::join(directory, "*")))
         {
             long double size = ((long double)data.nFileSizeHigh * ((long double)MAXDWORD + 1.0L)) + (long double)data.nFileSizeLow;
             bool is_directory = data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY;

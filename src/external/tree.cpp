@@ -24,7 +24,7 @@ int main(int argc, const char **argv)
     std::cout << "Content of " << directory << ":" << std::endl;
 
     std::vector<std::pair<int, std::pair<std::string, WIN32_FIND_DATAW>>> stack;
-    for (const auto &child : utils::explore_directory(directory))
+    for (const auto &child : utils::list_files(utils::join(directory, "*")))
     {
         if (!ignore(child))
         {
@@ -70,11 +70,10 @@ int main(int argc, const char **argv)
 
         if (
             (data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) &&
-            !(data.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) &&
             !ignore(data))
         {
             const auto new_path = utils::join(path, filename);
-            for (const auto &child : utils::explore_directory(new_path))
+            for (const auto &child : utils::list_files(utils::join(new_path, "*")))
             {
                 if (!ignore(child))
                 {

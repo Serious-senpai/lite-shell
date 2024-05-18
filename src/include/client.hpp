@@ -70,19 +70,18 @@ namespace liteshell
             std::cout << "Resolving executable from \"" << token << "\"" << std::endl;
 #endif
 
-            auto t = utils::strip(token, '\\', '/');
-            auto find_executable = [this, &t](const std::string &directory) -> std::optional<std::string>
+            auto find_executable = [this, &token](const std::string &directory) -> std::optional<std::string>
             {
                 try
                 {
-                    for (const auto &file : utils::explore_directory(directory, t + "*"))
+                    for (const auto &file : utils::list_files(utils::join(directory, token+"*")))
                     {
                         auto filename = utils::utf_convert(std::wstring(file.cFileName));
                         for (auto &extension : _extensions)
                         {
                             if (utils::endswith(filename, extension))
                             {
-                                return utils::join(directory, t + extension);
+                                return utils::join(directory, token + extension);
                             }
                         }
                     }

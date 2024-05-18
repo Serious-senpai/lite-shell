@@ -81,23 +81,15 @@ namespace utils
         }
     }
 
-    /** @brief Explore a directory */
-    std::vector<WIN32_FIND_DATAW> explore_directory(const std::string &__directory, const std::string &__pattern = "\\*")
+    /** @brief List all files matching a specific pattern (typically used to list a directory) */
+    std::vector<WIN32_FIND_DATAW> list_files(const std::string &__pattern)
     {
-        auto directory = join(__directory, __pattern);
         std::vector<WIN32_FIND_DATAW> results(1);
 
-        HANDLE h_file = FindFirstFileW(utf_convert(directory).c_str(), &results[0]);
+        HANDLE h_file = FindFirstFileW(utf_convert(__pattern).c_str(), &results[0]);
         if (h_file == INVALID_HANDLE_VALUE)
         {
-            switch (GetLastError())
-            {
-            case ERROR_FILE_NOT_FOUND:
-            case ERROR_ACCESS_DENIED:
-                return {};
-            default:
-                throw std::runtime_error(last_error("Error when listing directory"));
-            }
+            return {};
         }
 
         do
