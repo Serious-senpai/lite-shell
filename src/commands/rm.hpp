@@ -29,7 +29,8 @@ public:
                 }
                 else
                 {
-                    std::cout << utils::last_error("DeleteFileW ERROR") << std::endl;
+                    auto message = utils::last_error(utils::format("Error deleting file \"%s\"", utils::utf_convert(target.cFileName).c_str()));
+                    std::cerr << message << std::endl;
                 }
             }
         }
