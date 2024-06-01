@@ -1,27 +1,24 @@
 @OFF
 eval -pms n "Enter n = "
 
-if $n < 0
+if -m $n < 2
     jump :is_not_prime
 endif
 
-if $n == 0
+eval -s div 2
+
+:loop
+if -m "$div * $div" > $n
+    jump :is_prime
+endif
+
+if -m "$n % $div" == 0
+    echoln "$n % $div = 0"
     jump :is_not_prime
 endif
 
-if $n == 1
-    jump :is_not_prime
-endif
-
-for div 2 "$n / 2 + 1" -t range
-    if -m "$n % $div" == 0
-        jump :is_not_prime
-    endif
-
-    if -m "$div * $div" > $n
-        jump :is_prime
-    endif
-endfor
+eval -ms div "$div + 1"
+jump :loop
 
 :is_prime
 echoln "$n is a prime"
