@@ -11,7 +11,6 @@ public:
               "Get all commands or get help for a specific command",
               "Provides help information about shell commands.\n"
               "To get help for a specific command, specify its name as the first argument (e.g. \"help help\").",
-              {},
               liteshell::CommandConstraint("command", "The command to get help for", false))
     {
     }

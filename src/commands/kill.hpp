@@ -10,7 +10,6 @@ public:
               "kill",
               "Kill a subprocess with the given PID and exit code ",
               "",
-              {},
               liteshell::CommandConstraint(
                   "pid", "The PID of the subprocess to kill", true,
                   "exit_code", "The exit code to use when killing the subprocess (default: 1)", false)) {}

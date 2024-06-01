@@ -8,9 +8,8 @@ public:
     SuspendCommand()
         : liteshell::BaseCommand(
               "suspend",
-              "Increase the suspend count of a subprocess with the given PID",
+              "Suspend a subprocess with the given PID",
               "",
-              {},
               liteshell::CommandConstraint("pid", "The PID of the target process", true)) {}
 
     DWORD run(const liteshell::Context &context)

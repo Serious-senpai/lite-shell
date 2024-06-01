@@ -10,7 +10,6 @@ public:
               "memory",
               "Display global memory status",
               "",
-              {},
               liteshell::CommandConstraint()) {}
 
     DWORD run(const liteshell::Context &context)

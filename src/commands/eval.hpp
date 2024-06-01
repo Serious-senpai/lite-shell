@@ -24,7 +24,6 @@ public:
               "Evaluate an expression",
               "The default behavior of this command is to treat the argument as a string and print it to stdout (which is\n"
               "similar to the \"echoln\" command. Different behavior can be achieved by using the parameters listed below.",
-              {},
               __constraint_EvalCommand())
     {
     }

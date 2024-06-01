@@ -29,7 +29,6 @@ public:
               "for",
               "Iterate the loop variable over a specified integer range.",
               "To end the loop section, type \"endfor\"",
-              {},
               __constraint_ForCommand()) {}
 
     std::vector<std::string> get_lines(const liteshell::Context &context)

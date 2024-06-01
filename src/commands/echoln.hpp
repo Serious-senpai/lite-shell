@@ -10,7 +10,6 @@ public:
               "echoln",
               "Print to stdout and add a newline at the end",
               "",
-              {},
               liteshell::CommandConstraint("text", "The text to print to stdout", true, true)) {}
 
     DWORD run(const liteshell::Context &context)

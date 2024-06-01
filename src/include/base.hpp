@@ -60,6 +60,23 @@ namespace liteshell
         }
 
         /**
+         * @brief Construct a new command without aliases
+         *
+         * @param name The name of the command
+         * @param description A short description of the command
+         * @param long_description A long description of the command
+         * @param constraint The arguments constraint of the command
+         */
+        BaseCommand(
+            const std::string &name,
+            const std::string &description,
+            const std::string &long_description,
+            const CommandConstraint &constraint)
+            : BaseCommand(name, description, long_description, {}, constraint)
+        {
+        }
+
+        /**
          * @brief Invoke this command and return a new errorlevel for the current shell.
          *
          * Subclasses must implement this method.

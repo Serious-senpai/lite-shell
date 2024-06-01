@@ -21,6 +21,7 @@
 #include "commands/mkdir.hpp"
 #include "commands/ps.hpp"
 #include "commands/resume.hpp"
+#include "commands/rm.hpp"
 #include "commands/suspend.hpp"
 
 void initialize(liteshell::Client *client)
@@ -44,5 +45,6 @@ void initialize(liteshell::Client *client)
         ->add_command(std::make_shared<MkdirCommand>())
         ->add_command(std::make_shared<PsCommand>())
         ->add_command(std::make_shared<ResumeCommand>())
+        ->add_command(std::make_shared<RmCommand>())
         ->add_command(std::make_shared<SuspendCommand>());
 }

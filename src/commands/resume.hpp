@@ -8,9 +8,8 @@ public:
     ResumeCommand()
         : liteshell::BaseCommand(
               "resume",
-              "Decrease the suspend count of a subprocess with the given PID",
+              "Resume a suspended subprocess with the given PID",
               "",
-              {},
               liteshell::CommandConstraint("pid", "The PID of the target process", true)) {}
 
     DWORD run(const liteshell::Context &context)

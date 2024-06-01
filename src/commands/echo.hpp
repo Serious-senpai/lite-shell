@@ -10,7 +10,6 @@ public:
               "echo",
               "Print to stdout but do not add a newline like \"echoln\"",
               "",
-              {},
               liteshell::CommandConstraint("text", "The text to print to stdout", true, true)) {}
 
     DWORD run(const liteshell::Context &context)

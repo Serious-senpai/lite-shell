@@ -13,7 +13,6 @@ public:
               "Call this command with no argument to get the working directory (similar to Unix shell's \"pwd\").\n"
               "When a positional argument is provided, the shell will attempt to change the working directory to\n"
               "the specified path. If the path is not found, an error will be returned.",
-              {},
               liteshell::CommandConstraint("path", "The path to change the working directory to", false))
     {
     }

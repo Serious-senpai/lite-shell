@@ -169,7 +169,8 @@ namespace liteshell
         if (constraint.has_value())
         {
             // Preprocess the tokens: split "-abc" into "-a", "-b", "-c" if all are valid options, etc.
-            auto new_tokens = std::list<std::string>(tokens.begin(), tokens.end());
+            // Copy all tokens to a linked list for fast insertion/deletion.
+            std::list<std::string> new_tokens(tokens.begin(), tokens.end());
             for (auto iter = new_tokens.begin(); iter != new_tokens.end(); iter++)
             {
                 if (utils::startswith(*iter, "-"))
@@ -180,12 +181,14 @@ namespace liteshell
                     }
                     else if (iter->size() > 2)
                     {
+                        // Split "-abc" into "-a", "-b", "-c" (no checking is done yet)
                         std::vector<std::string> options;
                         for (std::size_t i = 1; i < iter->size(); i++)
                         {
                             options.push_back(utils::format("-%c", iter->at(i)));
                         }
 
+                        // Now we perform options checking
                         bool split = true;
                         for (auto &option : options)
                         {
@@ -198,11 +201,15 @@ namespace liteshell
 
                         if (split)
                         {
+                            // All options are valid, insert the split options into the linked list
 #ifdef DEBUG
                             std::cout << "Split " << *iter << " to " << options << std::endl;
 #endif
 
+                            // Delete the current token e.g. "-abc"
                             iter = new_tokens.erase(iter);
+
+                            // Insert the split tokens e.g. "-a", "-b", "-c"
                             iter = new_tokens.insert(iter, options.begin(), options.end());
                         }
                     }
@@ -213,7 +220,8 @@ namespace liteshell
             std::cout << "Splitted tokens: " << new_tokens << std::endl;
 #endif
 
-            std::vector<std::string> new_tokens_v(new_tokens.begin(), new_tokens.end());
+            // Vectorize the linked list for fast random access
+            const std::vector<std::string> new_tokens_v(new_tokens.begin(), new_tokens.end());
             const auto options = constraint->get_options_map();
 
             auto positional_iter = constraint->positional.begin();

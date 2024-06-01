@@ -11,7 +11,6 @@ public:
               "Skip the input stream to the specified label",
               "Examples: \"jump end\", \"jump :end\".\n"
               "When reading from batch scripts, a label :EOF will automatically be added to the end.",
-              {},
               liteshell::CommandConstraint("label", "The label to jump to", true))
     {
     }

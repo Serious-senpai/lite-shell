@@ -10,7 +10,6 @@ public:
               "exit",
               "Exit the shell with the specified exit code",
               "If no exit code is specified, the shell will exit with the current errorlevel.",
-              {},
               liteshell::CommandConstraint("exitcode", "The code to exit with", false)) {}
 
     DWORD run(const liteshell::Context &context)

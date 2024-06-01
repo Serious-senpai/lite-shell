@@ -10,7 +10,6 @@ public:
               "env",
               "Display all environment variables",
               "",
-              {},
               liteshell::CommandConstraint()) {}
 
     DWORD run(const liteshell::Context &context)

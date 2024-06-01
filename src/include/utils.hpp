@@ -112,9 +112,10 @@ namespace utils
      * @brief Remove a directory recursively. It is the caller's responsibility to ensure that the directory exists.
      *
      * @param directory The directory to remove
+     * @param verbose Whether to display the deletion progress
      * @return Whether the directory was removed successfully
      */
-    bool remove_directory(const std::string &directory)
+    bool remove_directory(const std::string &directory, bool verbose)
     {
         bool success = true;
         for (const auto &file : list_files(join(directory, "*")))
@@ -130,19 +131,27 @@ namespace utils
             auto path = join(directory, filename);
             if (file.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
             {
-                if (!remove_directory(path))
+                if (!remove_directory(path, verbose))
                 {
                     success = false;
                 }
             }
-            else if (!DeleteFileW(utf_convert(path).c_str()))
+            else if (DeleteFileW(utf_convert(path).c_str()))
+            {
+                std::cout << "Deleted " << path << std::endl;
+            }
+            else
             {
                 std::cerr << last_error(format("Error deleting file \"%s\"", path.c_str())) << std::endl;
                 success = false;
             }
         }
 
-        if (!RemoveDirectoryW(utf_convert(directory).c_str()))
+        if (RemoveDirectoryW(utf_convert(directory).c_str()))
+        {
+            std::cout << "Deleted " << directory << std::endl;
+        }
+        else
         {
             std::cerr << last_error(format("Error deleting directory \"%s\"", directory.c_str())) << std::endl;
             success = false;
