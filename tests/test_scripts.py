@@ -25,7 +25,7 @@ def is_prime(value: int, /) -> bool:
 
 
 def test_script_prime() -> None:
-    for value in range(100):
+    for value in range(-20, 100):
         stdout, _ = execute_command(f"tests/prime\n{value}")
         if is_prime(value):
             assert_match(f"{value} is a prime", stdout)
