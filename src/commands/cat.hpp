@@ -31,7 +31,8 @@ public:
             throw std::runtime_error(utils::last_error("Error when opening file"));
         }
 
-        char buffer[BUFFER_SIZE] = {};
+        char buffer[BUFFER_SIZE];
+        ZeroMemory(buffer, BUFFER_SIZE);
         DWORD read = BUFFER_SIZE;
         while (read == BUFFER_SIZE)
         {

@@ -78,7 +78,7 @@ namespace utils
             std::vector<std::string> lines;
             for (std::size_t row = 0; row < rows.size(); row++)
             {
-                for (unsigned lines_in_row = 0;; lines_in_row++)
+                for (std::size_t lines_in_row = 0;; lines_in_row++)
                 {
                     std::stringstream line;
                     bool has_content = false;

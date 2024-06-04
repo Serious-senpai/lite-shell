@@ -120,7 +120,8 @@ namespace liteshell
             std::string data;
             while (!fstream.eof())
             {
-                char buffer[BUFFER_SIZE] = {};
+                char buffer[BUFFER_SIZE];
+                ZeroMemory(buffer, BUFFER_SIZE);
                 fstream.read(buffer, BUFFER_SIZE);
                 data += buffer;
             }
@@ -467,7 +468,8 @@ namespace liteshell
         {
             auto final_context = context.strip_background_request();
 
-            STARTUPINFOW startup_info = {};
+            STARTUPINFOW startup_info;
+            ZeroMemory(&startup_info, sizeof(startup_info));
             startup_info.cb = sizeof(startup_info);
 
             PROCESS_INFORMATION process_info;
