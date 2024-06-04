@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import time
+from urllib import request
 
 from .globals import (
     assert_match,
@@ -26,3 +27,15 @@ def test_tree() -> None:
             assert_match(dirname, stdout)
         for filename in filenames:
             assert_match(filename, stdout)
+
+
+def test_download() -> None:
+    execute_command("download https://example.com example.html")
+    assert os.path.exists("example.html")
+
+    response = request.urlopen("https://example.com")
+    data = response.read()
+    with open("example.html", "rb") as file:
+        assert data == file.read()
+
+    os.remove("example.html")
