@@ -7,8 +7,8 @@
 #include "subprocess.hpp"
 #include "wrapper.hpp"
 
-#define BATCH_EXT ".ff"
-#define BUFFER_SIZE 4096
+#define LITE_SHELL_SCRIPT_EXTENSION ".ff"
+#define LITE_SHELL_BUFFER_SIZE 4096
 
 namespace liteshell
 {
@@ -25,7 +25,7 @@ namespace liteshell
     private:
         static std::shared_ptr<Client> _instance;
 
-        const std::vector<std::string> _extensions = {".exe", BATCH_EXT};
+        const std::vector<std::string> _extensions = {".exe", LITE_SHELL_SCRIPT_EXTENSION};
 
         std::vector<ProcessInfoWrapper *> subprocesses;
 
@@ -120,9 +120,9 @@ namespace liteshell
             std::string data;
             while (!fstream.eof())
             {
-                char buffer[BUFFER_SIZE];
-                ZeroMemory(buffer, BUFFER_SIZE);
-                fstream.read(buffer, BUFFER_SIZE);
+                char buffer[LITE_SHELL_BUFFER_SIZE];
+                ZeroMemory(buffer, LITE_SHELL_BUFFER_SIZE);
+                fstream.read(buffer, LITE_SHELL_BUFFER_SIZE);
                 data += buffer;
             }
 

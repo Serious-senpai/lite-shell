@@ -19,7 +19,7 @@ public:
         {
             // This will throw std::runtime_error when running as a subprocess (testing with pytest for example)
             std::size_t columns = utils::get_console_size().first;
-            displayer.limits = {6, columns - 36, 20, 10};
+            displayer.limits = {7, columns - 40, 20, 10};
         }
         catch (std::runtime_error &)
         {

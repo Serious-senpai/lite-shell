@@ -7,14 +7,14 @@ namespace liteshell
     /**
      * @brief Represent the current environment of the shell.
      *
-     * This class mostly contains data about active environment variables.
+     * This class mostly contains data about active environment _variables.
      */
     class Environment
     {
     private:
-        const boost::regex var_resolver = boost::regex(R"((?<!\$)\$(?:\{(\w+)\}|(\w+)))");
-        const boost::regex escape_resolver = boost::regex(R"(\$\$)");
-        std::map<std::string, std::string> variables;
+        const boost::regex _var_resolver = boost::regex(R"((?<!\$)\$(?:\{(\w+)\}|(\w+)))");
+        const boost::regex _escape_resolver = boost::regex(R"(\$\$)");
+        std::map<std::string, std::string> _variables;
 
         Environment(const Environment &) = delete;
         Environment &operator=(const Environment &) = delete;
@@ -35,7 +35,7 @@ namespace liteshell
          */
         Environment *set_value(const std::string &name, const std::string &value)
         {
-            variables[name] = value;
+            _variables[name] = value;
             return this;
         }
 
@@ -47,8 +47,8 @@ namespace liteshell
          */
         std::string get_value(const std::string &name) const
         {
-            auto iter = variables.find(name);
-            if (iter == variables.end())
+            auto iter = _variables.find(name);
+            if (iter == _variables.end())
             {
                 return "";
             }
@@ -56,17 +56,17 @@ namespace liteshell
         }
 
         /**
-         * @brief Get a mapping from environment variables to their values
+         * @brief Get a mapping from environment _variables to their values
          *
-         * @return A mapping from environment variables to their values
+         * @return A mapping from environment _variables to their values
          */
         std::map<std::string, std::string> get_values() const
         {
-            return variables;
+            return _variables;
         }
 
         /**
-         * @brief Resolve all environment variables in a message
+         * @brief Resolve all environment _variables in a message
          *
          * @param message The message to resolve
          * @return The resolved message
@@ -76,25 +76,25 @@ namespace liteshell
             auto result = message;
             while (true)
             {
-                std::set<std::string> variables;
+                std::set<std::string> _variables;
                 for (auto begin = result.begin(); begin != result.end(); begin++)
                 {
                     boost::smatch match;
-                    bool resolved = boost::regex_search(result, match, var_resolver);
+                    bool resolved = boost::regex_search(result, match, _var_resolver);
                     if (resolved)
                     {
                         auto group_1 = utils::strip(match.str(1)), group_2 = utils::strip(match.str(2));
-                        variables.insert(group_1.empty() ? group_2 : group_1);
+                        _variables.insert(group_1.empty() ? group_2 : group_1);
                     }
                 }
 
-                if (variables.empty())
+                if (_variables.empty())
                 {
                     break;
                 }
                 else
                 {
-                    for (auto &variable : variables)
+                    for (auto &variable : _variables)
                     {
                         auto pattern = boost::regex(utils::format("(?<!\\$)\\$(?:\\{%s\\}|%s)", variable.c_str(), variable.c_str()));
                         result = boost::regex_replace(result, pattern, utils::regex_escape(get_value(variable)));
@@ -102,7 +102,7 @@ namespace liteshell
                 }
             }
 
-            result = boost::regex_replace(result, escape_resolver, "$");
+            result = boost::regex_replace(result, _escape_resolver, "$");
             return result;
         }
 

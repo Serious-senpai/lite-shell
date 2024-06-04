@@ -31,12 +31,12 @@ public:
             throw std::runtime_error(utils::last_error("Error when opening file"));
         }
 
-        char buffer[BUFFER_SIZE];
-        ZeroMemory(buffer, BUFFER_SIZE);
-        DWORD read = BUFFER_SIZE;
-        while (read == BUFFER_SIZE)
+        char buffer[LITE_SHELL_BUFFER_SIZE];
+        ZeroMemory(buffer, LITE_SHELL_BUFFER_SIZE);
+        DWORD read = LITE_SHELL_BUFFER_SIZE;
+        while (read == LITE_SHELL_BUFFER_SIZE)
         {
-            if (!ReadFile(h_file, buffer, BUFFER_SIZE, &read, NULL))
+            if (!ReadFile(h_file, buffer, LITE_SHELL_BUFFER_SIZE, &read, NULL))
             {
                 throw std::runtime_error(utils::last_error("Error when reading file"));
             }
