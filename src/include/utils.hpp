@@ -332,8 +332,14 @@ namespace utils
         return memory_status;
     }
 
+    /**
+     * @brief Calculate the square root of a value using binary search
+     *
+     * @param value The value to calculate the square root of
+     * @return The square root of the value
+     */
     template <typename T>
-    T sqrt(const T value)
+    T sqrt(const T &value)
     {
         if (value < 0)
         {
@@ -345,7 +351,7 @@ namespace utils
             return 0;
         }
 
-        T low = 0, high = std::max((T)1, value), accuracy = 1;
+        T low = 0, high = std::max(static_cast<T>(1), value), accuracy = 1;
         if constexpr (std::is_floating_point_v<T>)
         {
             accuracy = 1.0e-6;
@@ -366,4 +372,26 @@ namespace utils
 
         return high;
     }
+
+    /**
+     * @brief Register a callback to run when this object is destroyed
+     * @see https://en.wikipedia.org/wiki/Resource_acquisition_is_initialization
+     */
+    class Finalize
+    {
+    private:
+        const std::function<void()> callback;
+
+        Finalize(const Finalize &) = delete;
+        Finalize &operator=(const Finalize &) = delete;
+
+    public:
+        /** Construct a new `Finalize` object with a registered callback */
+        Finalize(const std::function<void()> &callback) : callback(callback) {}
+
+        ~Finalize()
+        {
+            callback();
+        }
+    };
 }

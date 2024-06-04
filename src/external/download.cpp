@@ -64,6 +64,8 @@ int main(int argc, const char **argv)
     std::cout << "Path: " << urlpath << std::endl;
     std::cout << "Extra info: " << extrainfo << std::endl;
 
+    std::vector<std::unique_ptr<utils::Finalize>> finalizers;
+
     auto session = _InternetOpenW(
         L"Serious-senpai/lite-shell",
         INTERNET_OPEN_TYPE_DIRECT,
@@ -74,23 +76,13 @@ int main(int argc, const char **argv)
     {
         throw std::runtime_error(utils::last_error("wininet.h InternetOpenW ERROR"));
     }
-
-    /*
-    auto connection = _InternetConnectW(
-        session,                              // hInternet
-        utils::utf_convert(hostname).c_str(), // lpszServerName
-        components.nPort,                     // nServerPort
-        utils::utf_convert(username).c_str(), // lpszUserName
-        utils::utf_convert(password).c_str(), // lpszPassword
-        INTERNET_SERVICE_HTTP,                // dwService
-        0,                                    // dwFlags
-        0                                     // dwContext
-    );
-    if (connection == NULL)
-    {
-        throw std::runtime_error(utils::last_error("wininet.h InternetConnectW ERROR"));
-    }
-    */
+    finalizers.push_back(
+        std::make_unique<utils::Finalize>(
+            [&_InternetCloseHandle, &session]()
+            {
+                _InternetCloseHandle(session);
+                std::cout << "Closed session" << std::endl;
+            }));
 
     auto request = _InternetOpenUrlW(
         session,      // hInternet
@@ -104,19 +96,13 @@ int main(int argc, const char **argv)
     {
         throw std::runtime_error(utils::last_error("wininet.h InternetOpenUrlW ERROR"));
     }
-
-    /*
-    if (!_HttpSendRequestW(
-            request, // hRequest
-            NULL,    // lpszHeaders
-            0,       // dwHeadersLength
-            NULL,    // lpOptional
-            0        // dwOptionalLength
-            ))
-    {
-        throw std::runtime_error(utils::last_error("wininet.h HttpSendRequestW ERROR"));
-    }
-    */
+    finalizers.push_back(
+        std::make_unique<utils::Finalize>(
+            [&_InternetCloseHandle, &request]()
+            {
+                _InternetCloseHandle(request);
+                std::cout << "Closed request" << std::endl;
+            }));
 
     auto file = CreateFileW(
         utils::utf_convert(path).c_str(),
@@ -147,12 +133,9 @@ int main(int argc, const char **argv)
             total += write;
         }
 
-        std::cout << "Downloaded bytes: " << total << "         \r" << std::flush;
+        std::cout << "Downloaded: " << utils::memory_size(total) << "         \r" << std::flush;
     } while (write > 0);
-
-    _InternetCloseHandle(request);
-    // _InternetCloseHandle(connection);
-    _InternetCloseHandle(session);
+    std::cout << std::endl;
 
     return 0;
 }
