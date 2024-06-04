@@ -119,19 +119,19 @@ namespace liteshell
 
                 for (auto &argument : constraint.positional)
                 {
-                    stream << " " << argument.display() << " " << utils::ngettext(argument.required, "(required)", "(optional)") << std::endl;
+                    stream << " " << argument.display() << std::endl;
                     stream << "  " << argument.help << std::endl;
                 }
 
                 for (auto &argument : constraint.get_options_vector())
                 {
                     auto names = argument.names();
-                    stream << " " << utils::join(names.begin(), names.end(), " | ") << " " << utils::ngettext(argument.required, "(required)", "(optional)") << std::endl;
+                    stream << " " << utils::join(names.begin(), names.end(), " | ") << std::endl;
                     stream << "  " << argument.help << std::endl;
 
                     for (auto &p : argument.positional)
                     {
-                        stream << "   " << p.display() << " " << utils::ngettext(p.required, "(required)", "(optional)") << std::endl;
+                        stream << "   " << p.display() << std::endl;
                         stream << "    " << p.help << std::endl;
                     }
                 }

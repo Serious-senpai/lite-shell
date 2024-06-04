@@ -74,7 +74,7 @@ namespace liteshell
             {
                 try
                 {
-                    for (const auto &file : utils::list_files(utils::join(directory, token+"*")))
+                    for (const auto &file : utils::list_files(utils::join(directory, token + "*")))
                     {
                         auto filename = utils::utf_convert(std::wstring(file.cFileName));
                         for (auto &extension : _extensions)
@@ -305,6 +305,19 @@ namespace liteshell
             }
 
             return this;
+        }
+
+        /**
+         * @brief Add a command to the internal list of commands.
+         *
+         * @tparam T A subclass of `BaseCommand`
+         * @return A pointer to the current client to allow fluent-style chaining
+         */
+        template <typename T>
+        Client *add_command()
+        {
+            static_assert(std::is_base_of_v<BaseCommand, T>, "Can only add a subclass of BaseCommand as a command");
+            return add_command(std::make_shared<T>());
         }
 
         /**

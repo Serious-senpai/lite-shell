@@ -19,6 +19,7 @@
 #include "commands/ls.hpp"
 #include "commands/memory.hpp"
 #include "commands/mkdir.hpp"
+#include "commands/mv.hpp"
 #include "commands/ps.hpp"
 #include "commands/resume.hpp"
 #include "commands/rm.hpp"
@@ -26,25 +27,26 @@
 
 void initialize(liteshell::Client *client)
 {
-    client->add_command(std::make_shared<CatCommand>())
-        ->add_command(std::make_shared<CdCommand>())
-        ->add_command(std::make_shared<ClearCommand>())
-        ->add_command(std::make_shared<DateCommand>())
-        ->add_command(std::make_shared<EchoCommand>())
-        ->add_command(std::make_shared<EcholnCommand>())
-        ->add_command(std::make_shared<EnvCommand>())
-        ->add_command(std::make_shared<EvalCommand>())
-        ->add_command(std::make_shared<ExitCommand>())
-        ->add_command(std::make_shared<ForCommand>())
-        ->add_command(std::make_shared<HelpCommand>())
-        ->add_command(std::make_shared<IfCommand>())
-        ->add_command(std::make_shared<JumpCommand>())
-        ->add_command(std::make_shared<KillCommand>())
-        ->add_command(std::make_shared<LsCommand>())
-        ->add_command(std::make_shared<MemoryCommand>())
-        ->add_command(std::make_shared<MkdirCommand>())
-        ->add_command(std::make_shared<PsCommand>())
-        ->add_command(std::make_shared<ResumeCommand>())
-        ->add_command(std::make_shared<RmCommand>())
-        ->add_command(std::make_shared<SuspendCommand>());
+    client->add_command<CatCommand>()
+        ->add_command<CdCommand>()
+        ->add_command<ClearCommand>()
+        ->add_command<DateCommand>()
+        ->add_command<EchoCommand>()
+        ->add_command<EcholnCommand>()
+        ->add_command<EnvCommand>()
+        ->add_command<EvalCommand>()
+        ->add_command<ExitCommand>()
+        ->add_command<ForCommand>()
+        ->add_command<HelpCommand>()
+        ->add_command<IfCommand>()
+        ->add_command<JumpCommand>()
+        ->add_command<KillCommand>()
+        ->add_command<LsCommand>()
+        ->add_command<MemoryCommand>()
+        ->add_command<MkdirCommand>()
+        ->add_command<MvCommand>()
+        ->add_command<PsCommand>()
+        ->add_command<ResumeCommand>()
+        ->add_command<RmCommand>()
+        ->add_command<SuspendCommand>();
 }
