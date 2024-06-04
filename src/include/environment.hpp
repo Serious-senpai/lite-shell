@@ -212,7 +212,6 @@ namespace liteshell
             };
 
             bool may_be_unary = true;
-            std::string function;
             for (std::size_t i = 0; i < expression.size(); i++)
             {
                 if (expression[i] == ' ')
