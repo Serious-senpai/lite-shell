@@ -14,8 +14,8 @@ namespace liteshell
     class InputStream
     {
     private:
-        std::list<std::string> list;
-        std::list<std::string>::iterator iterator = list.begin();
+        std::list<std::string> _list;
+        std::list<std::string>::iterator _iterator = _list.begin();
 
         InputStream(const InputStream &) = delete;
         InputStream &operator=(const InputStream &) = delete;
@@ -61,7 +61,7 @@ namespace liteshell
          */
         std::optional<std::string> peek()
         {
-            for (auto iter = iterator; iter != list.end(); iter++)
+            for (auto iter = _iterator; iter != _list.end(); iter++)
             {
                 auto text = utils::strip(*iter);
                 if (!text.empty())
@@ -87,12 +87,12 @@ namespace liteshell
                 throw std::invalid_argument("Arguments conflict: FORCE_STDIN && FORCE_STREAM");
             }
 
-            if ((flags & FORCE_STREAM) && iterator == list.end())
+            if ((flags & FORCE_STREAM) && _iterator == _list.end())
             {
                 throw std::runtime_error("Unexpected EOF while reading");
             }
 
-            if ((flags & FORCE_STDIN) || iterator == list.end())
+            if ((flags & FORCE_STDIN) || _iterator == _list.end())
             {
                 while (true)
                 {
@@ -119,7 +119,7 @@ namespace liteshell
             else
             {
                 auto echo_state = echo && peek_echo();
-                auto line = utils::strip(*iterator++);
+                auto line = utils::strip(*_iterator++);
                 if (echo_state)
                 {
                     std::cout << prompt << line << std::endl;
@@ -132,7 +132,7 @@ namespace liteshell
         template <typename _ForwardIterator>
         void write(const _ForwardIterator &__begin, const _ForwardIterator &__end)
         {
-            iterator = list.insert(iterator, __begin, __end);
+            _iterator = _list.insert(_iterator, __begin, __end);
         }
 
         void write(const std::string &data)
@@ -153,26 +153,26 @@ namespace liteshell
         /** @brief Whether this stream reaches EOF */
         bool eof() const
         {
-            return iterator == list.end();
+            return _iterator == _list.end();
         }
 
         /** @brief Jump to the specified label */
         void jump(const std::string &label)
         {
-            for (auto iter = iterator; iter != list.end(); iter++)
+            for (auto iter = _iterator; iter != _list.end(); iter++)
             {
                 if (utils::strip(*iter) == label)
                 {
-                    iterator = iter;
+                    _iterator = iter;
                     return;
                 }
             }
 
-            for (auto iter = list.begin(); iter != iterator; iter++)
+            for (auto iter = _list.begin(); iter != _iterator; iter++)
             {
                 if (utils::strip(*iter) == label)
                 {
-                    iterator = iter;
+                    _iterator = iter;
                     return;
                 }
             }

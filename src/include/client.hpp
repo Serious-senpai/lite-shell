@@ -27,7 +27,7 @@ namespace liteshell
 
         const std::vector<std::string> _extensions = {".exe", LITE_SHELL_SCRIPT_EXTENSION};
 
-        std::vector<ProcessInfoWrapper *> subprocesses;
+        std::vector<ProcessInfoWrapper *> _subprocesses;
 
         std::vector<CommandWrapper<BaseCommand>> _wrappers;
         std::map<std::string, std::size_t> _commands;
@@ -218,7 +218,7 @@ namespace liteshell
         /** @brief Destructor for this object */
         ~Client()
         {
-            for (auto &subprocess : subprocesses)
+            for (auto &subprocess : _subprocesses)
             {
                 delete subprocess;
             }
@@ -278,7 +278,7 @@ namespace liteshell
          */
         std::vector<ProcessInfoWrapper *> get_subprocesses()
         {
-            return subprocesses;
+            return _subprocesses;
         }
 
         /**
@@ -489,7 +489,7 @@ namespace liteshell
             if (success)
             {
                 ProcessInfoWrapper *wrapper = new ProcessInfoWrapper(process_info, final_context.message);
-                subprocesses.push_back(wrapper);
+                _subprocesses.push_back(wrapper);
 
                 // Do not close the handles since we want to keep track of all subprocesses in our current shell (unless explicitly closed)
 
