@@ -120,6 +120,8 @@ int main(int argc, const char **argv)
     char buffer[LITE_SHELL_BUFFER_SIZE];
     DWORD write = 0, total = 0;
     std::cout << "Downloading from \"" << url << "\" to \"" << path << "\"" << std::endl;
+
+    auto start = std::chrono::high_resolution_clock::now();
     do
     {
         if (!_InternetReadFile(request, buffer, LITE_SHELL_BUFFER_SIZE, &write))
@@ -133,7 +135,10 @@ int main(int argc, const char **argv)
             total += write;
         }
 
-        std::cout << "Downloaded: " << utils::memory_size(total) << "         \r" << std::flush;
+        auto end = std::chrono::high_resolution_clock::now();
+        long double speed = static_cast<long double>(total) /
+                            static_cast<long double>(std::chrono::duration_cast<std::chrono::seconds>(end - start).count());
+        std::cout << "Downloaded: " << utils::memory_size(total) << " (" << utils::memory_size(speed) << "/s)          \r" << std::flush;
     } while (write > 0);
     std::cout << std::endl;
 

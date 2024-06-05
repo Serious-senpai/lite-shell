@@ -1,5 +1,6 @@
 #pragma once
 
+#include <chrono>
 #include <codecvt>
 #include <fstream>
 #include <iostream>
