@@ -15,8 +15,7 @@ public:
     DWORD run(const liteshell::Context &context)
     {
         auto argument = context.values.at("text");
-        std::cout << utils::join(argument.begin(), argument.end(), " ");
-        std::cout.flush();
+        std::cout << utils::join(argument.begin(), argument.end(), " ") << std::flush;
         return 0;
     }
 };

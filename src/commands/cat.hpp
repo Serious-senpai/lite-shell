@@ -41,8 +41,7 @@ public:
                 throw std::runtime_error(utils::last_error("Error when reading file"));
             }
 
-            std::cout << std::string(buffer, buffer + read);
-            std::cout.flush();
+            std::cout << std::string(buffer, buffer + read) << std::flush;
         }
 
         CloseHandle(h_file);

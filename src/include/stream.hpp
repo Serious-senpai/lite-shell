@@ -87,19 +87,18 @@ namespace liteshell
                 throw std::invalid_argument("Arguments conflict: FORCE_STDIN && FORCE_STREAM");
             }
 
-            if ((flags & FORCE_STREAM) && _iterator == _list.end())
+            if ((flags & FORCE_STREAM) && eof())
             {
                 throw std::runtime_error("Unexpected EOF while reading");
             }
 
-            if ((flags & FORCE_STDIN) || _iterator == _list.end())
+            if ((flags & FORCE_STDIN) || eof())
             {
                 while (true)
                 {
                     if ((flags & FORCE_STDOUT) || (echo && peek_echo()))
                     {
-                        std::cout << prompt;
-                        std::cout.flush();
+                        std::cout << prompt << std::flush;
                     }
 
                     std::string line;

@@ -56,7 +56,7 @@ int main(int argc, const char **argv)
     const auto urlpath = utils::utf_convert(std::wstring(components.lpszUrlPath, components.dwUrlPathLength));
     const auto extrainfo = utils::utf_convert(std::wstring(components.lpszExtraInfo, components.dwExtraInfoLength));
 
-    std::cout << "Scheme: " << components.nScheme << std::endl;
+    std::cout << "Scheme: " << scheme << std::endl;
     std::cout << "Hostname: " << hostname << std::endl;
     std::cout << "Username: " << username << std::endl;
     std::cout << "Password: " << password << std::endl;
@@ -136,9 +136,16 @@ int main(int argc, const char **argv)
         }
 
         auto end = std::chrono::high_resolution_clock::now();
-        long double speed = static_cast<long double>(total) /
-                            static_cast<long double>(std::chrono::duration_cast<std::chrono::seconds>(end - start).count());
-        std::cout << "Downloaded: " << utils::memory_size(total) << " (" << utils::memory_size(speed) << "/s)          \r" << std::flush;
+
+        std::cout << "Downloaded: " << utils::memory_size(total);
+
+        auto duration = static_cast<long double>(std::chrono::duration_cast<std::chrono::seconds>(end - start).count());
+        if (duration > 0)
+        {
+            std::cout << " (" << utils::memory_size(static_cast<long double>(total) / duration) << "/s)";
+        }
+        std::cout << "          \r" << std::flush;
+
     } while (write > 0);
     std::cout << std::endl;
 
