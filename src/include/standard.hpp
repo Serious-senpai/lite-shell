@@ -8,6 +8,7 @@
 #include <sstream>
 #include <stack>
 #include <windows.h>
+#include <wininet.h>
 
 #include <boost/regex.hpp>
 

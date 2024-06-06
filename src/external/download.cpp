@@ -1,8 +1,5 @@
 #include <all.hpp>
 
-// Header-only, should be linked to wininet.dll at runtime
-#include <wininet.h>
-
 int main(int argc, const char **argv)
 {
     if (argc != 3)
@@ -20,53 +17,23 @@ int main(int argc, const char **argv)
         throw std::runtime_error(utils::last_error("LoadLibraryW (wininet.dll) ERROR"));
     }
 
-    const auto _InternetCrackUrlW = (WINBOOL(*)(LPCWSTR, DWORD, DWORD, LPURL_COMPONENTSW))GetProcAddress(module, "InternetCrackUrlW");
-    const auto _InternetOpenW = (HINTERNET(*)(LPCWSTR, DWORD, LPCWSTR, LPCWSTR, DWORD))GetProcAddress(module, "InternetOpenW");
-    // const auto _InternetConnectW = (HINTERNET(*)(HINTERNET, LPCWSTR, INTERNET_PORT, LPCWSTR, LPCWSTR, DWORD, DWORD, DWORD_PTR))GetProcAddress(module, "InternetConnectW");
-    const auto _InternetOpenUrlW = (HINTERNET(*)(HINTERNET, LPCWSTR, LPCWSTR, DWORD, DWORD, DWORD_PTR))GetProcAddress(module, "InternetOpenUrlW");
-    // const auto _HttpOpenRequestW = (HINTERNET(*)(HINTERNET, LPCWSTR, LPCWSTR, LPCWSTR, LPCWSTR, LPCWSTR *, DWORD, DWORD_PTR))GetProcAddress(module, "HttpOpenRequestW");
-    // const auto _HttpSendRequestW = (WINBOOL(*)(HINTERNET, LPCWSTR, DWORD, LPVOID, DWORD))GetProcAddress(module, "HttpSendRequestW");
-    const auto _InternetReadFile = (WINBOOL(*)(HINTERNET, LPVOID, DWORD, LPDWORD))GetProcAddress(module, "InternetReadFile");
-    const auto _InternetCloseHandle = (WINBOOL(*)(HINTERNET))GetProcAddress(module, "InternetCloseHandle");
-
-    URL_COMPONENTSW components;
-    ZeroMemory(&components, sizeof(components));
-    components.dwStructSize = sizeof(components);
-    components.dwSchemeLength = (DWORD)-1;
-    components.dwHostNameLength = (DWORD)-1;
-    components.dwUserNameLength = (DWORD)-1;
-    components.dwPasswordLength = (DWORD)-1;
-    components.dwUrlPathLength = (DWORD)-1;
-    components.dwExtraInfoLength = (DWORD)-1;
-
-    if (!_InternetCrackUrlW(wurl.c_str(), wurl.size(), 0, &components))
-    {
-        throw std::runtime_error(utils::last_error("wininet.h InternetCrackUrlW ERROR"));
-    }
-
-    const auto scheme = utils::utf_convert(std::wstring(components.lpszScheme, components.dwSchemeLength));
-    if (scheme != "http" && scheme != "https")
+    const auto component = utils::URL::parse(url);
+    if (component.scheme != "http" && component.scheme != "https")
     {
         throw std::invalid_argument("Only HTTP and HTTPS are supported");
     }
 
-    const auto hostname = utils::utf_convert(std::wstring(components.lpszHostName, components.dwHostNameLength));
-    const auto username = utils::utf_convert(std::wstring(components.lpszUserName, components.dwUserNameLength));
-    const auto password = utils::utf_convert(std::wstring(components.lpszPassword, components.dwPasswordLength));
-    const auto urlpath = utils::utf_convert(std::wstring(components.lpszUrlPath, components.dwUrlPathLength));
-    const auto extrainfo = utils::utf_convert(std::wstring(components.lpszExtraInfo, components.dwExtraInfoLength));
-
-    std::cout << "Scheme: " << scheme << std::endl;
-    std::cout << "Hostname: " << hostname << std::endl;
-    std::cout << "Username: " << username << std::endl;
-    std::cout << "Password: " << password << std::endl;
-    std::cout << "Port: " << components.nPort << std::endl;
-    std::cout << "Path: " << urlpath << std::endl;
-    std::cout << "Extra info: " << extrainfo << std::endl;
+    std::cout << "Scheme: " << component.scheme << std::endl;
+    std::cout << "Hostname: " << component.hostname << std::endl;
+    std::cout << "Username: " << component.username << std::endl;
+    std::cout << "Password: " << component.password << std::endl;
+    std::cout << "Port: " << component.port << std::endl;
+    std::cout << "Path: " << component.path << std::endl;
+    std::cout << "Extra info: " << component.extra_info << std::endl;
 
     std::vector<std::unique_ptr<utils::Finalize>> finalizers;
 
-    auto session = _InternetOpenW(
+    auto session = InternetOpenW(
         L"Serious-senpai/lite-shell",
         INTERNET_OPEN_TYPE_DIRECT,
         NULL,
@@ -78,13 +45,13 @@ int main(int argc, const char **argv)
     }
     finalizers.push_back(
         std::make_unique<utils::Finalize>(
-            [&_InternetCloseHandle, &session]()
+            [&session]()
             {
-                _InternetCloseHandle(session);
+                InternetCloseHandle(session);
                 std::cout << "Closed session" << std::endl;
             }));
 
-    auto request = _InternetOpenUrlW(
+    auto request = InternetOpenUrlW(
         session,      // hInternet
         wurl.c_str(), // lpszUrl
         NULL,         // lpszHeaders
@@ -98,9 +65,9 @@ int main(int argc, const char **argv)
     }
     finalizers.push_back(
         std::make_unique<utils::Finalize>(
-            [&_InternetCloseHandle, &request]()
+            [&request]()
             {
-                _InternetCloseHandle(request);
+                InternetCloseHandle(request);
                 std::cout << "Closed request" << std::endl;
             }));
 
@@ -124,7 +91,7 @@ int main(int argc, const char **argv)
     auto start = std::chrono::high_resolution_clock::now();
     do
     {
-        if (!_InternetReadFile(request, buffer, LITE_SHELL_BUFFER_SIZE, &write))
+        if (!InternetReadFile(request, buffer, LITE_SHELL_BUFFER_SIZE, &write))
         {
             throw std::runtime_error(utils::last_error("wininet.h InternetReadFile ERROR"));
         }
