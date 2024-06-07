@@ -11,12 +11,6 @@ int main(int argc, const char **argv)
     const auto path = std::string(argv[2]);
     const auto wurl = utils::utf_convert(url);
 
-    const auto module = LoadLibraryW(L"wininet.dll");
-    if (module == NULL)
-    {
-        throw std::runtime_error(utils::last_error("LoadLibraryW (wininet.dll) ERROR"));
-    }
-
     const auto component = utils::URL::parse(url);
     if (component.scheme != "http" && component.scheme != "https")
     {
