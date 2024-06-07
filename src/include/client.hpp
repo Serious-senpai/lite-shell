@@ -15,10 +15,15 @@ namespace liteshell
     /**
      * @brief The command shell application.
      *
-     * Represents a command shell client. The application should hold only one instance of this class.
+     * Embodies a command shell client. This application is architected to maintain a singular instantiation of this class,
+     * ensuring a unified command control interface.
      *
-     * This class is responsible for managing commands, subprocesses and errorlevel. It also provides a method
-     * to run the shell indefinitely.
+     * * Responsibilities:
+     * - Command Management: Orchestrates the execution and lifecycle of commands.
+     * - Subprocess Handling: Oversees the initiation, supervision, and termination of subprocesses.
+     * - Errorlevel Administration: Monitors and adjusts the errorlevel to reflect the current state of operations.
+     *
+     * Additionally, this class furnishes a mechanism to perpetuate the shell's operation ad infinitum.
      */
     class Client
     {
