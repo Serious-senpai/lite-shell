@@ -3,7 +3,7 @@
 namespace liteshell
 {
     /**
-     * @brief Wrapper for a command inheriting from `BaseCommand`.
+     * @brief An elegant encapsulation for an instruction set derived from the `BaseCommand` archetype.
      * @see https://stackoverflow.com/a/66010713
      *
      * @tparam T The command class, must be a subclass of BaseCommand
@@ -13,17 +13,17 @@ namespace liteshell
     {
     private:
     public:
-        /** @brief A pointer to the underlying command object */
+        /** @brief A reference conduit to the foundational command entity. */
         const std::shared_ptr<T> command;
 
-        /** @brief Construct a new `CommandWrapper` object */
+        /** @brief Instantiate a pristine instance of the `CommandWrapper` archetype. */
         CommandWrapper(const std::shared_ptr<T> &command) : command(command)
         {
             static_assert(std::is_base_of_v<BaseCommand, T>, "CommandWrapper can only be used for BaseCommand subclasses");
         }
 
         /**
-         * @brief Invoke the underlying command and return a new errorlevel for the current shell.
+         * @brief Execute the foundational command and yield an updated errorlevel for the present command-line processor.
          *
          * This method simply invokes `command->run(context)`.
          *
