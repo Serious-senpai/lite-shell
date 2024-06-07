@@ -17,7 +17,7 @@ public:
         utils::Table displayer("Name", "Value");
         try
         {
-            // This will throw std::runtime_error when running as a subprocess (testing with pytest for example)
+            // This will throw std::runtime_error when running without a console (testing with pytest for example)
             std::size_t columns = utils::get_console_size().first;
             displayer.limits = {30, columns - 35};
         }

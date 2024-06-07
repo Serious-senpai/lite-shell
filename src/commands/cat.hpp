@@ -28,6 +28,11 @@ public:
 
         if (h_file == INVALID_HANDLE_VALUE)
         {
+            if (GetLastError() == ERROR_FILE_NOT_FOUND)
+            {
+                throw std::invalid_argument("The specified file does not exist");
+            }
+
             throw std::runtime_error(utils::last_error("Error when opening file"));
         }
 

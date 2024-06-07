@@ -24,7 +24,7 @@ public:
             auto target = context.get("path");
             if (!SetCurrentDirectoryW(utils::utf_convert(target).c_str()))
             {
-                throw std::runtime_error(utils::last_error(utils::format("Error when changing directory to %s", target.c_str())));
+                throw std::runtime_error(utils::last_error(utils::format("Error when changing directory to \"%s\"", target.c_str())));
             }
         }
         catch (liteshell::ArgumentMissingError &)

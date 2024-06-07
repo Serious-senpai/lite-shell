@@ -373,6 +373,16 @@ namespace utils
         return high;
     }
 
+    /** @brief Convert an integer to its hex representation */
+    template <typename T>
+    std::string to_hex_string(const T &value)
+    {
+        static_assert(std::is_integral_v<T>);
+        std::stringstream stream;
+        stream << std::hex << value;
+        return stream.str();
+    }
+
     /**
      * @brief Register a callback to run when this object is destroyed
      * @see https://en.wikipedia.org/wiki/Resource_acquisition_is_initialization
@@ -386,9 +396,10 @@ namespace utils
         Finalize &operator=(const Finalize &) = delete;
 
     public:
-        /** Construct a new `Finalize` object with a registered callback */
+        /** @brief Construct a new `Finalize` object with a registered callback */
         Finalize(const std::function<void()> &callback) : callback(callback) {}
 
+        /** @brief Destructor for this object, which invokes the underlying callback */
         ~Finalize()
         {
             callback();

@@ -43,7 +43,7 @@ public:
 
         auto display = utils::Table("Attribute", "Value");
         display.add_row("Volume name", utils::utf_convert(std::wstring(volume_name)));
-        display.add_row("Serial number", std::to_string(volume_serial_number));
+        display.add_row("Serial number", utils::to_hex_string(volume_serial_number));
         display.add_row("Max component length", std::to_string(volume_max_component_length));
         display.add_row("Case-sensitive file names", display_bool(volume_fs_flags & FILE_CASE_SENSITIVE_SEARCH));
         display.add_row("Preserved case of file names", display_bool(volume_fs_flags & FILE_CASE_PRESERVED_NAMES));

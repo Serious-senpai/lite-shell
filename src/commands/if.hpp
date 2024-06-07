@@ -2,19 +2,6 @@
 
 #include <all.hpp>
 
-const char __if_description[] = R"(
-)";
-
-liteshell::CommandConstraint __constraint_IfCommand()
-{
-    liteshell::CommandConstraint constraint(
-        "x", "The first value to compare", true,
-        "operator", "The operator to use for comparison", true,
-        "y", "The second value to compare", true);
-    constraint.add_option("-m", "Perform mathematical comparison instead of string comparison", false);
-    return constraint;
-}
-
 class IfCommand : public liteshell::BaseCommand
 {
 public:
@@ -26,7 +13,11 @@ public:
               "The strings are compared using the lexicography order.\n"
               "If the flag -m is set, perform mathematical evaluation before making comparisons.\n"
               "To end each condition section, use \"else\"/\"endif\".",
-              __constraint_IfCommand())
+              liteshell::CommandConstraint(
+                  "x", "The first value to compare", true,
+                  "operator", "The operator to use for comparison", true,
+                  "y", "The second value to compare", true)
+                  .add_option("-m", "Perform mathematical comparison instead of string comparison", false))
     {
     }
 

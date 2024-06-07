@@ -381,9 +381,9 @@ namespace liteshell
          * @brief Add an `Option` to this constraint
          *
          * @param option The `Option` to add
-         * @return A pointer to this `CommandConstraint` object
+         * @return A reference to this `CommandConstraint` object
          */
-        CommandConstraint *add_option(const Option &option)
+        CommandConstraint &add_option(const Option &option)
         {
             options.push_back(option);
             for (auto &name : option.names())
@@ -392,7 +392,7 @@ namespace liteshell
                 options_map[name] = options.size() - 1;
             }
 
-            return this;
+            return *this;
         }
 
         /**
@@ -404,9 +404,9 @@ namespace liteshell
          * @param arguments The positional arguments for the option
          * @param required Whether the option is required
          *
-         * @return A pointer to this `CommandConstraint` object
+         * @return A reference to this `CommandConstraint` object
          */
-        CommandConstraint *add_option(
+        CommandConstraint &add_option(
             const std::string &short_name,
             const std::string &long_name,
             const std::string &help,
@@ -425,9 +425,9 @@ namespace liteshell
          * @param argument The only positional argument for the option
          * @param required Whether the option is required
          *
-         * @return A pointer to this `CommandConstraint` object
+         * @return A reference to this `CommandConstraint` object
          */
-        CommandConstraint *add_option(
+        CommandConstraint &add_option(
             const std::string &short_name,
             const std::string &long_name,
             const std::string &help,
@@ -445,9 +445,9 @@ namespace liteshell
          * @param arguments The positional arguments for the option
          * @param required Whether the option is required
          *
-         * @return A pointer to this `CommandConstraint` object
+         * @return A reference to this `CommandConstraint` object
          */
-        CommandConstraint *add_option(
+        CommandConstraint &add_option(
             const std::string &name,
             const std::string &help,
             const std::vector<PositionalArgument> &arguments,
@@ -474,9 +474,9 @@ namespace liteshell
          * @param argument The only positional argument for the option
          * @param required Whether the option is required
          *
-         * @return A pointer to this `CommandConstraint` object
+         * @return A reference to this `CommandConstraint` object
          */
-        CommandConstraint *add_option(
+        CommandConstraint &add_option(
             const std::string &name,
             const std::string &help,
             const PositionalArgument &argument,
@@ -493,9 +493,9 @@ namespace liteshell
          * @param help The help message for the option
          * @param required Whether the option is required
          *
-         * @return A pointer to this `CommandConstraint` object
+         * @return A reference to this `CommandConstraint` object
          */
-        CommandConstraint *add_option(
+        CommandConstraint &add_option(
             const std::string &name,
             const std::string &help,
             const bool required = false)

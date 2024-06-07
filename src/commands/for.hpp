@@ -2,25 +2,6 @@
 
 #include <all.hpp>
 
-liteshell::CommandConstraint __constraint_ForCommand()
-{
-    liteshell::CommandConstraint constraint(
-        "var", "The name of the loop variable", true,
-        "x", "The start of the loop range, or the string to split", true,
-        "y", "The end of the loop range", false);
-    constraint.add_option(
-        "-t", "--type",
-        "The type of loop",
-        liteshell::PositionalArgument(
-            "type",
-            "Must be \"range\" or \"split\" \n"
-            "If \"range\" is specified, loop the variable within range [x, y) or [y, x)\n"
-            "If \"split\" is specified, split the string by spaces and loop the variable within the tokens",
-            false, true),
-        true);
-    return constraint;
-}
-
 class ForCommand : public liteshell::BaseCommand
 {
 public:
@@ -29,7 +10,22 @@ public:
               "for",
               "Iterate the loop variable over a specified integer range.",
               "To end the loop section, type \"endfor\"",
-              __constraint_ForCommand()) {}
+              liteshell::CommandConstraint(
+                  "var", "The name of the loop variable", true,
+                  "x", "The start of the loop range, or the string to split", true,
+                  "y", "The end of the loop range", false)
+                  .add_option(
+                      "-t", "--type",
+                      "The type of loop",
+                      liteshell::PositionalArgument(
+                          "type",
+                          "Must be \"range\" or \"split\" \n"
+                          "If \"range\" is specified, loop the variable within range [x, y) or [y, x)\n"
+                          "If \"split\" is specified, split the string by spaces and loop the variable within the tokens",
+                          false, true),
+                      true))
+    {
+    }
 
     std::vector<std::string> get_lines(const liteshell::Context &context)
     {

@@ -4,17 +4,12 @@
 
 namespace utils
 {
+    /**
+     * @brief Represents a URL and its components.
+     */
     class URL
     {
-    public:
-        const std::string scheme;
-        const std::string hostname;
-        const std::string username;
-        const std::string password;
-        const INTERNET_PORT port;
-        const std::string path;
-        const std::string extra_info;
-
+    private:
         URL(
             const std::string &scheme,
             const std::string &hostname,
@@ -31,6 +26,34 @@ namespace utils
               path(path),
               extra_info(extra_info) {}
 
+    public:
+        /** @brief The URL scheme */
+        const std::string scheme;
+
+        /** @brief The URL hostname */
+        const std::string hostname;
+
+        /** @brief The URL username */
+        const std::string username;
+
+        /** @brief The URL password */
+        const std::string password;
+
+        /** @brief The URL port */
+        const INTERNET_PORT port;
+
+        /** @brief The URL path */
+        const std::string path;
+
+        /** @brief Extra information of the URL (query strings, fragments, ...) */
+        const std::string extra_info;
+
+        /**
+         * @brief Parse a string into a `URL` object
+         *
+         * @param url The string to parse
+         * @return A `URL` object
+         */
         static URL parse(const std::string &url);
     };
 

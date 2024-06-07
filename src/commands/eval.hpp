@@ -2,19 +2,6 @@
 
 #include <all.hpp>
 
-liteshell::CommandConstraint __constraint_EvalCommand()
-{
-    liteshell::CommandConstraint constraint("expression", "A string expression, or a math expression if -m is specified", true);
-    constraint.add_option("-m", "Treat the input as a mathematical expression instead of a string and evaluate it");
-    constraint.add_option("-p", "Print the input to stdout, read stdin and treat it as the original input");
-    constraint.add_option(
-        "-s",
-        "Save the input to an environment variable instead of printing to stdout",
-        liteshell::PositionalArgument("var", "The variable name", false, true));
-
-    return constraint;
-}
-
 class EvalCommand : public liteshell::BaseCommand
 {
 public:
@@ -24,7 +11,13 @@ public:
               "Evaluate an expression",
               "The default behavior of this command is to treat the argument as a string and print it to stdout (which is\n"
               "similar to the \"echoln\" command. Different behavior can be achieved by using the parameters listed here.",
-              __constraint_EvalCommand())
+              liteshell::CommandConstraint("expression", "A string expression, or a math expression if -m is specified", true)
+                  .add_option("-m", "Treat the input as a mathematical expression instead of a string and evaluate it")
+                  .add_option("-p", "Print the input to stdout, read stdin and treat it as the original input")
+                  .add_option(
+                      "-s",
+                      "Save the input to an environment variable instead of printing to stdout",
+                      liteshell::PositionalArgument("var", "The variable name", false, true)))
     {
     }
 
