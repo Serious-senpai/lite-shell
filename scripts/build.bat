@@ -1,4 +1,3 @@
-@echo off
 setlocal enabledelayedexpansion
 
 g++ --version
@@ -31,6 +30,19 @@ if "%assembly%" == "true" (
 ) else (
     set extension=exe
 )
+
+set link=
+for %%f in (%root%\src\include\*) do (
+    if "%%~xf" == ".cpp" (
+        echo Building %%f to %root%\build\%%~nf.o
+        rem g++ -c %before% %%f %after% -o %root%\build\%%~nf.o
+        set link=!link! %root%\build\%%~nf.o
+        if !errorlevel! neq 0 exit /b !errorlevel!
+    )
+)
+
+ar rcs %root%\build\firefly.lib %link%
+set after=-L %root%\build -l firefly %after%
 
 echo Building %root%\src\shell.cpp to %root%\build\shell.%extension%
 g++ %before% %root%\src\shell.cpp %after% -o %root%\build\shell.%extension%

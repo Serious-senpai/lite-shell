@@ -1,5 +1,8 @@
 #pragma once
 
+#include "base.hpp"
+#include "context.hpp"
+
 namespace liteshell
 {
     /**
@@ -17,10 +20,7 @@ namespace liteshell
         const std::shared_ptr<T> command;
 
         /** @brief Construct a new `CommandWrapper` object */
-        CommandWrapper(const std::shared_ptr<T> &command) : command(command)
-        {
-            static_assert(std::is_base_of_v<BaseCommand, T>, "CommandWrapper can only be used for BaseCommand subclasses");
-        }
+        CommandWrapper(const std::shared_ptr<T> &command);
 
         /**
          * @brief Invoke the underlying command and return a new errorlevel for the current shell.
@@ -32,23 +32,14 @@ namespace liteshell
          * @param context The context in which the command is being invoked under.
          * @return The new errorlevel for the shell.
          */
-        DWORD run(const Context &context)
-        {
-            return command->run(context);
-        }
+        DWORD run(const Context &context);
     };
 
     /** @brief Comparator to use within std::set and std::map */
     template <typename T>
-    bool operator<(const CommandWrapper<T> &lhs, const CommandWrapper<T> &rhs)
-    {
-        return lhs.command->name < rhs.command->name;
-    }
+    bool operator<(const CommandWrapper<T> &lhs, const CommandWrapper<T> &rhs);
 
     /** @brief Comparator to use within std::set and std::map */
     template <typename T>
-    bool operator==(const CommandWrapper<T> &lhs, const CommandWrapper<T> &rhs)
-    {
-        return lhs.command->name == rhs.command->name;
-    }
+    bool operator==(const CommandWrapper<T> &lhs, const CommandWrapper<T> &rhs);
 }
