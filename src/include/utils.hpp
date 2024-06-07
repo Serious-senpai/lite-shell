@@ -86,8 +86,8 @@ namespace utils
     {
         std::vector<WIN32_FIND_DATAW> results(1);
 
-        HANDLE h_file = FindFirstFileW(utf_convert(__pattern).c_str(), &results[0]);
-        if (h_file == INVALID_HANDLE_VALUE)
+        HANDLE file = FindFirstFileW(utf_convert(__pattern).c_str(), &results[0]);
+        if (file == INVALID_HANDLE_VALUE)
         {
             return {};
         }
@@ -95,16 +95,16 @@ namespace utils
         do
         {
             results.emplace_back();
-        } while (FindNextFileW(h_file, &results.back()));
+        } while (FindNextFileW(file, &results.back()));
 
         results.pop_back();
 
-        if (!FindClose(h_file))
+        if (!FindClose(file))
         {
             throw std::runtime_error(last_error("Error when closing file search handle"));
         }
 
-        CloseHandle(h_file);
+        CloseHandle(file);
         return results;
     }
 
