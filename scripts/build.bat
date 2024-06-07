@@ -1,3 +1,4 @@
+@echo off
 setlocal enabledelayedexpansion
 
 g++ --version
@@ -35,7 +36,7 @@ set link=
 for %%f in (%root%\src\include\*) do (
     if "%%~xf" == ".cpp" (
         echo Building %%f to %root%\build\%%~nf.o
-        rem g++ -c %before% %%f %after% -o %root%\build\%%~nf.o
+        g++ -c %before% %%f %after% -o %root%\build\%%~nf.o
         set link=!link! %root%\build\%%~nf.o
         if !errorlevel! neq 0 exit /b !errorlevel!
     )
