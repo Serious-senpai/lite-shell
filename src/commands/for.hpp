@@ -8,20 +8,20 @@ public:
     ForCommand()
         : liteshell::BaseCommand(
               "for",
-              "Iterate the loop variable over a specified integer range.",
+              "Iterate the loop variable over a specified integer range or string tokens.",
               "To end the loop section, type \"endfor\"",
               liteshell::CommandConstraint(
                   "var", "The name of the loop variable", true,
                   "x", "The start of the loop range, or the string to split", true,
-                  "y", "The end of the loop range", false)
+                  "y", "The end of the loop range if iterating over an integer range", false)
                   .add_option(
                       "-t", "--type",
                       "The type of loop",
                       liteshell::PositionalArgument(
                           "type",
                           "Must be \"range\" or \"split\" \n"
-                          "If \"range\" is specified, loop the variable within range [x, y) or [y, x)\n"
-                          "If \"split\" is specified, split the string by spaces and loop the variable within the tokens",
+                          "If \"range\" is specified, loop the variable in range [x, y) or [y, x) (from x to y)\n"
+                          "If \"split\" is specified, split the string by spaces and loop the variable over the tokens",
                           false, true),
                       true))
     {

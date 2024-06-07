@@ -176,7 +176,7 @@ namespace liteshell
                 }
             }
 
-            throw std::runtime_error(utils::format("Label %s not found", label.c_str()));
+            throw std::runtime_error(utils::format("Label \"%s\" not found", label.c_str()));
         }
     };
 }

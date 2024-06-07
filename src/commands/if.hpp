@@ -11,7 +11,7 @@ public:
               "Compare strings or math expressions",
               "<operator> must be one of the values: \"==\", \"!=\", \"<\", \">\", \"<=\", \">=\".\n\n"
               "The strings are compared using the lexicography order.\n"
-              "If the flag -m is set, perform mathematical evaluation before making comparisons.\n"
+              "If the flag -m is set, perform mathematical evaluation before making algebra comparisons.\n"
               "To end each condition section, use \"else\"/\"endif\".",
               liteshell::CommandConstraint(
                   "x", "The first value to compare", true,
