@@ -97,6 +97,11 @@ namespace liteshell
          */
         void kill(UINT exit_code)
         {
+            if (this->exit_code() != STILL_ACTIVE)
+            {
+                throw std::runtime_error("This process has already terminated");
+            }
+
             if (!TerminateProcess(_info.hProcess, exit_code))
             {
                 throw std::runtime_error(utils::last_error("TerminateProcess ERROR"));
