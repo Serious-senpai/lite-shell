@@ -1,3 +1,4 @@
+@OFF
 eval "Enter array seperated by spaces: " -ps arr
 
 eval -s i 0
