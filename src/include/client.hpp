@@ -172,10 +172,7 @@ namespace liteshell
                 stream << std::string(buffer, buffer + read);
             }
 
-            stream << "\n";
-            stream << STREAM_EOF << "\n";
-            stream << ECHO_ON;
-
+            _stream->append_footer(stream);
             _stream->write(stream.str());
         }
 
@@ -417,24 +414,7 @@ namespace liteshell
 #ifdef DEBUG
                 std::cout << utils::format("Processing command \"%s\"", stripped_message.c_str()) << std::endl;
 #endif
-                // Special sequences
-                if (stripped_message == ECHO_ON)
-                {
-                    _stream->echo = true;
-                }
-                else if (stripped_message == ECHO_OFF)
-                {
-                    _stream->echo = false;
-                }
-                else if (stripped_message == STREAM_EOF)
-                {
-                    _stream->clear();
-                }
-                else if (stripped_message.empty())
-                {
-                    // pass
-                }
-                else if (stripped_message[0] == ':') // is a jump label
+                if (stripped_message.empty())
                 {
                     // pass
                 }

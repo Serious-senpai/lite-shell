@@ -1,9 +1,5 @@
 #pragma once
 
-#define ECHO_OFF "@OFF"
-#define ECHO_ON "@ON"
-#define STREAM_EOF ":EOF"
-
 namespace liteshell
 {
     /**
@@ -15,6 +11,10 @@ namespace liteshell
     class InputStream
     {
     private:
+        static const std::string ECHO_OFF;
+        static const std::string ECHO_ON;
+        static const std::string STREAM_EOF;
+
         std::list<std::string> _list;
         std::list<std::string>::iterator _iterator = _list.begin();
 
@@ -84,7 +84,7 @@ namespace liteshell
         std::string getline(const std::string &prompt, const int flags)
         {
 #ifdef DEBUG
-            std::cout << "Received getline request" << std::endl;
+            std::cout << "Received getline request, flags = " << flags << std::endl;
             std::cout << "Current input stream: " << _list << std::endl;
             std::cout << "Iterator position: " << std::distance(_list.begin(), _iterator);
             if (_iterator != _list.end())
@@ -106,6 +106,7 @@ namespace liteshell
 
             if ((flags & FORCE_STDIN) || eof())
             {
+                // Read from stdin
                 while (true)
                 {
                     if ((flags & FORCE_STDOUT) || (echo && peek_echo()))
@@ -117,25 +118,75 @@ namespace liteshell
                     std::getline(std::cin, line);
 
                     line = utils::strip(line);
-                    if (std::cin.fail() || std::cin.eof() || line.empty())
+                    if (line == ECHO_OFF)
+                    {
+                        echo = false;
+                        continue;
+                    }
+                    else if (line == ECHO_ON)
+                    {
+                        echo = true;
+                        continue;
+                    }
+                    else if (line == STREAM_EOF)
+                    {
+                        clear();
+                        continue;
+                    }
+                    else if (!line.empty() && line[0] == ':')
+                    {
+                        continue;
+                    }
+                    else if (std::cin.fail() || std::cin.eof() || line.empty())
                     {
                         std::cin.clear();
                         std::cout << std::endl;
                         continue;
                     }
 
+#ifdef DEBUG
+                    std::cout << "Response for getline request: " << line << std::endl;
+#endif
                     return line;
                 }
             }
             else
             {
+                // Read from stream
                 auto echo_state = echo && peek_echo();
                 auto line = utils::strip(*_iterator++);
-                if (echo_state)
+                if (line == ECHO_OFF)
+                {
+                    echo = false;
+                    return getline(prompt, flags);
+                }
+                else if (line == ECHO_ON)
+                {
+                    echo = true;
+                    return getline(prompt, flags);
+                }
+                else if (line == STREAM_EOF)
+                {
+                    clear();
+                    if (flags & FORCE_STREAM)
+                    {
+                        throw std::runtime_error("Unexpected EOF while reading");
+                    }
+
+                    return getline(prompt, flags);
+                }
+                else if (!line.empty() && line[0] == ':')
+                {
+                    return getline(prompt, flags);
+                }
+                else if (echo_state)
                 {
                     std::cout << prompt << line << std::endl;
                 }
 
+#ifdef DEBUG
+                std::cout << "Response for getline request: " << line << std::endl;
+#endif
                 return line;
             }
         }
@@ -163,23 +214,28 @@ namespace liteshell
 
         void clear()
         {
-            // Collect then erase, or else iterators will be invalidated
-            std::vector<std::list<std::string>::iterator> to_remove;
-            for (auto iter = _list.begin(); iter != _iterator; iter++)
-            {
-                to_remove.push_back(iter);
-            }
+#ifdef DEBUG
+            std::cout << "Clearing input stream" << std::endl;
+#endif
 
-            for (auto &iter : to_remove)
-            {
-                _list.erase(iter);
-            }
+            _list.erase(_list.begin(), _iterator);
+
+#ifdef DEBUG
+            std::cout << "Cleared input stream, current size = " << _list.size() << std::endl;
+#endif
         }
 
         /** @brief Whether this stream reaches EOF */
         bool eof() const
         {
             return _iterator == _list.end();
+        }
+
+        void append_footer(std::stringstream &stream)
+        {
+            stream << "\n";
+            stream << STREAM_EOF << "\n";
+            stream << (echo ? ECHO_ON : ECHO_OFF) << "\n";
         }
 
         /** @brief Jump to the specified label */
@@ -212,4 +268,8 @@ namespace liteshell
             throw std::runtime_error(utils::format("Label \"%s\" not found", label.c_str()));
         }
     };
+
+    const std::string InputStream::ECHO_ON = "@ON";
+    const std::string InputStream::ECHO_OFF = "@OFF";
+    const std::string InputStream::STREAM_EOF = ":EOF";
 }

@@ -20,8 +20,8 @@ def test_sleep() -> None:
 
 
 def test_tree() -> None:
-    stdout, _ = execute_command("tree . --ascii")
-    for dirpath, dirnames, filenames in os.walk(current_dir):
+    stdout, _ = execute_command("tree src/ --ascii")
+    for dirpath, dirnames, filenames in os.walk(current_dir / "src"):
         print(f"At {dirpath}:\n{dirnames}\n{filenames}")
         for dirname in dirnames:
             assert_match(dirname, stdout)
