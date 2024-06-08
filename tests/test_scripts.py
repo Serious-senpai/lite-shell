@@ -45,6 +45,15 @@ def test_script_reverse() -> None:
         assert_not_match("@ON", stdout)
 
 
+def test_script_sort() -> None:
+    for _ in range(20):
+        arr = random.choices(range(-50, 100), k=20)
+        stdout, _ = execute_command(f"tests/sort\n{' '.join(map(str, arr))}")
+        assert_match(" ".join(map(str, sorted(arr))), stdout)
+        assert_not_match("@OFF", stdout)
+        assert_not_match("@ON", stdout)
+
+
 def test_script_sum() -> None:
     for _ in range(20):
         arr = random.choices(range(-50, 100), k=40)

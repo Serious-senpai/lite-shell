@@ -45,7 +45,7 @@ public:
                     break;
                 }
             }
-            else if (input == "endif")
+            else if (utils::startswith(input, "endif"))
             {
                 counter--;
                 if (counter == 0)
@@ -76,7 +76,7 @@ public:
                         throw std::invalid_argument("\"else\" is not allowed here");
                     }
                 }
-                else if (input == "endif")
+                else if (utils::startswith(input, "endif"))
                 {
                     counter--;
                     if (counter == 0)

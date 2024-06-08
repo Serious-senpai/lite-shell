@@ -39,7 +39,7 @@ public:
             {
                 counter++;
             }
-            else if (input == "endfor")
+            else if (utils::startswith(input, "endfor"))
             {
                 counter--;
                 if (counter == 0)

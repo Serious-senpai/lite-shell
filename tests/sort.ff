@@ -1,0 +1,29 @@
+eval "Enter array seperated by spaces: " -ps arr
+
+eval -s i 0
+for e "$arr" -t split
+    eval $e -ms arr_$i
+    eval -ms i "$i + 1"
+endfor
+
+eval -s n $i
+
+for --type range i 0 $n
+    echo "${arr_$i} "
+endfor
+echoln ""
+
+for --type range index 1 $n
+    for --type range i $index 0
+        eval -ms j "$i - 1"
+        if -m ${arr_$j} > ${arr_$i}
+            eval -s temp ${arr_$j}
+            eval -s arr_$j ${arr_$i}
+            eval -s arr_$i $temp
+        endif
+    endfor 1
+endfor 2
+
+for --type range i 0 $n
+    echo "${arr_$i} "
+endfor 3
