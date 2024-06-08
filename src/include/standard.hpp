@@ -8,6 +8,8 @@
 #include <optional>
 #include <sstream>
 #include <stack>
+
+#include <pathcch.h>
 #include <windows.h>
 #include <wininet.h>
 

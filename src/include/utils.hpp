@@ -18,6 +18,25 @@ namespace utils
     }
 
     /**
+     * @brief Get the absolute path using the native method
+     * [`GetFullPathNameW`](https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfullpathnamew)
+     *
+     * @param path The path to get the absolute path of
+     * @return The absolute path
+     */
+    std::string get_absolute_path(const std::string &path)
+    {
+        wchar_t buffer[MAX_PATH];
+        auto size = GetFullPathNameW(utf_convert(path).c_str(), MAX_PATH, buffer, NULL);
+        if (size == 0)
+        {
+            throw std::runtime_error(last_error("GetFullPathNameW ERROR"));
+        }
+
+        return utf_convert(std::wstring(buffer, buffer + size));
+    }
+
+    /**
      * @brief Get the size of the console window using
      * [`GetConsoleScreenBufferInfo`](https://learn.microsoft.com/en-us/windows/console/getconsolescreenbufferinfo).
      *
@@ -81,7 +100,10 @@ namespace utils
         }
     }
 
-    /** @brief List all files matching a specific pattern (typically used to list a directory) */
+    /**
+     * @brief List all files matching a specific pattern (typically used to list a directory)
+     * @see https://stackoverflow.com/a/24193730
+     */
     std::vector<WIN32_FIND_DATAW> list_files(const std::string &__pattern)
     {
         std::vector<WIN32_FIND_DATAW> results(1);
@@ -105,6 +127,17 @@ namespace utils
         }
 
         CloseHandle(file);
+
+#ifdef DEBUG
+        std::vector<std::string> names;
+        for (const auto &data : results)
+        {
+            names.push_back(utf_convert(std::wstring(data.cFileName)));
+        }
+
+        std::cout << "Items matching \"" << __pattern << "\":" << names << std::endl;
+#endif
+
         return results;
     }
 
