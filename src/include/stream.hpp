@@ -163,7 +163,14 @@ namespace liteshell
 
         void clear()
         {
+            // Collect then erase, or else iterators will be invalidated
+            std::vector<std::list<std::string>::iterator> to_remove;
             for (auto iter = _list.begin(); iter != _iterator; iter++)
+            {
+                to_remove.push_back(iter);
+            }
+
+            for (auto &iter : to_remove)
             {
                 _list.erase(iter);
             }
