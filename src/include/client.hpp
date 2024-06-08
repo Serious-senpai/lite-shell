@@ -480,7 +480,7 @@ namespace liteshell
                 NULL,                                             // lpProcessAttributes
                 NULL,                                             // lpThreadAttributes
                 TRUE,                                             // bInheritHandles
-                0,                                                // dwCreationFlags
+                CREATE_NEW_PROCESS_GROUP,                         // dwCreationFlags
                 NULL,                                             // lpEnvironment
                 NULL,                                             // lpCurrentDirectory
                 &startup_info,                                    // lpStartupInfo
