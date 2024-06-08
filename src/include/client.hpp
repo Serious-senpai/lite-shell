@@ -507,16 +507,16 @@ namespace liteshell
 
             PROCESS_INFORMATION process_info;
             auto success = CreateProcessW(
-                NULL,                                             // lpApplicationName
-                utils::utf_convert(final_context.message).data(), // lpCommandLine
-                NULL,                                             // lpProcessAttributes
-                NULL,                                             // lpThreadAttributes
-                TRUE,                                             // bInheritHandles
-                CREATE_NEW_PROCESS_GROUP,                         // dwCreationFlags
-                NULL,                                             // lpEnvironment
-                NULL,                                             // lpCurrentDirectory
-                &startup_info,                                    // lpStartupInfo
-                &process_info                                     // lpProcessInformation
+                NULL,                                                           // lpApplicationName
+                utils::utf_convert(final_context.message).data(),               // lpCommandLine
+                NULL,                                                           // lpProcessAttributes
+                NULL,                                                           // lpThreadAttributes
+                TRUE,                                                           // bInheritHandles
+                context.is_background_request() ? CREATE_NEW_PROCESS_GROUP : 0, // dwCreationFlags
+                NULL,                                                           // lpEnvironment
+                NULL,                                                           // lpCurrentDirectory
+                &startup_info,                                                  // lpStartupInfo
+                &process_info                                                   // lpProcessInformation
             );
 
             if (success)

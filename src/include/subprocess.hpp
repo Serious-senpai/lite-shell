@@ -44,9 +44,18 @@ namespace liteshell
             return _suspended;
         }
 
+        void assert_active()
+        {
+            if (this->exit_code() != STILL_ACTIVE)
+            {
+                throw std::runtime_error("This process has already terminated");
+            }
+        }
+
         /** @brief Suspend the subprocess */
         void suspend()
         {
+            assert_active();
             if (!_suspended)
             {
                 if (SuspendThread(_info.hThread) == (DWORD)-1)
@@ -65,6 +74,7 @@ namespace liteshell
         /** @brief Resume the subprocess */
         void resume()
         {
+            assert_active();
             if (_suspended)
             {
                 if (ResumeThread(_info.hThread) == (DWORD)-1)
@@ -97,11 +107,7 @@ namespace liteshell
          */
         void kill(UINT exit_code)
         {
-            if (this->exit_code() != STILL_ACTIVE)
-            {
-                throw std::runtime_error("This process has already terminated");
-            }
-
+            assert_active();
             if (!TerminateProcess(_info.hProcess, exit_code))
             {
                 throw std::runtime_error(utils::last_error("TerminateProcess ERROR"));
