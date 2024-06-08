@@ -172,7 +172,8 @@ namespace liteshell
                 stream << std::string(buffer, buffer + read);
             }
 
-            stream << "\n:EOF\n";
+            stream << "\n";
+            stream << STREAM_EOF << "\n";
             stream << ECHO_ON;
 
             _stream->write(stream.str());
@@ -424,6 +425,10 @@ namespace liteshell
                 else if (stripped_message == ECHO_OFF)
                 {
                     _stream->echo = false;
+                }
+                else if (stripped_message == STREAM_EOF)
+                {
+                    _stream->clear();
                 }
                 else if (stripped_message.empty())
                 {

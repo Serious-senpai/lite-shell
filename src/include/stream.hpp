@@ -2,6 +2,7 @@
 
 #define ECHO_OFF "@OFF"
 #define ECHO_ON "@ON"
+#define STREAM_EOF ":EOF"
 
 namespace liteshell
 {
@@ -82,6 +83,17 @@ namespace liteshell
          */
         std::string getline(const std::string &prompt, const int flags)
         {
+#ifdef DEBUG
+            std::cout << "Received getline request" << std::endl;
+            std::cout << "Current input stream: " << _list << std::endl;
+            std::cout << "Iterator position: " << std::distance(_list.begin(), _iterator);
+            if (_iterator != _list.end())
+            {
+                std::cout << " (\"" << *_iterator << "\")";
+            }
+            std::cout << std::endl;
+#endif
+
             if ((flags & FORCE_STDIN) & (flags & FORCE_STREAM))
             {
                 throw std::invalid_argument("Arguments conflict: FORCE_STDIN && FORCE_STREAM");
@@ -149,6 +161,14 @@ namespace liteshell
             write(lines.begin(), lines.end());
         }
 
+        void clear()
+        {
+            for (auto iter = _list.begin(); iter != _iterator; iter++)
+            {
+                _list.erase(iter);
+            }
+        }
+
         /** @brief Whether this stream reaches EOF */
         bool eof() const
         {
@@ -163,6 +183,9 @@ namespace liteshell
                 if (utils::strip(*iter) == label)
                 {
                     _iterator = iter;
+#ifdef DEBUG
+                    std::cout << "Shift iterator to position " << std::distance(_list.begin(), _iterator) << std::endl;
+#endif
                     return;
                 }
             }
@@ -172,6 +195,9 @@ namespace liteshell
                 if (utils::strip(*iter) == label)
                 {
                     _iterator = iter;
+#ifdef DEBUG
+                    std::cout << "Shift iterator to position " << std::distance(_list.begin(), _iterator) << std::endl;
+#endif
                     return;
                 }
             }
