@@ -377,32 +377,22 @@ namespace utils
     template <typename T>
     std::string to_hex_string(const T &value)
     {
-        static_assert(std::is_integral_v<T>);
+        static_assert(std::is_integral_v<T>, "to_hex_string called with a non-integral type");
         std::stringstream stream;
         stream << std::hex << value;
         return stream.str();
     }
 
     /**
-     * @brief Register a callback to run when this object is destroyed
-     * @see https://en.wikipedia.org/wiki/Resource_acquisition_is_initialization
+     * @brief Convert a string to lowercase
+     *
+     * @param str The string to convert
+     * @return The lowercase version of the string
      */
-    class Finalize
+    std::string to_lowercase(const std::string &str)
     {
-    private:
-        const std::function<void()> callback;
-
-        Finalize(const Finalize &) = delete;
-        Finalize &operator=(const Finalize &) = delete;
-
-    public:
-        /** @brief Construct a new `Finalize` object with a registered callback */
-        Finalize(const std::function<void()> &callback) : callback(callback) {}
-
-        /** @brief Destructor for this object, which invokes the underlying callback */
-        ~Finalize()
-        {
-            callback();
-        }
-    };
+        std::string result(str);
+        std::transform(result.begin(), result.end(), result.begin(), tolower);
+        return result;
+    }
 }

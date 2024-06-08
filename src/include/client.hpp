@@ -3,6 +3,7 @@
 #include "base.hpp"
 #include "environment.hpp"
 #include "fuzzy_search.hpp"
+#include "maps.hpp"
 #include "stream.hpp"
 #include "subprocess.hpp"
 #include "wrapper.hpp"
@@ -30,7 +31,7 @@ namespace liteshell
         std::vector<ProcessInfoWrapper *> _subprocesses;
 
         std::vector<CommandWrapper<BaseCommand>> _wrappers;
-        std::map<std::string, std::size_t> _commands;
+        utils::CaseInsensitiveMap<std::size_t> _commands;
 
         const std::unique_ptr<Environment> _environment;
         const std::unique_ptr<InputStream> _stream;
