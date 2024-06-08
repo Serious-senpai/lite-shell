@@ -18,41 +18,32 @@ if "%1"=="debug" (
     set debug=false
 )
 
-if "%1"=="assembly" (
-    set before=-S -fverbose-asm %before%
-    set assembly=true
-    echo Compiling to assembly
-) else (
-    set assembly=false
-)
-
-if "%assembly%" == "true" (
-    set extension=asm
-) else (
-    set extension=exe
-)
-
 set link=
 for %%f in (%root%\src\include\*) do (
     if "%%~xf" == ".cpp" (
-        echo Building %%f to %root%\build\%%~nf.o
+        echo Compiling %%f to %root%\build\%%~nf.o
         g++ -c %before% %%f %after% -o %root%\build\%%~nf.o
         set link=!link! %root%\build\%%~nf.o
         if !errorlevel! neq 0 exit /b !errorlevel!
     )
 )
 
-ar rcs %root%\build\firefly.lib %link%
-set after=-L %root%\build -l firefly %after%
+echo Compiling %root%\src\shell.cpp to %root%\build\shell.o
+g++ -c %before% %root%\src\shell.cpp %after% -o %root%\build\shell.o
+if %errorlevel% neq 0 exit /b %errorlevel%
 
-echo Building %root%\src\shell.cpp to %root%\build\shell.%extension%
-g++ %before% %root%\src\shell.cpp %after% -o %root%\build\shell.%extension%
+echo Building %root%\build\shell.exe
+g++ -o %root%\build\shell.exe %link% %root%\build\shell.o
 if %errorlevel% neq 0 exit /b %errorlevel%
 
 for %%f in (%root%\src\external\*) do (
     if "%%~xf" == ".cpp" (
-        echo Building %%f to %root%\build\%%~nf.%extension%
-        g++ %before% %%f %after% -o %root%\build\%%~nf.%extension%
+        echo Compiling %%f to %root%\build\%%~nf.o
+        g++ -c %before% %%f %after% -o %root%\build\%%~nf.o
+        if !errorlevel! neq 0 exit /b !errorlevel!
+
+        echo Building %root%\build\%%~nf.exe
+        g++ -o %root%\build\%%~nf.exe %link% %root%\build\%%~nf.o
         if !errorlevel! neq 0 exit /b !errorlevel!
     )
 )

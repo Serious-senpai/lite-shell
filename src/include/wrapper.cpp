@@ -14,14 +14,12 @@ namespace liteshell
         return command->run(context);
     }
 
-    /** @brief Comparator to use within `std::set` and `std::map` */
     template <typename T>
     bool operator<(const CommandWrapper<T> &lhs, const CommandWrapper<T> &rhs)
     {
         return lhs.command->name < rhs.command->name;
     }
 
-    /** @brief Comparator to use within `std::set` and `std::map` */
     template <typename T>
     bool operator==(const CommandWrapper<T> &lhs, const CommandWrapper<T> &rhs)
     {
