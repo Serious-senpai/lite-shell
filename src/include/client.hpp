@@ -392,7 +392,17 @@ namespace liteshell
             utils::set_ignore_ctrl_c(true);
             while (true)
             {
-                process_command(_stream->getline(utils::format("\nliteshell~%s>", utils::get_working_directory().c_str()), 0));
+                SYSTEMTIME time;
+                GetLocalTime(&time);
+                process_command(
+                    _stream->getline(
+                        utils::format(
+                            "\n[%d:%d:%d]liteshell~%s>",
+                            time.wHour,
+                            time.wMinute,
+                            time.wSecond,
+                            utils::get_working_directory().c_str()),
+                        0));
             }
         }
 
