@@ -31,7 +31,7 @@ public:
                 throw std::invalid_argument(error.message);
             }
         }
-        catch (liteshell::ArgumentMissingError &e)
+        catch (liteshell::ArgumentMissingError &)
         {
             auto commands = context.client->walk_commands();
             std::size_t max_width = 0;

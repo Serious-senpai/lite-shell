@@ -23,7 +23,7 @@ public:
         {
             exit_code = std::stoul(context.get("exit_code"));
         }
-        catch (liteshell::ArgumentMissingError &e)
+        catch (liteshell::ArgumentMissingError &)
         {
             // pass
         }

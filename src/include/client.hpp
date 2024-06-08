@@ -82,12 +82,12 @@ namespace liteshell
                         {
                             if (utils::endswith(filename, extension))
                             {
-                                return utils::join(directory, token + extension);
+                                return utils::join(directory, filename);
                             }
                         }
                     }
                 }
-                catch (const std::exception &e)
+                catch (std::exception &)
                 {
                     // pass
                 }
@@ -406,7 +406,7 @@ namespace liteshell
                         auto errorlevel = wrapper.run(context.parse(constraint));
                         _environment->set_value("errorlevel", std::to_string(errorlevel));
                     }
-                    catch (CommandNotFound &e)
+                    catch (CommandNotFound &)
                     {
 #ifdef DEBUG
                         std::cout << "No command found. Resolving as an executable/script." << std::endl;
@@ -443,9 +443,9 @@ namespace liteshell
                     }
                 }
             }
-            catch (std::exception &e)
+            catch (std::exception &error)
             {
-                on_error(e);
+                on_error(error);
             }
         }
 
