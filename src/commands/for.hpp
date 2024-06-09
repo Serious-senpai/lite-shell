@@ -31,7 +31,7 @@ public:
     {
         std::vector<std::string> lines;
         unsigned counter = 1;
-        bool force_stream = !context.client->get_stream()->eof();
+        bool force_stream = !context.client->get_stream()->exhaust();
         while (true)
         {
             auto input = utils::strip(context.client->get_stream()->getline("for>", force_stream ? liteshell::InputStream::FORCE_STREAM : 0));
