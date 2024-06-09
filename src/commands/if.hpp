@@ -31,7 +31,10 @@ public:
         bool has_else = false;
         while (true)
         {
-            auto input = utils::strip(context.client->get_stream()->getline("if_true>", force_stream ? liteshell::InputStream::FORCE_STREAM : 0));
+            auto input = utils::strip(context.client->get_stream()->getline(
+                []()
+                { std::cout << "if_true>" << std::flush; },
+                force_stream ? liteshell::InputStream::FORCE_STREAM : 0));
             if (utils::startswith(input, "if "))
             {
                 counter++;
@@ -63,7 +66,10 @@ public:
         {
             while (true)
             {
-                auto input = utils::strip(context.client->get_stream()->getline("if_false>", force_stream ? liteshell::InputStream::FORCE_STREAM : 0));
+                auto input = utils::strip(context.client->get_stream()->getline(
+                    []()
+                    { std::cout << "if_false>" << std::flush; },
+                    force_stream ? liteshell::InputStream::FORCE_STREAM : 0));
                 if (utils::startswith(input, "if "))
                 {
                     counter++;

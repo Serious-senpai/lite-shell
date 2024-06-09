@@ -16,6 +16,7 @@
 #include "standard.hpp"
 #include "stream.hpp"
 #include "strip.hpp"
+#include "style.hpp"
 #include "subprocess.hpp"
 #include "tables.hpp"
 #include "units.hpp"
