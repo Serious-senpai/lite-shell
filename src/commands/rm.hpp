@@ -19,7 +19,7 @@ public:
             auto targets = utils::list_files(target);
             if (targets.empty())
             {
-                auto message = utils::format("Error: Target \"%s\" does not exist or is empty", target.c_str());
+                auto message = utils::format("Warning: Target \"%s\" does not exist", target.c_str());
                 std::cerr << message << std::endl;
                 continue;
             }
@@ -28,12 +28,7 @@ public:
             {
                 if (target.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
                 {
-                    bool result = utils::remove_directory(utils::utf_convert(target.cFileName), true);
-                    if (!result)
-                    {
-                        auto message = utils::last_error(utils::format("Error deleting directory \"%s\"", utils::utf_convert(target.cFileName).c_str()));
-                        std::cerr << message << std::endl;
-                    }
+                    utils::remove_directory(utils::utf_convert(target.cFileName), true);
                 }
                 else if (DeleteFileW(target.cFileName))
                 {
