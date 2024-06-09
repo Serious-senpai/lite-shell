@@ -82,11 +82,11 @@ namespace liteshell
         /**
          * @brief Read the next command
          *
-         * @param prompt The prompt to display before reading
+         * @param prompt The function to display the prompt string before reading
          * @param flags The flags to use when reading the command
          * @return The next command in the input stream
          */
-        std::string getline(const std::string &prompt, const int flags)
+        std::string getline(const std::function<void()> &prompt, const int flags)
         {
 #ifdef DEBUG
             std::cout << "Received getline request, flags = " << flags << std::endl;
@@ -111,7 +111,7 @@ namespace liteshell
 
             if ((flags & FORCE_STDOUT) || (echo && peek_echo()))
             {
-                std::cout << prompt << std::flush;
+                prompt();
             }
 
             bool from_stdin = (flags & FORCE_STDIN) || exhaust();

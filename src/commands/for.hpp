@@ -34,7 +34,10 @@ public:
         bool force_stream = !context.client->get_stream()->exhaust();
         while (true)
         {
-            auto input = utils::strip(context.client->get_stream()->getline("for>", force_stream ? liteshell::InputStream::FORCE_STREAM : 0));
+            auto input = utils::strip(context.client->get_stream()->getline(
+                []()
+                { std::cout << "for>" << std::flush; },
+                force_stream ? liteshell::InputStream::FORCE_STREAM : 0));
             if (utils::startswith(input, "for "))
             {
                 counter++;

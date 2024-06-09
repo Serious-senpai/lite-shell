@@ -6,6 +6,7 @@
 #include "fuzzy_search.hpp"
 #include "maps.hpp"
 #include "stream.hpp"
+#include "style.hpp"
 #include "subprocess.hpp"
 #include "wrapper.hpp"
 
@@ -392,16 +393,16 @@ namespace liteshell
             utils::set_ignore_ctrl_c(true);
             while (true)
             {
-                SYSTEMTIME time;
-                GetLocalTime(&time);
                 process_command(
                     _stream->getline(
-                        utils::format(
-                            "\n[%d:%d:%d]liteshell~%s>",
-                            time.wHour,
-                            time.wMinute,
-                            time.wSecond,
-                            utils::get_working_directory().c_str()),
+                        []()
+                        {
+                            SYSTEMTIME time;
+                            GetLocalTime(&time);
+                            std::cout << utils::format("\n[%d:%d:%d]", time.wHour, time.wMinute, time.wSecond);
+                            utils::style_print("liteshell~", FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+                            std::cout << utils::get_working_directory() << ">";
+                        },
                         0));
             }
         }
