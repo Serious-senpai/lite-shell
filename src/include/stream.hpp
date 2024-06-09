@@ -11,8 +11,13 @@ namespace liteshell
     class InputStream
     {
     private:
+        /** @brief A special command to turn off echo */
         static const std::string ECHO_OFF;
+
+        /** @brief A special command to turn on echo */
         static const std::string ECHO_ON;
+
+        /** @brief A special label appended at the end of each batch script and clear the input stream when executed */
         static const std::string STREAM_EOF;
 
         std::list<std::string> _list;
@@ -99,96 +104,69 @@ namespace liteshell
                 throw std::invalid_argument("Arguments conflict: FORCE_STDIN && FORCE_STREAM");
             }
 
-            if ((flags & FORCE_STREAM) && eof())
+            if ((flags & FORCE_STREAM) && exhaust())
             {
                 throw std::runtime_error("Unexpected EOF while reading");
             }
 
-            if ((flags & FORCE_STDIN) || eof())
+            if ((flags & FORCE_STDOUT) || (echo && peek_echo()))
             {
-                // Read from stdin
-                while (true)
+                std::cout << prompt << std::flush;
+            }
+
+            bool from_stdin = (flags & FORCE_STDIN) || exhaust();
+
+            std::string line;
+            if (from_stdin)
+            {
+                std::getline(std::cin, line);
+                if (std::cin.fail() || std::cin.eof())
                 {
-                    if ((flags & FORCE_STDOUT) || (echo && peek_echo()))
-                    {
-                        std::cout << prompt << std::flush;
-                    }
-
-                    std::string line;
-                    std::getline(std::cin, line);
-
-                    line = utils::strip(line);
-                    if (line == ECHO_OFF)
-                    {
-                        echo = false;
-                        continue;
-                    }
-                    else if (line == ECHO_ON)
-                    {
-                        echo = true;
-                        continue;
-                    }
-                    else if (line == STREAM_EOF)
-                    {
-                        clear();
-                        continue;
-                    }
-                    else if (!line.empty() && line[0] == ':')
-                    {
-                        continue;
-                    }
-                    else if (std::cin.fail() || std::cin.eof() || line.empty())
-                    {
-                        std::cin.clear();
-                        std::cout << std::endl;
-                        continue;
-                    }
-
-#ifdef DEBUG
-                    std::cout << "Response for getline request: " << line << std::endl;
-#endif
-                    return line;
+                    std::cin.clear();
+                    std::cout << std::endl;
+                    return getline(prompt, flags);
                 }
             }
             else
             {
-                // Read from stream
-                auto echo_state = echo && peek_echo();
-                auto line = utils::strip(*_iterator++);
-                if (line == ECHO_OFF)
-                {
-                    echo = false;
-                    return getline(prompt, flags);
-                }
-                else if (line == ECHO_ON)
-                {
-                    echo = true;
-                    return getline(prompt, flags);
-                }
-                else if (line == STREAM_EOF)
-                {
-                    clear();
-                    if (flags & FORCE_STREAM)
-                    {
-                        throw std::runtime_error("Unexpected EOF while reading");
-                    }
+                line = *_iterator++;
+            }
+            line = utils::strip(line);
 
-                    return getline(prompt, flags);
-                }
-                else if (!line.empty() && line[0] == ':')
+            if (line == ECHO_OFF)
+            {
+                echo = false;
+                return getline(prompt, flags);
+            }
+            else if (line == ECHO_ON)
+            {
+                echo = true;
+                return getline(prompt, flags);
+            }
+            else if (line == STREAM_EOF)
+            {
+                clear();
+                if (flags & FORCE_STREAM)
                 {
-                    return getline(prompt, flags);
+                    throw std::runtime_error("Unexpected EOF while reading");
                 }
-                else if (echo_state)
-                {
-                    std::cout << prompt << line << std::endl;
-                }
+
+                return getline(prompt, flags);
+            }
+            else if (!line.empty() && line[0] == ':')
+            {
+                return getline(prompt, flags);
+            }
+
+            if (!from_stdin && echo && peek_echo())
+            {
+                std::cout << line << std::endl;
+            }
 
 #ifdef DEBUG
-                std::cout << "Response for getline request: " << line << std::endl;
+            std::cout << "Response for getline request: " << line << std::endl;
 #endif
-                return line;
-            }
+            return line;
         }
 
         template <typename _ForwardIterator>
@@ -225,8 +203,8 @@ namespace liteshell
 #endif
         }
 
-        /** @brief Whether this stream reaches EOF */
-        bool eof() const
+        /** @brief Whether the underlying iterator reaches the end of the linked-list */
+        bool exhaust() const
         {
             return _iterator == _list.end();
         }

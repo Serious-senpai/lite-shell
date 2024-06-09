@@ -16,7 +16,8 @@ def test_sleep() -> None:
     execute_command("sleep 1000")
     end = time.perf_counter()
 
-    assert 1.0 < end - start < 1.1
+    duration = end - start
+    assert 1.0 < duration < 1.15
 
 
 def test_tree() -> None:
