@@ -17,11 +17,23 @@ public:
         for (auto &target : context.values.at("targets"))
         {
             auto targets = utils::list_files(target);
+            if (targets.empty())
+            {
+                auto message = utils::format("Error: Target \"%s\" does not exist or is empty", target.c_str());
+                std::cerr << message << std::endl;
+                continue;
+            }
+
             for (auto &target : targets)
             {
                 if (target.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
                 {
-                    utils::remove_directory(utils::utf_convert(target.cFileName), true);
+                    bool result = utils::remove_directory(utils::utf_convert(target.cFileName), true);
+                    if (!result)
+                    {
+                        auto message = utils::last_error(utils::format("Error deleting directory \"%s\"", utils::utf_convert(target.cFileName).c_str()));
+                        std::cerr << message << std::endl;
+                    }
                 }
                 else if (DeleteFileW(target.cFileName))
                 {
