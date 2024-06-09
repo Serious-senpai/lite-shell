@@ -24,7 +24,7 @@ public:
     DWORD run(const liteshell::Context &context)
     {
         auto first = context.get("x"), op = context.get("operator"), second = context.get("y");
-        bool force_stream = !context.client->get_stream()->eof();
+        bool force_stream = !context.client->get_stream()->exhaust();
 
         unsigned counter = 1;
         std::vector<std::string> if_true;
