@@ -67,7 +67,7 @@ public:
         {
             if (lines.empty()) // No-op loops, reduce to a single assignment
             {
-                context.client->get_stream()->write(utils::format("eval \"%s\" -s %s", loop_values.back().c_str(), loop_var.c_str()));
+                context.client->get_stream()->write(utils::format("eval \"%s\" -s %s", loop_values.back().c_str(), loop_var.c_str()), true);
             }
             else
             {
@@ -75,8 +75,8 @@ public:
                 std::reverse(_loop_values.begin(), _loop_values.end());
                 for (const auto &value : _loop_values)
                 {
-                    context.client->get_stream()->write(lines.begin(), lines.end());
-                    context.client->get_stream()->write(utils::format("eval \"%s\" -s %s", value.c_str(), loop_var.c_str()));
+                    context.client->get_stream()->write(lines.begin(), lines.end(), true);
+                    context.client->get_stream()->write(utils::format("eval \"%s\" -s %s", value.c_str(), loop_var.c_str()), true);
                 }
             }
         }
