@@ -162,7 +162,7 @@ public:
         }
 
         std::vector<std::string> lines = result ? if_true : if_false;
-        context.client->get_stream()->write(lines.begin(), lines.end());
+        context.client->get_stream()->write(lines.begin(), lines.end(), true);
 
         return 0;
     }
