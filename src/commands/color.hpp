@@ -14,17 +14,11 @@ public:
 
     DWORD run(const liteshell::Context &context)
     {
-        if (context.values.find("color") == context.values.end())
-        {
-            std::cerr << "Error: No color specified" << std::endl;
-            return 1;
-        }
 
         std::string color = context.values.at("color").front();
         if (!utils::setColor(color))
         {
-            std::cerr << "Error: Unable to set color \"" << color << "\"" << std::endl;
-            return 1;
+            throw std::invalid_argument("Error: Unable to set color \"" + color + "\"");
         }
 
         std::cout << "Color changed to " << color << std::endl;
