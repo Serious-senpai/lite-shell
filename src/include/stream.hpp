@@ -11,33 +11,67 @@ namespace liteshell
     class InputStream
     {
     private:
-        /** @brief A special command to turn off echo */
+        /**
+         * @brief A special command to turn off echo.
+         *
+         * This is handled by the `InputStream::getline`
+         */
         static const std::string ECHO_OFF;
 
-        /** @brief A special command to turn on echo */
+        /**
+         * @brief A special command to turn on echo.
+         *
+         * This is handled by the `InputStream::getline`
+         */
         static const std::string ECHO_ON;
 
-        /** @brief A special label appended at the end of each batch script and clear the input stream when executed */
-        static const std::string STREAM_EOF;
+        struct _list_iterator_compare
+        {
+            template <typename _Iter>
+            bool operator()(const _Iter &lhs, const _Iter &rhs) const
+            {
+                return &(*lhs) < &(*rhs);
+            }
+        };
 
         std::list<std::string> _list;
         std::list<std::string>::iterator _iterator = _list.begin();
+        std::set<std::list<std::string>::iterator, _list_iterator_compare> _run_once;
 
         InputStream(const InputStream &) = delete;
         InputStream &operator=(const InputStream &) = delete;
 
+        /** @brief The current echo state */
+        bool _echo = true;
+
+        void _shift_iterator()
+        {
+            auto _run_once_iter = _run_once.find(_iterator);
+            if (_run_once_iter != _run_once.end())
+            {
+                _run_once.erase(_run_once_iter);
+                _iterator = _list.erase(_iterator);
+            }
+            else
+            {
+                _iterator++;
+            }
+        }
+
     public:
+        /**
+         * @brief A special label appended at the end of each batch script and clear the input stream when executed.
+         */
+        static const std::string STREAM_EOF;
+
         /** @brief A flag indicating that `getline` must echo the input to stdout */
-        static const int FORCE_STDOUT = 1 << 2;
+        static const int FORCE_STDOUT = 1 << 0;
 
         /** @brief A flag indicating that `getline` must read input from stdin */
         static const int FORCE_STDIN = 1 << 1;
 
         /** @brief A flag indicating that `getline` must read input from file */
-        static const int FORCE_STREAM = 1 << 0;
-
-        /** @brief The current echo state */
-        bool echo = true;
+        static const int FORCE_STREAM = 1 << 2;
 
         /**
          * @brief Construct a new `InputStream` object
@@ -57,7 +91,7 @@ namespace liteshell
                 return false;
             }
 
-            return echo;
+            return _echo;
         }
 
         /**
@@ -109,7 +143,7 @@ namespace liteshell
                 throw std::runtime_error("Unexpected EOF while reading");
             }
 
-            if ((flags & FORCE_STDOUT) || (echo && peek_echo()))
+            if ((flags & FORCE_STDOUT) || (_echo && peek_echo()))
             {
                 prompt();
             }
@@ -129,36 +163,32 @@ namespace liteshell
             }
             else
             {
-                line = *_iterator++;
+                line = *_iterator;
+                _shift_iterator();
             }
             line = utils::strip(line);
 
             if (line == ECHO_OFF)
             {
-                echo = false;
+                _echo = false;
                 return getline(prompt, flags);
             }
             else if (line == ECHO_ON)
             {
-                echo = true;
+                _echo = true;
                 return getline(prompt, flags);
             }
-            else if (line == STREAM_EOF)
+
+            if (line == STREAM_EOF)
             {
                 clear();
                 if (flags & FORCE_STREAM)
                 {
                     throw std::runtime_error("Unexpected EOF while reading");
                 }
-
-                return getline(prompt, flags);
-            }
-            else if (!line.empty() && line[0] == ':')
-            {
-                return getline(prompt, flags);
             }
 
-            if (!from_stdin && echo && peek_echo())
+            if (!from_stdin && _echo)
             {
                 std::cout << line << std::endl;
             }
@@ -170,12 +200,23 @@ namespace liteshell
         }
 
         template <typename _ForwardIterator>
-        void write(const _ForwardIterator &__begin, const _ForwardIterator &__end)
+        void write(const _ForwardIterator &__begin, const _ForwardIterator &__end, const bool run_once)
         {
             _iterator = _list.insert(_iterator, __begin, __end);
+
+            if (run_once)
+            {
+                std::size_t distance = std::distance(__begin, __end);
+                auto iter = _iterator;
+                for (std::size_t i = 0; i < distance; i++)
+                {
+                    _run_once.insert(iter);
+                    iter++;
+                }
+            }
         }
 
-        void write(const std::string &data)
+        void write(const std::string &data, const bool run_once)
         {
             std::vector<std::string> lines;
             for (auto &line : utils::split(data, '\n'))
@@ -187,7 +228,7 @@ namespace liteshell
                 }
             }
 
-            write(lines.begin(), lines.end());
+            write(lines.begin(), lines.end(), run_once);
         }
 
         void clear()
@@ -213,37 +254,35 @@ namespace liteshell
         {
             stream << "\n";
             stream << STREAM_EOF << "\n";
-            stream << (echo ? ECHO_ON : ECHO_OFF) << "\n";
+            stream << (_echo ? ECHO_ON : ECHO_OFF) << "\n";
         }
 
         /** @brief Jump to the specified label */
         void jump(const std::string &label)
         {
-            for (auto iter = _iterator; iter != _list.end(); iter++)
+            if (_list.empty())
             {
-                if (utils::strip(*iter) == label)
-                {
-                    _iterator = iter;
-#ifdef DEBUG
-                    std::cout << "Shift iterator to position " << std::distance(_list.begin(), _iterator) << std::endl;
-#endif
-                    return;
-                }
+                throw std::runtime_error("Cannot jump to the specified label since the input stream is empty");
             }
 
-            for (auto iter = _list.begin(); iter != _iterator; iter++)
+            if (_iterator == _list.end())
             {
-                if (utils::strip(*iter) == label)
-                {
-                    _iterator = iter;
-#ifdef DEBUG
-                    std::cout << "Shift iterator to position " << std::distance(_list.begin(), _iterator) << std::endl;
-#endif
-                    return;
-                }
+                _iterator = _list.begin();
             }
 
-            throw std::runtime_error(utils::format("Label \"%s\" not found", label.c_str()));
+            auto _iterator_old = _iterator;
+            while (utils::strip(*_iterator) != label)
+            {
+                _shift_iterator();
+                if (_iterator == _list.end())
+                {
+                    _iterator = _list.begin();
+                }
+                if (_iterator == _iterator_old)
+                {
+                    throw std::runtime_error(utils::format("Label \"%s\" not found", label.c_str()));
+                }
+            }
         }
     };
 

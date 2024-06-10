@@ -174,7 +174,7 @@ namespace liteshell
             }
 
             _stream->append_footer(stream);
-            _stream->write(stream.str());
+            _stream->write(stream.str(), false);
         }
 
         /**
@@ -425,7 +425,8 @@ namespace liteshell
 #ifdef DEBUG
                 std::cout << utils::format("Processing command \"%s\"", stripped_message.c_str()) << std::endl;
 #endif
-                if (stripped_message.empty())
+
+                if (stripped_message.empty() || stripped_message[0] == ':')
                 {
                     // pass
                 }

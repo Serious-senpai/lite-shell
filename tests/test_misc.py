@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import os
+import random
 import shutil
 from .globals import (
     assert_match,
@@ -28,9 +30,13 @@ def test_case_insensitive() -> None:
 
 
 def test_mutable_path() -> None:
-    shutil.move(root_dir / "build" / "hello.exe", root_dir / "hello123.exe")
+    dirname = str(random.randint(10000, 99999))
+    os.mkdir(root_dir / dirname)
+    shutil.move(root_dir / "build" / "hello.exe", root_dir / dirname / "hello123.exe")
+
     try:
-        stdout, _ = execute_command(f"eval -s PATH \"$PATH;{root_dir}\"\nhello123")
+        stdout, _ = execute_command(f"eval -s PATH \"$PATH;{root_dir / dirname}\"\nhello123")
         assert_match("Hello world!", stdout)
     finally:
-        shutil.move(root_dir / "hello123.exe", root_dir / "build" / "hello.exe")
+        shutil.move(root_dir / dirname / "hello123.exe", root_dir / "build" / "hello.exe")
+        os.rmdir(root_dir / dirname)
