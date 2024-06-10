@@ -14,8 +14,7 @@ public:
 
     DWORD run(const liteshell::Context &context)
     {
-
-        std::string color = context.values.at("color").front();
+        std::string color = context.get("color");
         if (!utils::setColor(color))
         {
             throw std::invalid_argument("Error: Unable to set color \"" + color + "\"");
