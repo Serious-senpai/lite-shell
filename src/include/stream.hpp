@@ -44,6 +44,20 @@ namespace liteshell
         /** @brief The current echo state */
         bool _echo = true;
 
+        void _shift_iterator()
+        {
+            auto _run_once_iter = _run_once.find(_iterator);
+            if (_run_once_iter != _run_once.end())
+            {
+                _run_once.erase(_run_once_iter);
+                _iterator = _list.erase(_iterator);
+            }
+            else
+            {
+                _iterator++;
+            }
+        }
+
     public:
         /**
          * @brief A special label appended at the end of each batch script and clear the input stream when executed.
@@ -150,17 +164,7 @@ namespace liteshell
             else
             {
                 line = *_iterator;
-
-                auto _run_once_iter = _run_once.find(_iterator);
-                if (_run_once_iter != _run_once.end())
-                {
-                    _run_once.erase(_run_once_iter);
-                    _iterator = _list.erase(_iterator);
-                }
-                else
-                {
-                    _iterator++;
-                }
+                _shift_iterator();
             }
             line = utils::strip(line);
 
@@ -256,31 +260,29 @@ namespace liteshell
         /** @brief Jump to the specified label */
         void jump(const std::string &label)
         {
-            for (auto iter = _iterator; iter != _list.end(); iter++)
+            if (_list.empty())
             {
-                if (utils::strip(*iter) == label)
-                {
-                    _iterator = iter;
-#ifdef DEBUG
-                    std::cout << "Shift iterator to position " << std::distance(_list.begin(), _iterator) << std::endl;
-#endif
-                    return;
-                }
+                throw std::runtime_error("Cannot jump to the specified label since the input stream is empty");
             }
 
-            for (auto iter = _list.begin(); iter != _iterator; iter++)
+            if (_iterator == _list.end())
             {
-                if (utils::strip(*iter) == label)
-                {
-                    _iterator = iter;
-#ifdef DEBUG
-                    std::cout << "Shift iterator to position " << std::distance(_list.begin(), _iterator) << std::endl;
-#endif
-                    return;
-                }
+                _iterator = _list.begin();
             }
 
-            throw std::runtime_error(utils::format("Label \"%s\" not found", label.c_str()));
+            auto _iterator_old = _iterator;
+            while (utils::strip(*_iterator) != label)
+            {
+                _shift_iterator();
+                if (_iterator == _list.end())
+                {
+                    _iterator = _list.begin();
+                }
+                if (_iterator == _iterator_old)
+                {
+                    throw std::runtime_error(utils::format("Label \"%s\" not found", label.c_str()));
+                }
+            }
         }
     };
 
