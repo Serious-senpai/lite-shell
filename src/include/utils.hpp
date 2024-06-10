@@ -449,10 +449,10 @@ namespace utils
         GetConsoleScreenBufferInfoEx(hConsole, &info);
 
         // Modify color table at index 1
-        info.ColorTable[1] = RGB(r, g, b);
+        info.ColorTable[10] = RGB(r, g, b);
 
         SetConsoleScreenBufferInfoEx(hConsole, &info);
-        SetConsoleTextAttribute(hConsole, FOREGROUND_INTENSITY | 1);
+        SetConsoleTextAttribute(hConsole, 10);
     }
 
     // Wrapper function to set color using hex code
