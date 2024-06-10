@@ -1,5 +1,7 @@
 #pragma once
 
+#include <iostream>
+#include <unordered_map>
 #include "converter.hpp"
 #include "join.hpp"
 
@@ -427,5 +429,46 @@ namespace utils
         std::string result(str);
         std::transform(result.begin(), result.end(), result.begin(), tolower);
         return result;
+    }
+
+    void hexToRgb(const std::string &hex, int &r, int &g, int &b)
+    {
+        std::stringstream ss;
+        ss << std::hex << hex.substr(1);
+        unsigned int hexColor;
+        ss >> hexColor;
+        r = (hexColor >> 16) & 0xFF;
+        g = (hexColor >> 8) & 0xFF;
+        b = hexColor & 0xFF;
+    }
+
+    // Set console text color using RGB values
+    void setColor(int r, int g, int b)
+    {
+        HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+        CONSOLE_SCREEN_BUFFER_INFOEX info;
+        info.cbSize = sizeof(CONSOLE_SCREEN_BUFFER_INFOEX);
+        GetConsoleScreenBufferInfoEx(hConsole, &info);
+
+        // Modify color table at index 1
+        info.ColorTable[1] = RGB(r, g, b);
+
+        SetConsoleScreenBufferInfoEx(hConsole, &info);
+        SetConsoleTextAttribute(hConsole, FOREGROUND_INTENSITY | 1);
+    }
+
+    // Wrapper function to set color using hex code
+    bool setColor(const std::string &hexColor)
+    {
+        if (hexColor.size() != 7 || hexColor[0] != '#')
+        {
+            std::cerr << "Error: Invalid hex color format" << std::endl;
+            return false;
+        }
+
+        int r, g, b;
+        hexToRgb(hexColor, r, g, b);
+        setColor(r, g, b);
+        return true;
     }
 }

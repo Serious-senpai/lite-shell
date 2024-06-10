@@ -400,7 +400,7 @@ namespace liteshell
                             SYSTEMTIME time;
                             GetLocalTime(&time);
                             std::cout << utils::format("\n[%d:%d:%d]", time.wHour, time.wMinute, time.wSecond);
-                            utils::style_print("liteshell~", FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+                            utils::style_print("liteshell~", FOREGROUND_RED | FOREGROUND_INTENSITY);
                             std::cout << utils::get_working_directory() << ">";
                         },
                         0));
