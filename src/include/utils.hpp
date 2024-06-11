@@ -440,6 +440,18 @@ namespace utils
         b = hexColor & 0xFF;
     }
 
+    // Validate hex color code
+    bool isValidHexColor(const std::string &hexColor)
+    {
+        if (hexColor.size() != 7 || hexColor[0] != '#')
+        {
+            return false;
+        }
+        // Regular expression to match valid hex color code
+        std::regex hexPattern("#[0-9a-fA-F]{6}");
+        return std::regex_match(hexColor, hexPattern);
+    }
+
     // Set console text color using RGB values
     void setColor(int r, int g, int b)
     {
@@ -456,15 +468,17 @@ namespace utils
     }
 
     // Wrapper function to set color using hex code
-    void setColor(const std::string &hexColor)
+    bool setColor(const std::string &hexColor)
     {
-        if (hexColor.size() != 7 || hexColor[0] != '#')
+        if (!isValidHexColor(hexColor))
         {
             throw std::invalid_argument("Error: Invalid hex color format " + hexColor);
+            return false;
         }
 
         int r, g, b;
         hexToRgb(hexColor, r, g, b);
         setColor(r, g, b);
+        return true;
     }
 }
