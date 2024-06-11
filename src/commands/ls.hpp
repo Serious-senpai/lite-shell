@@ -20,7 +20,7 @@ public:
         {
             directory = context.get("dir");
         }
-        catch (liteshell::ArgumentMissingError &e)
+        catch (liteshell::ArgumentMissingError &)
         {
             // pass
         }

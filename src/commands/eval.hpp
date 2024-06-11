@@ -26,7 +26,10 @@ public:
         auto input = context.get("expression");
         if (context.present.count("-p"))
         {
-            input = context.client->get_stream()->getline(input, liteshell::InputStream::FORCE_STDOUT | liteshell::InputStream::FORCE_STDIN);
+            input = context.client->get_stream()->getline(
+                [&input]()
+                { std::cout << input << std::flush; },
+                liteshell::InputStream::FORCE_ECHO | liteshell::InputStream::FORCE_STDIN);
         }
 
         auto result = context.present.count("-m") ? std::to_string(context.client->get_environment()->eval_ll(input)) : input;

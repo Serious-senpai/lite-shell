@@ -1,12 +1,17 @@
 #pragma once
 
+#include <cctype>
 #include <chrono>
 #include <codecvt>
 #include <fstream>
 #include <iostream>
 #include <optional>
+#include <random>
 #include <sstream>
 #include <stack>
+#include <unordered_map>
+
+#include <pathcch.h>
 #include <windows.h>
 #include <wininet.h>
 

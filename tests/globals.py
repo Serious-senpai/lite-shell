@@ -71,6 +71,7 @@ def execute_command(
     assert process.returncode == expected_exit_code or expected_exit_code is None
 
     if no_stderr:
+        print(stderr.decode("utf-8"))
         assert stderr == b""
 
     def decode(data: bytes) -> str:

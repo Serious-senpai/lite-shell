@@ -17,6 +17,13 @@ public:
         for (auto &target : context.values.at("targets"))
         {
             auto targets = utils::list_files(target);
+            if (targets.empty())
+            {
+                auto message = utils::format("Warning: Target \"%s\" does not exist", target.c_str());
+                std::cerr << message << std::endl;
+                continue;
+            }
+
             for (auto &target : targets)
             {
                 if (target.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)

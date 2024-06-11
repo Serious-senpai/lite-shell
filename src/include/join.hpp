@@ -32,32 +32,21 @@ namespace utils
     }
 
     /**
-     * @brief Join 2 Windows paths
+     * @brief Join 2 Windows paths using the native method
+     * [`PathCchCombine`](https://learn.microsoft.com/en-us/windows/win32/api/pathcch/nf-pathcch-pathcchcombine)
      *
      * @param first The first path
      * @param second The second path
      * @return The joined path
      */
-    std::string join(std::string first, std::string second)
+    std::string join(const std::string &first, const std::string &second)
     {
+        wchar_t result[MAX_PATH];
+        if (PathCchCombine(result, MAX_PATH, utils::utf_convert(first).c_str(), utils::utf_convert(second).c_str()) != S_OK)
         {
-            std::size_t size = first.size();
-            while (size > 0 && first[size - 1] == '\\')
-            {
-                size--;
-            }
-            first = first.substr(0, size);
+            throw std::invalid_argument("Cannot join the paths");
         }
 
-        {
-            std::size_t index = 0;
-            while (index + 1 < second.size() && second[index] == '\\')
-            {
-                index++;
-            }
-            second = second.substr(index);
-        }
-
-        return first + '\\' + second;
+        return utils::utf_convert(result);
     }
 }

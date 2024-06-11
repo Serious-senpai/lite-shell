@@ -1,13 +1,8 @@
 @OFF
-eval -ps arr "Enter array seperated by spaces: "
-eval 0 -s i
+eval -ps tokens "Enter array seperated by spaces: "
+array arr $tokens
 
-for -t split e "$arr"
-    eval $e -s arr_$i
-    eval "$i + 1" -ms i
-endfor
-
-eval $i -s size
-for -t range i "$size - 1" -1
-    echo "${arr_$i} "
+for i 0 $arr
+    eval -ms j "$arr - $i - 1"
+    echo "${arr_$j} "
 endfor

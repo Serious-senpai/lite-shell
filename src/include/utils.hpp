@@ -18,6 +18,25 @@ namespace utils
     }
 
     /**
+     * @brief Get the absolute path using the native method
+     * [`GetFullPathNameW`](https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfullpathnamew)
+     *
+     * @param path The path to get the absolute path of
+     * @return The absolute path
+     */
+    std::string get_absolute_path(const std::string &path)
+    {
+        wchar_t buffer[MAX_PATH];
+        auto size = GetFullPathNameW(utf_convert(path).c_str(), MAX_PATH, buffer, NULL);
+        if (size == 0)
+        {
+            throw std::runtime_error(last_error("GetFullPathNameW ERROR"));
+        }
+
+        return utf_convert(std::wstring(buffer, buffer + size));
+    }
+
+    /**
      * @brief Get the size of the console window using
      * [`GetConsoleScreenBufferInfo`](https://learn.microsoft.com/en-us/windows/console/getconsolescreenbufferinfo).
      *
@@ -81,13 +100,16 @@ namespace utils
         }
     }
 
-    /** @brief List all files matching a specific pattern (typically used to list a directory) */
+    /**
+     * @brief List all files matching a specific pattern (typically used to list a directory)
+     * @see https://stackoverflow.com/a/24193730
+     */
     std::vector<WIN32_FIND_DATAW> list_files(const std::string &__pattern)
     {
         std::vector<WIN32_FIND_DATAW> results(1);
 
-        HANDLE h_file = FindFirstFileW(utf_convert(__pattern).c_str(), &results[0]);
-        if (h_file == INVALID_HANDLE_VALUE)
+        HANDLE file = FindFirstFileW(utf_convert(__pattern).c_str(), &results[0]);
+        if (file == INVALID_HANDLE_VALUE)
         {
             return {};
         }
@@ -95,16 +117,27 @@ namespace utils
         do
         {
             results.emplace_back();
-        } while (FindNextFileW(h_file, &results.back()));
+        } while (FindNextFileW(file, &results.back()));
 
         results.pop_back();
 
-        if (!FindClose(h_file))
+        if (!FindClose(file))
         {
             throw std::runtime_error(last_error("Error when closing file search handle"));
         }
 
-        CloseHandle(h_file);
+        CloseHandle(file);
+
+#ifdef DEBUG
+        std::vector<std::string> names;
+        for (const auto &data : results)
+        {
+            names.push_back(utf_convert(std::wstring(data.cFileName)));
+        }
+
+        std::cout << "Items matching \"" << __pattern << "\":" << names << std::endl;
+#endif
+
         return results;
     }
 
@@ -377,32 +410,64 @@ namespace utils
     template <typename T>
     std::string to_hex_string(const T &value)
     {
-        static_assert(std::is_integral_v<T>);
+        static_assert(std::is_integral_v<T>, "to_hex_string called with a non-integral type");
         std::stringstream stream;
         stream << std::hex << value;
         return stream.str();
     }
 
     /**
-     * @brief Register a callback to run when this object is destroyed
-     * @see https://en.wikipedia.org/wiki/Resource_acquisition_is_initialization
+     * @brief Convert a string to lowercase
+     *
+     * @param str The string to convert
+     * @return The lowercase version of the string
      */
-    class Finalize
+    std::string to_lowercase(const std::string &str)
     {
-    private:
-        const std::function<void()> callback;
+        std::string result(str);
+        std::transform(result.begin(), result.end(), result.begin(), tolower);
+        return result;
+    }
 
-        Finalize(const Finalize &) = delete;
-        Finalize &operator=(const Finalize &) = delete;
+    const boost::regex _hex_pattern("#[0-9a-fA-F]{6}");
 
-    public:
-        /** @brief Construct a new `Finalize` object with a registered callback */
-        Finalize(const std::function<void()> &callback) : callback(callback) {}
+    /** @brief Check if a string is a valid hex representation */
+    bool valid_hex_color(const std::string &hexColor)
+    {
+        return boost::regex_match(hexColor, _hex_pattern);
+    }
 
-        /** @brief Destructor for this object, which invokes the underlying callback */
-        ~Finalize()
+    /** @brief Convert a RGB string to 3 components */
+    void hex_to_rgb(const std::string &hex, int &r, int &g, int &b)
+    {
+        if (!valid_hex_color(hex))
         {
-            callback();
+            throw std::invalid_argument("Error: Invalid hex color format " + hex);
         }
-    };
+
+        std::stringstream ss;
+        ss << std::hex << hex.substr(1);
+        unsigned hexColor;
+        ss >> hexColor;
+        r = (hexColor >> 16) & 0xFF;
+        g = (hexColor >> 8) & 0xFF;
+        b = hexColor & 0xFF;
+    }
+
+    /** @brief Wrapper function to set color using hex code */
+    void set_color(const std::string &hexColor)
+    {
+        int r, g, b;
+        hex_to_rgb(hexColor, r, g, b);
+
+        HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+        CONSOLE_SCREEN_BUFFER_INFOEX info;
+        info.cbSize = sizeof(CONSOLE_SCREEN_BUFFER_INFOEX);
+        GetConsoleScreenBufferInfoEx(hConsole, &info);
+
+        // Modify color table at index 1
+        info.ColorTable[10] = RGB(r, g, b);
+
+        SetConsoleScreenBufferInfoEx(hConsole, &info);
+    }
 }

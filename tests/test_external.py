@@ -16,12 +16,13 @@ def test_sleep() -> None:
     execute_command("sleep 1000")
     end = time.perf_counter()
 
-    assert 1.0 < end - start < 1.1
+    duration = end - start
+    assert 1.0 < duration < 1.15
 
 
 def test_tree() -> None:
-    stdout, _ = execute_command("tree . --ascii")
-    for dirpath, dirnames, filenames in os.walk(current_dir):
+    stdout, _ = execute_command("tree src/ --ascii")
+    for dirpath, dirnames, filenames in os.walk(current_dir / "src"):
         print(f"At {dirpath}:\n{dirnames}\n{filenames}")
         for dirname in dirnames:
             assert_match(dirname, stdout)

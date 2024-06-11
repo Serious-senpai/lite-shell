@@ -1,6 +1,6 @@
 @OFF
-for -t range i 0 50
-    for j $i 50 -t range
+for i 0 50
+    for j $i 50
         echoln "$i $j"
     endfor
 endfor

@@ -8,10 +8,10 @@ echo Got root of repository: %root%
 
 if not exist %root%\build mkdir %root%\build
 set before=-O3 -Wall -I %root%\extern\regex\include -I %root%\src\include -std=c++17
-set after=-l wininet
+set after=-l pathcch -l wininet
 
 if "%1"=="debug" (
-    set before=-D DEBUG %before%
+    set before=-D DEBUG -g %before%
     set debug=true
     echo Building in debug mode
 ) else (

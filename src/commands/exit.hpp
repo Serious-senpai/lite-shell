@@ -19,7 +19,7 @@ public:
             auto code = std::stoi(context.get("exitcode"));
             exit(code);
         }
-        catch (liteshell::ArgumentMissingError &e)
+        catch (liteshell::ArgumentMissingError &)
         {
             exit(context.client->get_errorlevel());
         }

@@ -2,8 +2,11 @@
 
 #include "base.hpp"
 #include "environment.hpp"
+#include "finalize.hpp"
 #include "fuzzy_search.hpp"
+#include "maps.hpp"
 #include "stream.hpp"
+#include "style.hpp"
 #include "subprocess.hpp"
 #include "wrapper.hpp"
 
@@ -30,12 +33,10 @@ namespace liteshell
     private:
         static std::shared_ptr<Client> _instance;
 
-        const std::vector<std::string> _extensions = {".exe", LITE_SHELL_SCRIPT_EXTENSION};
-
         std::vector<ProcessInfoWrapper *> _subprocesses;
 
         std::vector<CommandWrapper<BaseCommand>> _wrappers;
-        std::map<std::string, std::size_t> _commands;
+        utils::CaseInsensitiveMap<std::size_t> _commands;
 
         const std::unique_ptr<Environment> _environment;
         const std::unique_ptr<InputStream> _stream;
@@ -66,7 +67,8 @@ namespace liteshell
          *
          * The function will first look in the current working directory, then in the directories specified in `resolve_order`.
          *
-         * @param token The token to resolve. This token may contain path separators.
+         * @see https://stackoverflow.com/a/605139
+         * @param token The token to resolve. This token may be a relative or absolute path.
          * @return The path to the executable if found, `std::nullopt` otherwise.
          */
         std::optional<std::string> resolve(const std::string &token) const
@@ -75,23 +77,33 @@ namespace liteshell
             std::cout << "Resolving executable from \"" << token << "\"" << std::endl;
 #endif
 
-            auto find_executable = [this, &token](const std::string &directory) -> std::optional<std::string>
+            // `directory` may be empty
+            std::function<std::optional<std::string>(const std::string &directory, const std::string &filepath)> search;
+            search = [&search](const std::string &directory, const std::string &filepath) -> std::optional<std::string>
             {
+                if (!utils::endswith(filepath, ".exe") && !utils::endswith(filepath, LITE_SHELL_SCRIPT_EXTENSION))
+                {
+                    auto result = search(directory, filepath + ".exe");
+                    if (result.has_value())
+                    {
+                        return result;
+                    }
+
+                    return search(directory, filepath + LITE_SHELL_SCRIPT_EXTENSION);
+                }
+
                 try
                 {
-                    for (const auto &file : utils::list_files(utils::join(directory, token + "*")))
+                    const auto fullpath = utils::join(directory, filepath);
+#ifdef DEBUG
+                    std::cout << "Searching " << fullpath << std::endl;
+#endif
+                    if (!utils::list_files(fullpath).empty())
                     {
-                        auto filename = utils::utf_convert(std::wstring(file.cFileName));
-                        for (auto &extension : _extensions)
-                        {
-                            if (utils::endswith(filename, extension))
-                            {
-                                return utils::join(directory, token + extension);
-                            }
-                        }
+                        return utils::get_absolute_path(fullpath);
                     }
                 }
-                catch (const std::exception &e)
+                catch (std::exception &)
                 {
                     // pass
                 }
@@ -99,18 +111,23 @@ namespace liteshell
                 return std::nullopt;
             };
 
-            auto result = find_executable(utils::get_working_directory());
+            // Search as an absolute path or a relative path to the working directory
+            auto result = search("", token);
             if (result.has_value())
             {
-                return *result;
+                return result;
             }
 
-            for (const auto &directory : get_resolve_order())
+            if (token.find('\\') == std::string::npos && token.find('/') == std::string::npos)
             {
-                result = find_executable(directory);
-                if (result.has_value())
+                // token does not contain path separators
+                for (const auto &directory : get_resolve_order())
                 {
-                    return *result;
+                    auto result = search(directory, token);
+                    if (result.has_value())
+                    {
+                        return *result;
+                    }
                 }
             }
 
@@ -121,23 +138,48 @@ namespace liteshell
         {
             // Warning: ifstream read in text mode may f*ck up in Windows: https://stackoverflow.com/a/8834004
 
-            std::ifstream fstream(path, std::ios_base::in | std::ios_base::binary);
-            std::string data;
-            while (!fstream.eof())
+#ifdef DEBUG
+            std::cout << "Reading batch file: " << path << std::endl;
+#endif
+
+            auto file = CreateFileW(
+                utils::utf_convert(path).c_str(),
+                GENERIC_READ,
+                FILE_SHARE_READ,
+                NULL,
+                OPEN_EXISTING,
+                FILE_ATTRIBUTE_NORMAL,
+                NULL);
+
+            if (file == INVALID_HANDLE_VALUE)
             {
-                char buffer[LITE_SHELL_BUFFER_SIZE];
-                ZeroMemory(buffer, LITE_SHELL_BUFFER_SIZE);
-                fstream.read(buffer, LITE_SHELL_BUFFER_SIZE);
-                data += buffer;
+                throw std::runtime_error(utils::last_error("Error when opening file"));
             }
 
-            data.erase(std::remove(data.begin(), data.end(), '\r'), data.end());
-            data += "\n:EOF\n";
-            data += ECHO_ON;
+            auto _finalize = utils::Finalize(
+                [&file]()
+                {
+                    CloseHandle(file);
+                });
 
-            _stream->write(data);
+            char buffer[LITE_SHELL_BUFFER_SIZE];
+            ZeroMemory(buffer, LITE_SHELL_BUFFER_SIZE);
 
-            fstream.close();
+            std::stringstream stream;
+
+            DWORD read = LITE_SHELL_BUFFER_SIZE;
+            while (read == LITE_SHELL_BUFFER_SIZE)
+            {
+                if (!ReadFile(file, buffer, LITE_SHELL_BUFFER_SIZE, &read, NULL))
+                {
+                    throw std::runtime_error(utils::last_error("Error when reading file"));
+                }
+
+                stream << std::string(buffer, buffer + read);
+            }
+
+            _stream->append_footer(stream);
+            _stream->write(stream.str());
         }
 
         /**
@@ -356,7 +398,17 @@ namespace liteshell
             utils::set_ignore_ctrl_c(true);
             while (true)
             {
-                process_command(_stream->getline(utils::format("\nliteshell~%s>", utils::get_working_directory().c_str()), 0));
+                process_command(
+                    _stream->getline(
+                        []()
+                        {
+                            SYSTEMTIME time;
+                            GetLocalTime(&time);
+                            std::cout << utils::format("\n[%d:%d:%d]", time.wHour, time.wMinute, time.wSecond);
+                            utils::style_print("liteshell~", FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+                            std::cout << utils::get_working_directory() << ">";
+                        },
+                        0));
             }
         }
 
@@ -378,26 +430,14 @@ namespace liteshell
 #ifdef DEBUG
                 std::cout << utils::format("Processing command \"%s\"", stripped_message.c_str()) << std::endl;
 #endif
-                // Special sequences
-                if (stripped_message == ECHO_ON)
-                {
-                    _stream->echo = true;
-                }
-                else if (stripped_message == ECHO_OFF)
-                {
-                    _stream->echo = false;
-                }
-                else if (stripped_message.empty())
-                {
-                    // pass
-                }
-                else if (stripped_message[0] == ':') // is a jump label
+
+                if (stripped_message.empty() || stripped_message[0] == ':')
                 {
                     // pass
                 }
                 else
                 {
-                    auto context = Context::get_context(_instance, stripped_message);
+                    auto context = Context::get_context(_instance, stripped_message, message);
                     try
                     {
                         auto wrapper = _get_command(context);
@@ -410,15 +450,20 @@ namespace liteshell
                         auto errorlevel = wrapper.run(context.parse(constraint));
                         _environment->set_value("errorlevel", std::to_string(errorlevel));
                     }
-                    catch (CommandNotFound &e)
+                    catch (CommandNotFound &)
                     {
 #ifdef DEBUG
                         std::cout << "No command found. Resolving as an executable/script." << std::endl;
 #endif
 
                         auto executable = resolve(context.tokens[0]);
+
                         if (executable.has_value()) // Is an executable or batch file
                         {
+#ifdef DEBUG
+                            std::cout << "Matched executable/script " << *executable << std::endl;
+#endif
+
                             if (utils::endswith(*executable, ".exe"))
                             {
                                 auto final_context = context.replace_call(*executable);
@@ -447,9 +492,9 @@ namespace liteshell
                     }
                 }
             }
-            catch (std::exception &e)
+            catch (std::exception &error)
             {
-                on_error(e);
+                on_error(error);
             }
         }
 
@@ -479,16 +524,16 @@ namespace liteshell
 
             PROCESS_INFORMATION process_info;
             auto success = CreateProcessW(
-                NULL,                                             // lpApplicationName
-                utils::utf_convert(final_context.message).data(), // lpCommandLine
-                NULL,                                             // lpProcessAttributes
-                NULL,                                             // lpThreadAttributes
-                TRUE,                                             // bInheritHandles
-                0,                                                // dwCreationFlags
-                NULL,                                             // lpEnvironment
-                NULL,                                             // lpCurrentDirectory
-                &startup_info,                                    // lpStartupInfo
-                &process_info                                     // lpProcessInformation
+                NULL,                                                           // lpApplicationName
+                utils::utf_convert(final_context.message).data(),               // lpCommandLine
+                NULL,                                                           // lpProcessAttributes
+                NULL,                                                           // lpThreadAttributes
+                TRUE,                                                           // bInheritHandles
+                context.is_background_request() ? CREATE_NEW_PROCESS_GROUP : 0, // dwCreationFlags
+                NULL,                                                           // lpEnvironment
+                NULL,                                                           // lpCurrentDirectory
+                &startup_info,                                                  // lpStartupInfo
+                &process_info                                                   // lpProcessInformation
             );
 
             if (success)

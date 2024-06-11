@@ -4,42 +4,32 @@
 
 class ForCommand : public liteshell::BaseCommand
 {
-public:
-    ForCommand()
-        : liteshell::BaseCommand(
-              "for",
-              "Iterate the loop variable over a specified integer range.",
-              "To end the loop section, type \"endfor\"",
-              liteshell::CommandConstraint(
-                  "var", "The name of the loop variable", true,
-                  "x", "The start of the loop range, or the string to split", true,
-                  "y", "The end of the loop range", false)
-                  .add_option(
-                      "-t", "--type",
-                      "The type of loop",
-                      liteshell::PositionalArgument(
-                          "type",
-                          "Must be \"range\" or \"split\" \n"
-                          "If \"range\" is specified, loop the variable within range [x, y) or [y, x)\n"
-                          "If \"split\" is specified, split the string by spaces and loop the variable within the tokens",
-                          false, true),
-                      true))
+private:
+    unsigned long long _label_counter = 0;
+
+    std::string _make_new_label()
     {
+        return ":for_" + std::to_string(_label_counter++) + utils::random(20);
     }
 
-    std::vector<std::string> get_lines(const liteshell::Context &context)
+    std::deque<std::string> _get_lines(const liteshell::Context &raw_context)
     {
-        std::vector<std::string> lines;
+        const auto stream_ptr = raw_context.client->get_stream();
+        std::deque<std::string> lines;
         unsigned counter = 1;
-        bool force_stream = !context.client->get_stream()->eof();
+        bool force_stream = !stream_ptr->exhaust();
         while (true)
         {
-            auto input = utils::strip(context.client->get_stream()->getline("for>", force_stream ? liteshell::InputStream::FORCE_STREAM : 0));
+            auto input = utils::strip(stream_ptr->getline(
+                []()
+                { std::cout << "for>" << std::flush; },
+                force_stream ? liteshell::InputStream::FORCE_STREAM : 0));
+            stream_ptr->consume_last();
             if (utils::startswith(input, "for "))
             {
                 counter++;
             }
-            else if (input == "endfor")
+            else if (utils::startswith(input, "endfor"))
             {
                 counter--;
                 if (counter == 0)
@@ -54,63 +44,62 @@ public:
         return lines;
     }
 
-    void insert_commands(
-        const liteshell::Context &context,
-        const std::string &loop_var,
-        const std::vector<std::string> &loop_values,
-        const std::vector<std::string> &lines)
+public:
+    ForCommand()
+        : liteshell::BaseCommand(
+              "for",
+              "Iterate the loop variable over a specified integer range",
+              "Loop the variable in range [x, y) or [y, x) (always from x to y). To end the loop section, type \"endfor\"",
+              liteshell::CommandConstraint(
+                  "var", "The name of the loop variable", true,
+                  "x", "The start of the loop range", true,
+                  "y", "The end of the loop range", true))
     {
-        if (!loop_values.empty())
-        {
-            if (lines.empty()) // No-op loops, reduce to a single assignment
-            {
-                context.client->get_stream()->write(utils::format("eval \"%s\" -s %s", loop_values.back().c_str(), loop_var.c_str()));
-            }
-            else
-            {
-                std::vector<std::string> _loop_values(loop_values);
-                std::reverse(_loop_values.begin(), _loop_values.end());
-                for (const auto &value : _loop_values)
-                {
-                    context.client->get_stream()->write(lines.begin(), lines.end());
-                    context.client->get_stream()->write(utils::format("eval \"%s\" -s %s", value.c_str(), loop_var.c_str()));
-                }
-            }
-        }
     }
 
     DWORD run(const liteshell::Context &context)
     {
-        auto type = context.get("-t type");
-        auto loop_var = context.get("var");
-        if (type == "range")
-        {
-            auto start = context.client->get_environment()->eval_ll(context.get("x")),
-                 end = context.client->get_environment()->eval_ll(context.get("y"));
+        // Do NOT evaluate ANYTHING (even environment variables). Copy the exact components to the compiled commands.
+        const auto raw_context = liteshell::Context::get_context(
+            context.client,
+            context.original_message,
+            context.original_message,
+            context.constraint);
 
-            std::vector<std::string> loop_values;
-            if (start < end)
-            {
-                for (long long value = start; value < end; value++)
-                {
-                    loop_values.push_back(std::to_string(value));
-                }
-            }
-            else if (start > end)
-            {
-                for (long long value = start; value > end; value--)
-                {
-                    loop_values.push_back(std::to_string(value));
-                }
-            }
+        const auto stream_ptr = raw_context.client->get_stream();
+        const auto loop_var = raw_context.get("var");
+        const auto start = raw_context.get("x"), end = raw_context.get("y");
 
-            insert_commands(context, loop_var, loop_values, get_lines(context));
-        }
-        else if (type == "split")
-        {
-            auto values = utils::split(context.get("x"), ' ');
-            insert_commands(context, loop_var, values, get_lines(context));
-        }
+        stream_ptr->consume_last();
+        auto lines = _get_lines(raw_context);
+        auto loop_label = _make_new_label(), end_label = _make_new_label();
+
+        lines.push_front(loop_label);
+        lines.push_front(utils::format("eval -ms \"%s\" \"%s\"", loop_var.c_str(), start.c_str()));
+
+        lines.push_back(utils::format("if -m \"%s\" < \"%s\"", start.c_str(), end.c_str()));
+        lines.push_back(utils::format("eval -ms \"%s\" \"$%s + 1\"", loop_var.c_str(), loop_var.c_str()));
+        lines.push_back(
+            utils::format(
+                "_if -m \"$%s\" < \"%s\" \"%s\" \"%s\"",
+                loop_var.c_str(),
+                end.c_str(),
+                loop_label.c_str(),
+                end_label.c_str()));
+        lines.push_back("else");
+        lines.push_back(utils::format("eval -ms \"%s\" \"$%s - 1\"", loop_var.c_str(), loop_var.c_str()));
+        lines.push_back(
+            utils::format(
+                "_if -m \"$%s\" > \"%s\" \"%s\" \"%s\"",
+                loop_var.c_str(),
+                end.c_str(),
+                loop_label.c_str(),
+                end_label.c_str()));
+        lines.push_back("endif");
+
+        lines.push_back(end_label);
+
+        stream_ptr->write(lines.begin(), lines.end());
 
         return 0;
     }
