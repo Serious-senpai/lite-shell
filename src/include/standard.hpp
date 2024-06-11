@@ -9,7 +9,6 @@
 #include <sstream>
 #include <stack>
 #include <unordered_map>
-#include <regex>
 
 #include <pathcch.h>
 #include <windows.h>

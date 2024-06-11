@@ -443,12 +443,8 @@ namespace utils
     // Validate hex color code
     bool isValidHexColor(const std::string &hexColor)
     {
-        if (hexColor.size() != 7 || hexColor[0] != '#')
-        {
-            return false;
-        }
         // Regular expression to match valid hex color code
-        std::regex hexPattern("#[0-9a-fA-F]{6}");
+        boost::regex hexPattern("#[0-9a-fA-F]{6}");
         return std::regex_match(hexColor, hexPattern);
     }
 
