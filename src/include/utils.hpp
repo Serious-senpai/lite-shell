@@ -469,7 +469,6 @@ namespace utils
         if (!isValidHexColor(hexColor))
         {
             throw std::invalid_argument("Error: Invalid hex color format " + hexColor);
-            return false;
         }
 
         int r, g, b;
