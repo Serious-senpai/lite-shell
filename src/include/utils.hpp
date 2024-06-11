@@ -461,7 +461,6 @@ namespace utils
         if (hexColor.size() != 7 || hexColor[0] != '#')
         {
             throw std::invalid_argument("Error: Invalid hex color format" + hexColor);
-            return false;
         }
 
         int r, g, b;
