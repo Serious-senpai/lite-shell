@@ -5,6 +5,7 @@
 #include "commands/cat.hpp"
 #include "commands/cd.hpp"
 #include "commands/clear.hpp"
+#include "commands/color.hpp"
 #include "commands/date.hpp"
 #include "commands/echo.hpp"
 #include "commands/echoln.hpp"
@@ -31,6 +32,7 @@ void initialize(liteshell::Client *client)
     client->add_command<CatCommand>()
         ->add_command<CdCommand>()
         ->add_command<ClearCommand>()
+        ->add_command<ColorCommand>()
         ->add_command<DateCommand>()
         ->add_command<EchoCommand>()
         ->add_command<EcholnCommand>()

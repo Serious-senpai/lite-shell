@@ -8,6 +8,7 @@
 #include <optional>
 #include <sstream>
 #include <stack>
+#include <unordered_map>
 
 #include <pathcch.h>
 #include <windows.h>
