@@ -432,16 +432,17 @@ namespace utils
     const boost::regex _hex_pattern("#[0-9a-fA-F]{6}");
 
     /** @brief Check if a string is a valid hex representation */
-    bool isValidHexColor(const std::string &hexColor)
+    bool valid_hex_color(const std::string &hexColor)
     {
         return boost::regex_match(hexColor, _hex_pattern);
     }
-    
-    void hexToRgb(const std::string &hex, int &r, int &g, int &b)
+
+    /** @brief Convert a RGB string to 3 components */
+    void hex_to_rgb(const std::string &hex, int &r, int &g, int &b)
     {
-        if (!isValidHexColor(hex))
+        if (!valid_hex_color(hex))
         {
-            throw std::invalid_argument("Error: Invalid hex color format " + hexColor);
+            throw std::invalid_argument("Error: Invalid hex color format " + hex);
         }
 
         std::stringstream ss;
@@ -454,10 +455,10 @@ namespace utils
     }
 
     /** @brief Wrapper function to set color using hex code */
-    void setColor(const std::string &hexColor)
+    void set_color(const std::string &hexColor)
     {
         int r, g, b;
-        hexToRgb(hexColor, r, g, b);
+        hex_to_rgb(hexColor, r, g, b);
 
         HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
         CONSOLE_SCREEN_BUFFER_INFOEX info;
@@ -468,6 +469,5 @@ namespace utils
         info.ColorTable[10] = RGB(r, g, b);
 
         SetConsoleScreenBufferInfoEx(hConsole, &info);
-        SetConsoleTextAttribute(hConsole, 10);
     }
 }

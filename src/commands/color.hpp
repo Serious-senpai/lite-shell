@@ -15,7 +15,7 @@ public:
     DWORD run(const liteshell::Context &context)
     {
         std::string color = context.get("color");
-        utils::setColor(color);
+        utils::set_color(color);
 
         std::cout << "Color changed to " << color << std::endl;
         return 0;
