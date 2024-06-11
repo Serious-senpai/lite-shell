@@ -1,5 +1,7 @@
 #pragma once
 
+#include "standard.hpp"
+
 namespace liteshell
 {
     /**
@@ -25,18 +27,15 @@ namespace liteshell
          */
         static const std::string ECHO_ON;
 
-        struct _list_iterator_compare
-        {
-            template <typename _Iter>
-            bool operator()(const _Iter &lhs, const _Iter &rhs) const
-            {
-                return &(*lhs) < &(*rhs);
-            }
-        };
+        /**
+         * @brief A special label appended at the end of each batch script.
+         */
+        static const std::string STREAM_EOF;
 
         std::list<std::string> _list;
+
+        /** @brief Mimic the [instruction pointer](https://en.wikipedia.org/wiki/Program_counter) */
         std::list<std::string>::iterator _iterator = _list.begin();
-        std::set<std::list<std::string>::iterator, _list_iterator_compare> _run_once;
 
         InputStream(const InputStream &) = delete;
         InputStream &operator=(const InputStream &) = delete;
@@ -44,28 +43,9 @@ namespace liteshell
         /** @brief The current echo state */
         bool _echo = true;
 
-        void _shift_iterator()
-        {
-            auto _run_once_iter = _run_once.find(_iterator);
-            if (_run_once_iter != _run_once.end())
-            {
-                _run_once.erase(_run_once_iter);
-                _iterator = _list.erase(_iterator);
-            }
-            else
-            {
-                _iterator++;
-            }
-        }
-
     public:
-        /**
-         * @brief A special label appended at the end of each batch script and clear the input stream when executed.
-         */
-        static const std::string STREAM_EOF;
-
         /** @brief A flag indicating that `getline` must echo the input to stdout */
-        static const int FORCE_STDOUT = 1 << 0;
+        static const int FORCE_ECHO = 1 << 0;
 
         /** @brief A flag indicating that `getline` must read input from stdin */
         static const int FORCE_STDIN = 1 << 1;
@@ -96,6 +76,9 @@ namespace liteshell
 
         /**
          * @brief Peek the next command in the stream.
+         *
+         * The search starts from the underlying intruction pointer
+         *
          * @return The next command in the input stream, or `std::nullopt` if the stream
          * reaches EOF
          */
@@ -124,7 +107,11 @@ namespace liteshell
         {
 #ifdef DEBUG
             std::cout << "Received getline request, flags = " << flags << std::endl;
-            std::cout << "Current input stream: " << _list << std::endl;
+            std::cout << "Current input stream: " << std::endl;
+            for (const auto &line : _list)
+            {
+                std::cout << line << std::endl;
+            }
             std::cout << "Iterator position: " << std::distance(_list.begin(), _iterator);
             if (_iterator != _list.end())
             {
@@ -143,9 +130,15 @@ namespace liteshell
                 throw std::runtime_error("Unexpected EOF while reading");
             }
 
-            if ((flags & FORCE_STDOUT) || (_echo && peek_echo()))
+            if ((flags & FORCE_ECHO) || (_echo && peek_echo()))
             {
                 prompt();
+            }
+
+            if (exhaust())
+            {
+                _list.clear();
+                _iterator = _list.begin();
             }
 
             bool from_stdin = (flags & FORCE_STDIN) || exhaust();
@@ -163,8 +156,7 @@ namespace liteshell
             }
             else
             {
-                line = *_iterator;
-                _shift_iterator();
+                line = *_iterator++;
             }
             line = utils::strip(line);
 
@@ -181,7 +173,6 @@ namespace liteshell
 
             if (line == STREAM_EOF)
             {
-                clear();
                 if (flags & FORCE_STREAM)
                 {
                     throw std::runtime_error("Unexpected EOF while reading");
@@ -199,24 +190,28 @@ namespace liteshell
             return line;
         }
 
-        template <typename _ForwardIterator>
-        void write(const _ForwardIterator &__begin, const _ForwardIterator &__end, const bool run_once)
+        void consume_last()
         {
-            _iterator = _list.insert(_iterator, __begin, __end);
-
-            if (run_once)
+            auto iter = _iterator;
+            if (iter != _list.begin())
             {
-                std::size_t distance = std::distance(__begin, __end);
-                auto iter = _iterator;
-                for (std::size_t i = 0; i < distance; i++)
-                {
-                    _run_once.insert(iter);
-                    iter++;
-                }
+                _list.erase(--iter);
             }
         }
 
-        void write(const std::string &data, const bool run_once)
+        /**
+         * @brief Insert commands after the current instruction pointer
+         *
+         * @param __begin A forward iterator pointing to the beginning of the input
+         * @param __end A forward iterator pointing past the end of the input
+         */
+        template <typename _ForwardIterator>
+        void write(const _ForwardIterator &__begin, const _ForwardIterator &__end)
+        {
+            _iterator = _list.insert(_iterator, __begin, __end);
+        }
+
+        void write(const std::string &data)
         {
             std::vector<std::string> lines;
             for (auto &line : utils::split(data, '\n'))
@@ -228,20 +223,7 @@ namespace liteshell
                 }
             }
 
-            write(lines.begin(), lines.end(), run_once);
-        }
-
-        void clear()
-        {
-#ifdef DEBUG
-            std::cout << "Clearing input stream" << std::endl;
-#endif
-
-            _list.erase(_list.begin(), _iterator);
-
-#ifdef DEBUG
-            std::cout << "Cleared input stream, current size = " << _list.size() << std::endl;
-#endif
+            write(lines.begin(), lines.end());
         }
 
         /** @brief Whether the underlying iterator reaches the end of the linked-list */
@@ -260,6 +242,10 @@ namespace liteshell
         /** @brief Jump to the specified label */
         void jump(const std::string &label)
         {
+#ifdef DEBUG
+            std::cout << "Jumping to label " << label << std::endl;
+#endif
+
             if (_list.empty())
             {
                 throw std::runtime_error("Cannot jump to the specified label since the input stream is empty");
@@ -273,7 +259,7 @@ namespace liteshell
             auto _iterator_old = _iterator;
             while (utils::strip(*_iterator) != label)
             {
-                _shift_iterator();
+                _iterator++;
                 if (_iterator == _list.end())
                 {
                     _iterator = _list.begin();

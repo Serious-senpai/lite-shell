@@ -1,9 +1,10 @@
 @OFF
-eval "Enter array seperated by spaces: " -ps arr
-eval 0 -s sum
+eval "Enter array seperated by spaces: " -ps tokens
+array arr $tokens
 
-for e "$arr" -t split
-    eval "$sum + $e" -ms sum
+eval 0 -s sum
+for i 0 $arr
+    eval "$sum + ${arr_$i}" -ms sum
 endfor
 
 echoln "Sum = $sum"

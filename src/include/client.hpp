@@ -174,7 +174,7 @@ namespace liteshell
             }
 
             _stream->append_footer(stream);
-            _stream->write(stream.str(), false);
+            _stream->write(stream.str());
         }
 
         /**
@@ -432,7 +432,7 @@ namespace liteshell
                 }
                 else
                 {
-                    auto context = Context::get_context(_instance, stripped_message);
+                    auto context = Context::get_context(_instance, stripped_message, message);
                     try
                     {
                         auto wrapper = _get_command(context);

@@ -350,6 +350,69 @@ namespace liteshell
                    PositionalArgument(name_2, help_2, false, required_2),
                    PositionalArgument(name_3, help_3, many, required_3)}) {}
 
+        /**
+         * @brief Construct a `CommandConstraint` with 4 positional arguments
+         *
+         * @param name_1 The name of the first positional argument
+         * @param help_1 The help message for the first positional argument
+         * @param required_1 Whether the first positional argument is required
+         * @param name_2 The name of the second positional argument
+         * @param help_2 The help message for the second positional argument
+         * @param required_2 Whether the second positional argument is required
+         * @param name_3 The name of the third positional argument
+         * @param help_3 The help message for the third positional argument
+         * @param required_3 Whether the third positional argument is required
+         * @param name_4 The name of the fourth positional argument
+         * @param help_4 The help message for the fourth positional argument
+         * @param required_4 Whether the fourth positional argument is required
+         * @param many Whether the fourth positional argument can have multiple values
+         */
+        CommandConstraint(
+            const std::string &name_1, const std::string &help_1, const bool required_1,
+            const std::string &name_2, const std::string &help_2, const bool required_2,
+            const std::string &name_3, const std::string &help_3, const bool required_3,
+            const std::string &name_4, const std::string &help_4, const bool required_4,
+            const bool many = false)
+            : CommandConstraint(
+                  {PositionalArgument(name_1, help_1, false, required_1),
+                   PositionalArgument(name_2, help_2, false, required_2),
+                   PositionalArgument(name_3, help_3, false, required_3),
+                   PositionalArgument(name_4, help_4, many, required_4)}) {}
+
+        /**
+         * @brief Construct a `CommandConstraint` with 5 positional arguments
+         *
+         * @param name_1 The name of the first positional argument
+         * @param help_1 The help message for the first positional argument
+         * @param required_1 Whether the first positional argument is required
+         * @param name_2 The name of the second positional argument
+         * @param help_2 The help message for the second positional argument
+         * @param required_2 Whether the second positional argument is required
+         * @param name_3 The name of the third positional argument
+         * @param help_3 The help message for the third positional argument
+         * @param required_3 Whether the third positional argument is required
+         * @param name_4 The name of the fourth positional argument
+         * @param help_4 The help message for the fourth positional argument
+         * @param required_4 Whether the fourth positional argument is required
+         * @param name_5 The name of the fifth positional argument
+         * @param help_5 The help message for the fifth positional argument
+         * @param required_5 Whether the fifth positional argument is required
+         * @param many Whether the fifth positional argument can have multiple values
+         */
+        CommandConstraint(
+            const std::string &name_1, const std::string &help_1, const bool required_1,
+            const std::string &name_2, const std::string &help_2, const bool required_2,
+            const std::string &name_3, const std::string &help_3, const bool required_3,
+            const std::string &name_4, const std::string &help_4, const bool required_4,
+            const std::string &name_5, const std::string &help_5, const bool required_5,
+            const bool many = false)
+            : CommandConstraint(
+                  {PositionalArgument(name_1, help_1, false, required_1),
+                   PositionalArgument(name_2, help_2, false, required_2),
+                   PositionalArgument(name_3, help_3, false, required_3),
+                   PositionalArgument(name_4, help_4, false, required_4),
+                   PositionalArgument(name_5, help_5, many, required_5)}) {}
+
         /** @brief Whether there exists an `Option` with the given name */
         bool has_option(const std::string &name) const
         {

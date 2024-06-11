@@ -19,12 +19,14 @@ namespace liteshell
     private:
         Context(
             const std::string &message,
+            const std::string &original_message,
             const std::vector<std::string> &tokens,
             const std::map<std::string, std::vector<std::string>> &values,
             const std::set<std::string> &present,
             const std::shared_ptr<class Client> &client,
             const std::optional<CommandConstraint> &constraint)
             : message(message),
+              original_message(original_message),
               tokens(tokens),
               values(values),
               present(present),
@@ -35,8 +37,11 @@ namespace liteshell
         /** @brief A suffix indicating that a command message should be run in a background */
         static const char BACKGROUND_SUFFIX = '%';
 
-        /** @brief The message that triggered the command being executed. */
+        /** @brief The message (with all environment variables resolved) that triggered the command being executed. */
         const std::string message;
+
+        /** @brief The original message (with environment variables unresolved) that triggered the command being executed. */
+        const std::string original_message;
 
         /** @brief The list of tokens after parsing the message: e.g. `args a b -c d` will give `[args, a, b, -c, d]`. */
         const std::vector<std::string> tokens;
@@ -64,10 +69,6 @@ namespace liteshell
          */
         std::string get(const std::string &name) const
         {
-#ifdef DEBUG
-            std::cout << "Getting argument \"" << name << "\"" << std::endl;
-#endif
-
             auto iter = values.find(name);
             if (iter == values.end())
             {
@@ -85,7 +86,7 @@ namespace liteshell
          */
         Context parse(const std::optional<CommandConstraint> &constraint) const
         {
-            return get_context(client, message, constraint);
+            return get_context(client, message, original_message, constraint);
         }
 
         /**
@@ -107,7 +108,7 @@ namespace liteshell
             std::vector<std::string> new_tokens(tokens);
             new_tokens[0] = token;
 
-            return Context(new_message, new_tokens, values, present, client, constraint);
+            return Context(new_message, original_message, new_tokens, values, present, client, constraint);
         }
 
         /**
@@ -127,7 +128,7 @@ namespace liteshell
                 }
 
                 auto new_message = message.substr(0, size - 1);
-                return get_context(client, new_message, constraint);
+                return get_context(client, new_message, original_message, constraint);
             }
 
             return *this;
@@ -149,20 +150,25 @@ namespace liteshell
          *
          * @param client A pointer to the Client object
          * @param message The message to construct the context from
+         * @param original_message The original message (without environment variables unresolved)
          * @param constraint The constraint to parse the context with (if `std::nullopt` is provided, the
          * resulting `Context` will have its `Context::values` and `Context::present` be empty containers)
          * @return A new context object
          */
-        static Context get_context(const std::shared_ptr<Client> &client, const std::string &message, const std::optional<CommandConstraint> &constraint = std::nullopt);
+        static Context get_context(
+            const std::shared_ptr<Client> &client,
+            const std::string &message,
+            const std::string &original_message,
+            const std::optional<CommandConstraint> &constraint = std::nullopt);
     };
 
-    Context Context::get_context(const std::shared_ptr<Client> &client, const std::string &message, const std::optional<CommandConstraint> &constraint)
+    Context Context::get_context(
+        const std::shared_ptr<Client> &client,
+        const std::string &message,
+        const std::string &original_message,
+        const std::optional<CommandConstraint> &constraint)
     {
         const auto tokens = utils::split(message);
-#ifdef DEBUG
-        std::cout << "Parsing context from tokens: " << tokens << std::endl;
-#endif
-
         std::map<std::string, std::vector<std::string>> values;
         std::set<std::string> present;
 
@@ -328,6 +334,6 @@ namespace liteshell
             }
         }
 
-        return Context(message, tokens, values, present, client, constraint);
+        return Context(message, original_message, tokens, values, present, client, constraint);
     }
 }

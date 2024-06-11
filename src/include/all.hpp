@@ -12,6 +12,7 @@
 #include "fuzzy_search.hpp"
 #include "join.hpp"
 #include "maps.hpp"
+#include "random.hpp"
 #include "split.hpp"
 #include "standard.hpp"
 #include "stream.hpp"

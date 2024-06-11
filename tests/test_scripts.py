@@ -121,11 +121,3 @@ def test_script_6() -> None:
     assert_match("1234\n5\n6\n", stdout)
     assert_not_match("@OFF", stdout)
     assert_not_match("@ON", stdout)
-
-
-def test_script_7() -> None:
-    stdout, _ = execute_command("tests/shell-script-7")
-
-    assert_match("lmao this dumb string", stdout)
-    assert_not_match("@OFF", stdout)
-    assert_not_match("@ON", stdout)

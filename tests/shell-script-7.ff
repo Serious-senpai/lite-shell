@@ -1,4 +1,0 @@
-@OFF
-for -t split x "lmao   this      dumb         string"
-    echo "$x "
-endfor
