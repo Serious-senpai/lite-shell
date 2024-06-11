@@ -445,7 +445,7 @@ namespace utils
     {
         // Regular expression to match valid hex color code
         boost::regex hexPattern("#[0-9a-fA-F]{6}");
-        return std::regex_match(hexColor, hexPattern);
+        return boost::regex_match(hexColor, hexPattern);
     }
 
     // Set console text color using RGB values
