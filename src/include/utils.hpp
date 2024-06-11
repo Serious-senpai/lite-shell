@@ -460,14 +460,17 @@ namespace utils
         int r, g, b;
         hex_to_rgb(hexColor, r, g, b);
 
-        HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+        HANDLE console = GetStdHandle(STD_OUTPUT_HANDLE);
         CONSOLE_SCREEN_BUFFER_INFOEX info;
         info.cbSize = sizeof(CONSOLE_SCREEN_BUFFER_INFOEX);
-        GetConsoleScreenBufferInfoEx(hConsole, &info);
+        GetConsoleScreenBufferInfoEx(console, &info);
 
-        // Modify color table at index 1
-        info.ColorTable[10] = RGB(r, g, b);
+        /* Modify color table at index 7
+        I advise against changing the console color table though, but this is the only way to set the text
+        color to an arbitrary RGB value. */
+        info.ColorTable[7] = RGB(r, g, b); // 7 is the default color table index for screen text (and the most common one)
 
-        SetConsoleScreenBufferInfoEx(hConsole, &info);
+        SetConsoleScreenBufferInfoEx(console, &info);
+        SetConsoleTextAttribute(console, 7);
     }
 }
