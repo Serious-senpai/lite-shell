@@ -29,13 +29,13 @@ namespace liteshell
         const CommandConstraint constraint;
 
         /**
-         * @brief Construct a new command and initialize its attributes.
+         * @brief Constructs a command object and initializes its properties.
          *
-         * @param name The name of the command
-         * @param description A short description of the command
-         * @param long_description A long description of the command
-         * @param aliases A list of aliases the command can be invoked under
-         * @param constraint The arguments constraint of the command
+         * @param name specifies the command's identifier.
+         * @param description provides a concise explanation of the command's purpose.
+         * @param long_description elaborates on the command's functionality and usage.
+         * @param aliases lists alternative identifiers by which the command may be executed.
+         * @param constraint defines the permissible argument configurations for the command.
          */
         BaseCommand(
             const std::string &name,
@@ -60,12 +60,12 @@ namespace liteshell
         }
 
         /**
-         * @brief Construct a new command without aliases
+         * @brief instantiates a command object with specified attributes, excluding aliases.
          *
-         * @param name The name of the command
-         * @param description A short description of the command
-         * @param long_description A long description of the command
-         * @param constraint The arguments constraint of the command
+         * @param name identifies the command's unique name.
+         * @param description summarizes the command's purpose briefly.
+         * @param long_description details the command's functionality and guidance for use.
+         * @param constraint specifies the command's argument requirements and limitations.
          */
         BaseCommand(
             const std::string &name,
@@ -77,22 +77,22 @@ namespace liteshell
         }
 
         /**
-         * @brief Invoke this command and return a new errorlevel for the current shell.
+         * @brief Executes the command and updates the shell's error level.
          *
-         * Subclasses must implement this method.
+         * This method must be overridden by subclasses to define specific command behavior.
          *
-         * @param context The context in which the command is being invoked under.
-         * @return The new errorlevel for the shell.
+         * @param context represents the environment in which the command is executed.
+         * @return The updated error level for the shell after command execution.
          */
         virtual DWORD run(const Context &context) = 0;
 
         /**
-         * @brief Generate the help message.
+         * @brief Produces the command's help documentation.
          *
-         * Returns a string containing the help information for this command.
-         * The help information includes the command description, usage, aliases, and parameters.
+         * Generates a string that encapsulates the command's help details.
+         * This includes a description of the command, instructions for use, associated aliases, and argument specifications.
          *
-         * @return A string containing the help information.
+         * @return A comprehensive string detailing the help information.
          */
         virtual std::string help() const final
         {
