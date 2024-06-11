@@ -460,7 +460,7 @@ namespace utils
     {
         if (hexColor.size() != 7 || hexColor[0] != '#')
         {
-            std::cerr << "Error: Invalid hex color format" << std::endl;
+            throw std::invalid_argument("Error: Invalid hex color format" + hexColor);
             return false;
         }
 
