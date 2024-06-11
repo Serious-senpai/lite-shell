@@ -429,28 +429,36 @@ namespace utils
         return result;
     }
 
+    const boost::regex _hex_pattern("#[0-9a-fA-F]{6}");
+
+    /** @brief Check if a string is a valid hex representation */
+    bool isValidHexColor(const std::string &hexColor)
+    {
+        return boost::regex_match(hexColor, _hex_pattern);
+    }
+    
     void hexToRgb(const std::string &hex, int &r, int &g, int &b)
     {
+        if (!isValidHexColor(hexColor))
+        {
+            throw std::invalid_argument("Error: Invalid hex color format " + hexColor);
+        }
+
         std::stringstream ss;
         ss << std::hex << hex.substr(1);
-        unsigned int hexColor;
+        unsigned hexColor;
         ss >> hexColor;
         r = (hexColor >> 16) & 0xFF;
         g = (hexColor >> 8) & 0xFF;
         b = hexColor & 0xFF;
     }
 
-    // Validate hex color code
-    bool isValidHexColor(const std::string &hexColor)
+    /** @brief Wrapper function to set color using hex code */
+    void setColor(const std::string &hexColor)
     {
-        // Regular expression to match valid hex color code
-        boost::regex hexPattern("#[0-9a-fA-F]{6}");
-        return boost::regex_match(hexColor, hexPattern);
-    }
+        int r, g, b;
+        hexToRgb(hexColor, r, g, b);
 
-    // Set console text color using RGB values
-    void setColor(int r, int g, int b)
-    {
         HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
         CONSOLE_SCREEN_BUFFER_INFOEX info;
         info.cbSize = sizeof(CONSOLE_SCREEN_BUFFER_INFOEX);
@@ -461,18 +469,5 @@ namespace utils
 
         SetConsoleScreenBufferInfoEx(hConsole, &info);
         SetConsoleTextAttribute(hConsole, 10);
-    }
-
-    // Wrapper function to set color using hex code
-    void setColor(const std::string &hexColor)
-    {
-        if (!isValidHexColor(hexColor))
-        {
-            throw std::invalid_argument("Error: Invalid hex color format " + hexColor);
-        }
-
-        int r, g, b;
-        hexToRgb(hexColor, r, g, b);
-        setColor(r, g, b);
     }
 }
