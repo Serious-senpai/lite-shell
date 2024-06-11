@@ -439,7 +439,7 @@ namespace utils
     
     void hexToRgb(const std::string &hex, int &r, int &g, int &b)
     {
-        if (!isValidHexColor(hexColor))
+        if (!isValidHexColor(hex))
         {
             throw std::invalid_argument("Error: Invalid hex color format " + hexColor);
         }
