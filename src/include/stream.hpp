@@ -200,7 +200,7 @@ namespace liteshell
         }
 
         /**
-         * @brief Insert commands after the current instruction pointer
+         * @brief Insert commands before the current instruction pointer
          *
          * @param __begin A forward iterator pointing to the beginning of the input
          * @param __end A forward iterator pointing past the end of the input
@@ -211,6 +211,11 @@ namespace liteshell
             _iterator = _list.insert(_iterator, __begin, __end);
         }
 
+        /**
+         * @brief Split the given data into lines, then insert them before the instruction pointer
+         *
+         * @param data The data to insert
+         */
         void write(const std::string &data)
         {
             std::vector<std::string> lines;
@@ -232,6 +237,7 @@ namespace liteshell
             return _iterator == _list.end();
         }
 
+        /** @brief Append footer to a script */
         void append_footer(std::stringstream &stream)
         {
             stream << "\n";
@@ -239,7 +245,11 @@ namespace liteshell
             stream << (_echo ? ECHO_ON : ECHO_OFF) << "\n";
         }
 
-        /** @brief Jump to the specified label */
+        /**
+         * @brief Jump to the specified label.
+         *
+         * @param label The label to jump to, must start with `:`
+         */
         void jump(const std::string &label)
         {
 #ifdef DEBUG
