@@ -456,7 +456,7 @@ namespace utils
     }
 
     // Wrapper function to set color using hex code
-    bool setColor(const std::string &hexColor)
+    void setColor(const std::string &hexColor)
     {
         if (hexColor.size() != 7 || hexColor[0] != '#')
         {
@@ -466,6 +466,5 @@ namespace utils
         int r, g, b;
         hexToRgb(hexColor, r, g, b);
         setColor(r, g, b);
-        return true;
     }
 }
