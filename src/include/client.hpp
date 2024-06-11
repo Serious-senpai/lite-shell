@@ -16,17 +16,17 @@
 namespace liteshell
 {
     /**
-     * @brief The command shell application.
+     * @brief Command shell application class.
      *
-     * Embodies a command shell client. This application is architected to maintain a singular instantiation of this class,
-     * ensuring a unified command control interface.
+     * Serves as the sole instance of a command shell client. 
+     * This class is designed to ensure a consistent command control interface across the application.
      *
-     * * Responsibilities:
-     * - Command Management: Orchestrates the execution and lifecycle of commands.
-     * - Subprocess Handling: Oversees the initiation, supervision, and termination of subprocesses.
-     * - Errorlevel Administration: Monitors and adjusts the errorlevel to reflect the current state of operations.
+     * Responsibilities:
+     * - **Command Management**: Manages the execution flow and lifecycle of commands.
+     * - **Subprocess Handling**: Manages the creation, monitoring, and termination of subprocesses.
+     * - **Errorlevel Administration**: Tracks and modifies the errorlevel to accurately represent operational status.
      *
-     * Additionally, this class furnishes a mechanism to perpetuate the shell's operation ad infinitum.
+     * This class also provides a mechanism to sustain continuous shell operations indefinitely.
      */
     class Client
     {
@@ -63,13 +63,13 @@ namespace liteshell
         }
 
         /**
-         * @brief Find an executable that `token` points to.
+         * @brief Locates an executable referenced by a given token.
          *
-         * The function will first look in the current working directory, then in the directories specified in `resolve_order`.
+         * This function searches for the executable initially in the current working directory,
+         * followed by the directories listed in `resolve_order`.
          *
-         * @see https://stackoverflow.com/a/605139
-         * @param token The token to resolve. This token may be a relative or absolute path.
-         * @return The path to the executable if found, `std::nullopt` otherwise.
+         * @param token a token representing the path to resolve, which may be relative or absolute.
+         * @return The absolute path to the located executable, or `std::nullopt` if not found.
          */
         std::optional<std::string> resolve(const std::string &token) const
         {
@@ -302,11 +302,12 @@ namespace liteshell
         }
 
         /**
-         * @brief Get a command from the internal list of commands.
-         * This can also be used as a way to get aliases.
+         * @brief Retrieves a specified command from the command registry.
          *
-         * @param name The name of the command to get.
-         * @return The command that was requested. If not found, returns an empty optional.
+         * This method can also be utilized to obtain command aliases.
+         *
+         * @param name The identifier of the desired command.
+         * @return The corresponding Command object, or an empty optional if the command is not found.
          */
         std::optional<CommandWrapper<BaseCommand>> get_optional_command(const std::string &name) const
         {
@@ -329,10 +330,10 @@ namespace liteshell
         }
 
         /**
-         * @brief Add a command to the internal list of commands.
+         * @brief Registers a new command within the command repository.
          *
-         * @param ptr A shared pointer `std::shared_ptr<BaseCommand>` to the command to add.
-         * @return A pointer to the current client to allow fluent-style chaining
+         * @param ptr a `std::shared_ptr<BaseCommand>` pointing to the command to be registered.
+         * @return A pointer to the invoking client, enabling method chaining.
          */
         Client *add_command(const std::shared_ptr<BaseCommand> &ptr)
         {
@@ -369,11 +370,12 @@ namespace liteshell
         }
 
         /**
-         * @brief Search for a command that matches most closely to the given name.
-         * @see `utils::fuzzy_search`
+         * @brief Identifies the command that best matches the specified name.
          *
-         * @param name The name of the command to search for.
-         * @return The name of the command that was found.
+         * Utilizes the `utils::fuzzy_search` method to determine the closest command match.
+         *
+         * @param name The identifier of the command to be located.
+         * @return The name of the most closely matching command, if available.
          */
         std::string fuzzy_command_search(const std::string &name) const
         {
@@ -413,13 +415,13 @@ namespace liteshell
         }
 
         /**
-         * @brief Process a command message.
+         * @brief Processes an incoming command message.
          *
-         * @note The resolution order is as follows:
-         * @note - Built-in command
-         * @note - Executable/batch file
+         * @note Resolution sequence:
+         * @note - Prioritize built-in commands
+         * @note - Fallback to executables or batch files
          *
-         * @param message The command message to process.
+         * @param message The command message to be processed.
          */
         void process_command(const std::string &message)
         {
