@@ -72,32 +72,28 @@ public:
 
         stream_ptr->consume_last();
         auto lines = _get_lines(raw_context);
-        auto loop_label = _make_new_label(), end_label = _make_new_label();
 
+        const auto restore_echo = stream_ptr->echo() ? liteshell::InputStream::ECHO_ON : liteshell::InputStream::ECHO_OFF;
+        const auto loop_label = _make_new_label(), end_label = _make_new_label();
+
+        lines.push_front(restore_echo);
+        lines.push_front("endif");
+        lines.push_front(utils::format("jump %s", end_label.c_str()));
+        lines.push_front(utils::format("if -m \"$%s\" == \"%s\"", loop_var.c_str(), end.c_str()));
         lines.push_front(loop_label);
         lines.push_front(utils::format("eval -ms \"%s\" \"%s\"", loop_var.c_str(), start.c_str()));
+        lines.push_front(liteshell::InputStream::ECHO_OFF);
 
+        lines.push_back(liteshell::InputStream::ECHO_OFF);
         lines.push_back(utils::format("if -m \"%s\" < \"%s\"", start.c_str(), end.c_str()));
         lines.push_back(utils::format("eval -ms \"%s\" \"$%s + 1\"", loop_var.c_str(), loop_var.c_str()));
-        lines.push_back(
-            utils::format(
-                "_if -m \"$%s\" < \"%s\" \"%s\" \"%s\"",
-                loop_var.c_str(),
-                end.c_str(),
-                loop_label.c_str(),
-                end_label.c_str()));
         lines.push_back("else");
         lines.push_back(utils::format("eval -ms \"%s\" \"$%s - 1\"", loop_var.c_str(), loop_var.c_str()));
-        lines.push_back(
-            utils::format(
-                "_if -m \"$%s\" > \"%s\" \"%s\" \"%s\"",
-                loop_var.c_str(),
-                end.c_str(),
-                loop_label.c_str(),
-                end_label.c_str()));
         lines.push_back("endif");
+        lines.push_back(utils::format("jump %s", loop_label.c_str()));
 
         lines.push_back(end_label);
+        lines.push_back(restore_echo);
 
         stream_ptr->write(lines.begin(), lines.end());
 

@@ -113,12 +113,20 @@ public:
             }
         }
 
-        auto true_label = _make_new_label(), false_label = _make_new_label(), end_label = _make_new_label();
+        const auto restore_echo = stream_ptr->echo() ? liteshell::InputStream::ECHO_ON : liteshell::InputStream::ECHO_OFF;
+        const auto true_label = _make_new_label(), false_label = _make_new_label(), end_label = _make_new_label();
+
+        if_true.push_front(restore_echo);
         if_true.push_front(true_label);
-        if_false.push_front(false_label);
+        if_true.push_back(liteshell::InputStream::ECHO_OFF);
         if_true.push_back("jump " + end_label);
+
+        if_false.push_front(restore_echo);
+        if_false.push_front(false_label);
+        if_false.push_back(liteshell::InputStream::ECHO_OFF);
         if_false.push_back("jump " + end_label);
 
+        stream_ptr->write(restore_echo);
         stream_ptr->write(end_label);
         stream_ptr->write(if_false.begin(), if_false.end());
         stream_ptr->write(if_true.begin(), if_true.end());
@@ -130,6 +138,7 @@ public:
                 raw_context.present.count("-m") ? "-m" : "",
                 x.c_str(), op.c_str(), y.c_str(),
                 true_label.c_str(), false_label.c_str()));
+        stream_ptr->write(liteshell::InputStream::ECHO_OFF);
 
         return 0;
     }

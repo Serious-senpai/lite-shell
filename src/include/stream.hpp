@@ -13,6 +13,18 @@ namespace liteshell
     class InputStream
     {
     private:
+        std::list<std::string> _list;
+
+        /** @brief Mimic the [instruction pointer](https://en.wikipedia.org/wiki/Program_counter) */
+        std::list<std::string>::iterator _iterator = _list.begin();
+
+        InputStream(const InputStream &) = delete;
+        InputStream &operator=(const InputStream &) = delete;
+
+        /** @brief The current echo state */
+        bool _echo = true;
+
+    public:
         /**
          * @brief A special command to turn off echo.
          *
@@ -32,18 +44,6 @@ namespace liteshell
          */
         static const std::string STREAM_EOF;
 
-        std::list<std::string> _list;
-
-        /** @brief Mimic the [instruction pointer](https://en.wikipedia.org/wiki/Program_counter) */
-        std::list<std::string>::iterator _iterator = _list.begin();
-
-        InputStream(const InputStream &) = delete;
-        InputStream &operator=(const InputStream &) = delete;
-
-        /** @brief The current echo state */
-        bool _echo = true;
-
-    public:
         /** @brief A flag indicating that `getline` must echo the input to stdout */
         static const int FORCE_ECHO = 1 << 0;
 
@@ -59,7 +59,7 @@ namespace liteshell
         InputStream() {}
 
         /** @brief The echo state after the next command */
-        bool peek_echo()
+        bool peek_echo() const
         {
             if (peek() == ECHO_ON)
             {
@@ -75,6 +75,14 @@ namespace liteshell
         }
 
         /**
+         * @brief The current echo state
+         */
+        bool echo() const
+        {
+            return _echo;
+        }
+
+        /**
          * @brief Peek the next command in the stream.
          *
          * The search starts from the underlying intruction pointer
@@ -82,7 +90,7 @@ namespace liteshell
          * @return The next command in the input stream, or `std::nullopt` if the stream
          * reaches EOF
          */
-        std::optional<std::string> peek()
+        std::optional<std::string> peek() const
         {
             for (auto iter = _iterator; iter != _list.end(); iter++)
             {
