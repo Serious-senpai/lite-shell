@@ -8,7 +8,6 @@
 #include "stream.hpp"
 #include "style.hpp"
 #include "subprocess.hpp"
-#include "wrapper.hpp"
 
 #define LITE_SHELL_SCRIPT_EXTENSION ".ff"
 #define LITE_SHELL_BUFFER_SIZE 4096
@@ -30,13 +29,13 @@ namespace liteshell
 
         std::vector<ProcessInfoWrapper *> _subprocesses;
 
-        std::vector<CommandWrapper<BaseCommand>> _wrappers;
+        std::vector<std::shared_ptr<BaseCommand>> _wrappers;
         utils::CaseInsensitiveMap<std::size_t> _commands;
 
         const std::unique_ptr<Environment> _environment;
         const std::unique_ptr<InputStream> _stream;
 
-        CommandWrapper<BaseCommand> _get_command(const std::string &name) const
+        std::shared_ptr<BaseCommand> _get_command(const std::string &name) const
         {
             auto iter = _commands.find(name);
             if (iter == _commands.end())
@@ -47,7 +46,7 @@ namespace liteshell
             return _wrappers[iter->second];
         }
 
-        CommandWrapper<BaseCommand> _get_command(const Context &context) const
+        std::shared_ptr<BaseCommand> _get_command(const Context &context) const
         {
             if (context.tokens.empty())
             {
@@ -218,6 +217,14 @@ namespace liteshell
             _environment->set_value("errorlevel", std::to_string(errorlevel));
         }
 
+        struct _command_compare
+        {
+            bool operator()(const std::shared_ptr<BaseCommand> &first, const std::shared_ptr<BaseCommand> &second) const
+            {
+                return first->name < second->name;
+            }
+        };
+
     public:
         /**
          * @brief Get the `Client` instance.
@@ -289,11 +296,11 @@ namespace liteshell
         /**
          * @brief Get all commands of the current command shell.
          *
-         * @return A set containing all commands
+         * @return A set containing all commands sorted according to their names.
          */
-        std::set<CommandWrapper<BaseCommand>> walk_commands() const
+        std::set<std::shared_ptr<BaseCommand>, _command_compare> walk_commands() const
         {
-            return std::set<CommandWrapper<BaseCommand>>(_wrappers.begin(), _wrappers.end());
+            return std::set<std::shared_ptr<BaseCommand>, _command_compare>(_wrappers.begin(), _wrappers.end());
         }
 
         /**
@@ -301,9 +308,9 @@ namespace liteshell
          * This can also be used as a way to get aliases.
          *
          * @param name The name of the command to get.
-         * @return The command that was requested. If not found, returns an empty optional.
+         * @return The command that was requested, or `std::nullopt` if not found.
          */
-        std::optional<CommandWrapper<BaseCommand>> get_optional_command(const std::string &name) const
+        std::optional<std::shared_ptr<BaseCommand>> get_optional_command(const std::string &name) const
         {
             auto iter = _commands.find(name);
             if (iter == _commands.end())
@@ -333,16 +340,16 @@ namespace liteshell
         {
             if (_commands.find(ptr->name) != _commands.end())
             {
-                throw std::runtime_error(utils::format("Command %s already exists", ptr->name));
+                throw std::runtime_error(utils::format("Command \"%s\" already exists", ptr->name.c_str()));
             }
 
-            _wrappers.emplace_back(ptr);
+            _wrappers.push_back(ptr);
             _commands[ptr->name] = _wrappers.size() - 1;
             for (auto &alias : ptr->aliases)
             {
                 if (_commands.find(alias) != _commands.end())
                 {
-                    throw std::runtime_error(utils::format("Command %s already exists", alias));
+                    throw std::runtime_error(utils::format("Command \"%s\" already exists", alias.c_str()));
                 }
                 _commands[alias] = _wrappers.size() - 1;
             }
@@ -375,8 +382,8 @@ namespace liteshell
             std::vector<std::string> all;
             for (auto &wrapper : _wrappers)
             {
-                all.push_back(wrapper.command->name);
-                for (auto &alias : wrapper.command->aliases)
+                all.push_back(wrapper->name);
+                for (auto &alias : wrapper->aliases)
                 {
                     all.push_back(alias);
                 }
@@ -438,11 +445,11 @@ namespace liteshell
                         auto wrapper = _get_command(context);
 
 #ifdef DEBUG
-                        std::cout << "Matched command \"" << wrapper.command->name << "\"" << std::endl;
+                        std::cout << "Matched command \"" << wrapper->name << "\"" << std::endl;
 #endif
 
-                        auto constraint = wrapper.command->constraint;
-                        auto errorlevel = wrapper.run(context.parse(constraint));
+                        auto constraint = wrapper->constraint;
+                        auto errorlevel = wrapper->run(context.parse(constraint));
                         _environment->set_value("errorlevel", std::to_string(errorlevel));
                     }
                     catch (CommandNotFound &)
