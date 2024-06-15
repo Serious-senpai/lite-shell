@@ -85,21 +85,6 @@ namespace utils
         return utf_convert(std::wstring(buffer, buffer + size));
     }
 
-    /** @brief The CTRL handler used by the command shell */
-    BOOL WINAPI ctrl_handler(DWORD ctrl_type)
-    {
-        return ctrl_type == CTRL_C_EVENT;
-    }
-
-    /** @brief Set whether to ignore Ctrl C signal */
-    void set_ignore_ctrl_c(bool ignore)
-    {
-        if (!SetConsoleCtrlHandler(ctrl_handler, ignore))
-        {
-            std::cerr << last_error("Warning: SetConsoleCtrlHandler ERROR") << std::endl;
-        }
-    }
-
     /**
      * @brief List all files matching a specific pattern (typically used to list a directory)
      * @see https://stackoverflow.com/a/24193730

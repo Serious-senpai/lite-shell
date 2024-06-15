@@ -58,6 +58,12 @@ namespace liteshell
          */
         InputStream() {}
 
+        void clear()
+        {
+            _list.clear();
+            _iterator = _list.begin();
+        }
+
         /** @brief The echo state after the next command */
         bool peek_echo() const
         {

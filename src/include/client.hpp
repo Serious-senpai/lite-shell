@@ -26,6 +26,7 @@ namespace liteshell
     {
     private:
         static std::shared_ptr<Client> _instance;
+        static BOOL WINAPI _ctrl_handler(DWORD ctrl_type);
 
         std::vector<ProcessInfoWrapper *> _subprocesses;
 
@@ -397,7 +398,11 @@ namespace liteshell
          */
         void run_forever()
         {
-            utils::set_ignore_ctrl_c(true);
+            if (!SetConsoleCtrlHandler(_ctrl_handler, TRUE))
+            {
+                std::cerr << utils::last_error("Warning: SetConsoleCtrlHandler ERROR") << std::endl;
+            }
+
             while (true)
             {
                 process_command(
@@ -578,6 +583,19 @@ namespace liteshell
     };
 
     std::shared_ptr<Client> Client::_instance(nullptr);
+
+    BOOL WINAPI Client::_ctrl_handler(DWORD ctrl_type)
+    {
+        if (ctrl_type == CTRL_C_EVENT)
+        {
+            auto client = Client::get_instance();
+            client->get_stream()->clear();
+
+            return TRUE;
+        }
+        return FALSE;
+    }
+
     std::shared_ptr<Client> Client::get_instance()
     {
         if (_instance == nullptr)
