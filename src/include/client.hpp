@@ -475,7 +475,10 @@ namespace liteshell
                             {
                                 auto final_context = context.replace_call(*executable);
 
-                                auto subprocess = spawn_subprocess(final_context);
+                                auto subprocess = spawn_subprocess(
+                                    final_context.strip_background_request().message,
+                                    final_context.is_background_request(),
+                                    false);
                                 _environment->set_value("pid", std::to_string(subprocess->pid()));
                                 if (final_context.is_background_request())
                                 {
@@ -518,12 +521,23 @@ namespace liteshell
         /**
          * @brief Spawn a subprocess and execute `command` in it.
          *
-         * @param context A context holding the command to execute.
+         * @param command The command to execute in the subprocess.
+         * @param background Whether to run the subprocess in the background.
+         * @param new_console Whether to run the subprocess in a new console window. If this is `true`, parameter `background`
+         * has no effect.
          * @return A pointer to the wrapper object containing information about the subprocess.
          */
-        ProcessInfoWrapper *spawn_subprocess(const Context &context)
+        ProcessInfoWrapper *spawn_subprocess(const std::string &command, const bool background, const bool new_console)
         {
-            auto final_context = context.strip_background_request();
+            DWORD flags = 0;
+            if (background)
+            {
+                flags |= CREATE_NEW_PROCESS_GROUP;
+            }
+            if (new_console)
+            {
+                flags |= CREATE_NEW_CONSOLE;
+            }
 
             STARTUPINFOW startup_info;
             ZeroMemory(&startup_info, sizeof(startup_info));
@@ -531,21 +545,21 @@ namespace liteshell
 
             PROCESS_INFORMATION process_info;
             auto success = CreateProcessW(
-                NULL,                                                           // lpApplicationName
-                utils::utf_convert(final_context.message).data(),               // lpCommandLine
-                NULL,                                                           // lpProcessAttributes
-                NULL,                                                           // lpThreadAttributes
-                TRUE,                                                           // bInheritHandles
-                context.is_background_request() ? CREATE_NEW_PROCESS_GROUP : 0, // dwCreationFlags
-                NULL,                                                           // lpEnvironment
-                NULL,                                                           // lpCurrentDirectory
-                &startup_info,                                                  // lpStartupInfo
-                &process_info                                                   // lpProcessInformation
+                NULL,                               // lpApplicationName
+                utils::utf_convert(command).data(), // lpCommandLine
+                NULL,                               // lpProcessAttributes
+                NULL,                               // lpThreadAttributes
+                TRUE,                               // bInheritHandles
+                flags,                              // dwCreationFlags
+                NULL,                               // lpEnvironment
+                NULL,                               // lpCurrentDirectory
+                &startup_info,                      // lpStartupInfo
+                &process_info                       // lpProcessInformation
             );
 
             if (success)
             {
-                ProcessInfoWrapper *wrapper = new ProcessInfoWrapper(process_info, final_context.message);
+                ProcessInfoWrapper *wrapper = new ProcessInfoWrapper(process_info, command);
                 _subprocesses.push_back(wrapper);
 
                 // Do not close the handles since we want to keep track of all subprocesses in our current shell (unless explicitly closed)
@@ -567,7 +581,7 @@ namespace liteshell
             {
                 CloseHandle(process_info.hProcess);
                 CloseHandle(process_info.hThread);
-                throw SubprocessCreationError(utils::last_error(utils::format("Unable to create subprocess \"%s\"", final_context.message.c_str())));
+                throw SubprocessCreationError(utils::last_error(utils::format("Unable to create subprocess \"%s\"", command.c_str())));
             }
         }
 

@@ -26,6 +26,7 @@
 #include "commands/ps.hpp"
 #include "commands/resume.hpp"
 #include "commands/rm.hpp"
+#include "commands/start.hpp"
 #include "commands/suspend.hpp"
 #include "commands/volume.hpp"
 
@@ -55,6 +56,7 @@ void initialize(liteshell::Client *client)
         ->add_command<PsCommand>()
         ->add_command<ResumeCommand>()
         ->add_command<RmCommand>()
+        ->add_command<StartCommand>()
         ->add_command<SuspendCommand>()
         ->add_command<VolumeCommand>();
 }
