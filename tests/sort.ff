@@ -1,5 +1,5 @@
 @OFF
-eval "Enter array seperated by spaces: " -ps tokens
+eval "Enter array separated by spaces: " -ps tokens
 array arr $tokens
 
 for i 0 $arr
