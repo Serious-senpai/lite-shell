@@ -253,15 +253,7 @@ namespace liteshell
                 size--;
             }
 
-            wchar_t buffer[32767];
-            if (GetEnvironmentVariableW(L"PATH", buffer, 32767) == 0)
-            {
-                throw std::runtime_error(utils::last_error("Unable to get PATH"));
-            }
-
-            std::string env_path = utils::utf_convert(buffer);
-
-            _environment->set_value("PATH", path.substr(0, size) + ";" + env_path);
+            _environment->set_value("PATH", path.substr(0, size));
             _environment->set_value("errorlevel", "0");
         }
 
