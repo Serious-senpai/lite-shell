@@ -356,7 +356,7 @@ namespace utils
      * @param value The value to calculate the square root of
      * @return The square root of the value
      */
-    template <typename T>
+    template <typename T, std::enable_if_t<std::is_arithmetic_v<T>, bool> = true>
     T sqrt(const T &value)
     {
         if (value < 0)
@@ -392,10 +392,9 @@ namespace utils
     }
 
     /** @brief Convert an integer to its hex representation */
-    template <typename T>
+    template <typename T, std::enable_if_t<std::is_integral_v<T>, bool> = true>
     std::string to_hex_string(const T &value)
     {
-        static_assert(std::is_integral_v<T>, "to_hex_string called with a non-integral type");
         std::stringstream stream;
         stream << std::hex << value;
         return stream.str();

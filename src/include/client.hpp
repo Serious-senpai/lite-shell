@@ -356,10 +356,9 @@ namespace liteshell
          * @tparam T A subclass of `BaseCommand`
          * @return A pointer to the current client to allow fluent-style chaining
          */
-        template <typename T>
+        template <typename T, std::enable_if_t<std::is_base_of_v<BaseCommand, T>, bool> = true>
         Client *add_command()
         {
-            static_assert(std::is_base_of_v<BaseCommand, T>, "Can only add a subclass of BaseCommand as a command");
             return add_command(std::make_shared<T>());
         }
 

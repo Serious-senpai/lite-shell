@@ -14,10 +14,9 @@ namespace utils
      * @param r The upper bound (inclusive) of the range
      * @return A random number in range [l, r]
      */
-    template <typename T>
+    template <typename T, std::enable_if_t<std::is_arithmetic_v<T>, bool> = true>
     T random(const T &l, const T &r)
     {
-        static_assert(std::is_arithmetic_v<T>, "Expected an arithmetic type");
         std::conditional_t<std::is_floating_point_v<T>, std::uniform_real_distribution<T>, std::uniform_int_distribution<T>> unif(l, r);
         return unif(_rng);
     }
